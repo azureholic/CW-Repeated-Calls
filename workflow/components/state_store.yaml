@@ -1,0 +1,11 @@
+apiVersion: dapr.io/v1alpha1
+kind: Component
+metadata:
+  name: <NAME>
+spec:
+  type: state.in-memory
+  version: v1
+  metadata: 
+  # Uncomment this if you wish to use In-memory as a state store for actors (optional)
+  - name: actorStateStore
+    value: "true"

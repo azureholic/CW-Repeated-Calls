@@ -3,6 +3,7 @@
 ##
 ## Get latest from https://github.com/github/gitignore/blob/main/VisualStudio.gitignore
 
+
 # User-specific files
 *.rsuser
 *.suo
@@ -402,3 +403,4 @@ FodyWeavers.xsd
 
 # Python
 .python-version
+.venv
