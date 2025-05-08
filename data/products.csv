@@ -1,4 +1,4 @@
-Product_ID,Product_Name,Product_Type, Max_Price
+id,name,type,listing_price
 101,AutoMow 3000,Self-Driving Mower, 100
 102,HedgeBot Pro,Robotic Trimmer, 40
 103,AquaSpray X,Smart Sprinkler, 20
