@@ -1,0 +1,31 @@
+[
+    {
+        "name": "Scenario 1",
+        "title": "Repeat Complaint with Update Impact – AutoMow 3000 Not Functioning",
+        "customer": {
+            "name": "Emily Harper",
+            "customer_id": 7,
+            "clv": "High"
+        },
+        "product": {
+            "name": "AutoMow 3000",
+            "type": "Self-Driving Mower"
+        },
+        "dates": {
+            "primary_call_date": "2024-01-10",
+            "previous_call_dates": ["2024-01-09"]
+        },
+        "scenario_details": {
+            "call_reason": "Customer complaint: Their lawnmower is not working and has not functioned since yesterday.",
+            "call_history_analysis": "The Historic_Calls database shows that the customer called yesterday about the same issue and was told it would be resolved by today. This is a repeat call due to an unresolved issue.",
+            "operational_insight": "The Software_Updates database indicates a major update was rolled out yesterday for the AutoMow 3000. The issue may be linked to the update, suggesting a possible fault introduced on the company’s end.",
+            "customer_insights_and_retention_strategy": "The customer is marked as High CLV. The Discount database indicates a 20% discount for 6 months is available for high CLV customers using this product. It is recommended to offer this discount as a goodwill gesture.",
+            "recommended_system_response": [
+                "Acknowledge the repeat issue and apologize for the inconvenience.",
+                "Confirm that a recent major update might have impacted the product’s functionality.",
+                "Reassure the customer that the issue is being prioritized.",
+                "Offer: 'As a valued customer, we’re offering you a 20% discount for the next 6 months on your lawnmower subscription.'"
+            ]
+        }
+    }
+]
