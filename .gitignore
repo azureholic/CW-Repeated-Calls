@@ -403,6 +403,7 @@ FodyWeavers.xsd
 
 # Python
 .python-version
+.flake8
 
 # Environment variable files
 .env
