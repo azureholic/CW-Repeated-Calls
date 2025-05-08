@@ -23,7 +23,6 @@ class Subscription(Base):
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     customer_id: Mapped[int] = mapped_column(Integer(), ForeignKey("customer.id"))
     product_id: Mapped[int] = mapped_column(Integer(), ForeignKey("product.id"))
-    amount: Mapped[int] = mapped_column(Integer())
     contract_duration_months: Mapped[int] = mapped_column(Integer())
     price_per_month: Mapped[float] = mapped_column(Float())
     start_date: Mapped[date] = mapped_column(Date())
