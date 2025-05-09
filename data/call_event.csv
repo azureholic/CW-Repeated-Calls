@@ -1,3 +1,4 @@
 id,customer_id,sdc,time_stamp
 1,7,"My self-driving mower isn’t working since this morning",2024-01-10 10:05:22
-2,22,"My HedgeBot Compact won't turn on.",2025-02-15T10:12:00
+2,22,"My HedgeBot Compact won't turn on.",2025-02-15T10:12:10
+3,37,"My AutoMow Mini still keeps turning off while mowing.",2024-10-15T09:45:31
