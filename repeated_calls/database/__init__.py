@@ -1,5 +1,4 @@
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
 
 from . import settings
 
@@ -15,6 +14,3 @@ engine = create_engine(
     )
 )
 """SQLAlchemy engine."""
-
-session = sessionmaker(bind=engine, autocommit=False)
-"""SQLAlchemy session."""
