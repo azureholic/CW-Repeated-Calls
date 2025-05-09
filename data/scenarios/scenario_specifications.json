@@ -54,5 +54,33 @@
                 "Find out what the customer is calling about and assist them with their inquiry."
             ]
         }
+    },
+    {
+        "name": "Scenario 3",
+        "title": "Customer complained multiple times over the last month about the same issue with AutoMow Mini.",
+        "customer": {
+            "name": "Saul Brandt",
+            "customer_id": 37,
+            "clv": "Low"
+        },
+        "product": {
+            "name": "AutoMow Mini",
+            "type": "Self-Driving Mower"
+        },
+        "dates": {
+            "primary_call_date": "2024-10-15",
+            "previous_call_dates": ["2024-10-10", "2024-10-12", "2024-9-24"]
+        },
+        "scenario_details": {
+            "call_reason": "Issue with the Automow is still persisting. Customer is frustrated.",
+            "call_history_analysis": "Customer called multiple times over the last month about the same issue. At first it seemed like a fluke, but the AutoMow Mini seems to be turning off randomly while mowing. Before the first call, the issue was never there.",
+            "operational_insight": "At 2024-9-20, there was a major software update for the AutoMow Mini. Looking at the timeline, it seems likely to be related to the customer issues.",
+            "customer_insights_and_retention_strategy": "The customer is marked as low CLV. The database indicates that low CLV customers are not eligible for discounts.",
+            "recommended_system_response": [
+                "Acknowledge the repeat issue and apologize for the inconvenience.", 
+                "Confirm that a recent major update might have impacted the product’s functionality.", 
+                "Reassure the customer that the issue is being prioritized."
+            ]
+        }
     }
 ]
