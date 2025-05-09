@@ -27,5 +27,32 @@
                 "Offer: 'As a valued customer, we’re offering you a 20% discount for the next 6 months on your lawnmower subscription.'"
             ]
         }
+    },
+    {
+        "name": "Scenario 2",
+        "title": "Second unrelated call - HedgeBot Compact not working.",
+        "customer": {
+            "name": "Andrew Lyons",
+            "customer_id": 22,
+            "clv": "High"
+        },
+        "product": {
+            "name": "HedgeBot Compact",
+            "type": "Robotic Trimmer"
+        },
+        "dates": {
+            "primary_call_date": "2025-02-15",
+            "previous_call_dates": ["2025-02-13"]
+        },
+        "scenario_details": {
+            "call_reason": "HedgeBot Compact is not turning on.",
+            "call_history_analysis": "Customer called two days ago inquiring about an offer on the Aquaspray X. This deal had already expired, and the customer was recommended to sign up to the email list to receive future offers. As this is an unrelated reason for calling, this is not a repeat call.",
+            "operational_insight": "No relevant operational insights.",
+            "customer_insights_and_retention_strategy": "Customer is marked as high CSV. Since this is not a repeat call, do not offer a discount.",
+            "recommended_system_response": [
+                "As this is no repeat call, do not offer a discount.", 
+                "Find out what the customer is calling about and assist them with their inquiry."
+            ]
+        }
     }
 ]
