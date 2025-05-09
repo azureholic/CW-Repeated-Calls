@@ -63,7 +63,7 @@ class Discount(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     product_id: Mapped[int] = mapped_column(Integer(), ForeignKey("product.id"))
-    clv: Mapped[str] = mapped_column(String())
+    minimum_clv: Mapped[str] = mapped_column(String())
     percentage: Mapped[int] = mapped_column(Integer())
     duration_months: Mapped[int] = mapped_column(Integer())
 
