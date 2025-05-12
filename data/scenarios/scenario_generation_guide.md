@@ -55,6 +55,9 @@ historic_call_event:
   start_time: datetime str
   end_time: datetime str
 
+The data you generate must be rows that can be added to existing CSV files with the schema specified above. 
+The datetime format for all generated timestamps should be: YYYY-MM-DD HH:MM:SS
+
 Expected system behavior (for validation in your tests):
 
     The system must detect this as a repeat call (per call_history_analysis).
