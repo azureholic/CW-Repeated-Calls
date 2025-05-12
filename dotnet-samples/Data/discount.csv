@@ -1,0 +1,17 @@
+id,product_id,minimum_clv,percentage,duration_months
+1,101,Med,10,3
+2,101,High,20,6
+3,102,Med,10,4
+4,102,High,15,6
+5,103,Med,8,3
+6,103,High,12,5
+7,104,Med,5,2
+8,104,High,10,4
+9,105,Med,12,3
+10,105,High,18,6
+11,106,Med,10,4
+12,106,High,14,6
+13,107,Med,8,3
+14,107,High,12,5
+15,108,Med,15,6
+16,108,High,30,12
