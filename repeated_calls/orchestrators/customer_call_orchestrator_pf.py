@@ -144,7 +144,6 @@ class DetermineRepeatCallStep(KernelProcessStep[RepeatedCallProcessState]):
             sys.exit(0)
 
 
-
 # Step 4: Generate Recommendation
 class GenerateRecommendationStep(KernelProcessStep[RepeatedCallProcessState]):
     state: RepeatedCallProcessState = Field(default_factory=RepeatedCallProcessState)
