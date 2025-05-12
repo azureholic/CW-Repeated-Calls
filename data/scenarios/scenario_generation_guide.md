@@ -33,12 +33,14 @@ Given a scenario definition in JSON (see placeholder below), produce:
 2. **One or more `historic_call_event` rows** for each date in `previous_call_dates`, with:
    - Unique integer `id` values
    - The same `customer_id`
-   - The same or similar `sdc` as the primary call
+   - An `sdc`, defined the same as in the primary call. Its content must be different from that of the primary call event (although for repeat calls the meaning can be the same).
    - A `call_summary` that:
      - Summarizes what was discussed (per `call_history_analysis`)
      - Mentions the promised resolution date
      - Does **not** mention any “operational_insight” items that were not yet known then
    - `start_time` and `end_time` datetimes on each historic date
+
+These `historic_call_event` rows cannot be identical to eachother and/or to the `call_event`, they represent a unique event in history that should have its own characteristics, even if they are calls about a similar issue.
 
 Use these table schemas:
 call_event:
