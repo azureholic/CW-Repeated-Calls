@@ -375,3 +375,59 @@ class Subscription:
     def find_by_product_id(cls, product_id: int) -> List["Subscription"]:
         """Find subscriptions for a specific product"""
         return [sub for sub in cls.get_all() if sub.product_id == product_id]
+
+
+@dataclass
+class Discount:
+    """Discount entity class."""
+    id: int
+    product_id: int
+    minimum_clv: str
+    percentage: float
+    duration_months: int
+    
+    # Static storage for all discount instances
+    _all_discounts: ClassVar[List["Discount"]] = []
+    _loaded: ClassVar[bool] = False
+    
+    @classmethod
+    def get_all(cls) -> List["Discount"]:
+        """Get all discount instances, loading from CSV if not already loaded"""
+        if not cls._loaded:
+            cls.load_from_csv()
+        return cls._all_discounts
+    
+    @classmethod
+    def load_from_csv(cls, csv_path: str = None) -> None:
+        """Load discount data from CSV file"""
+        if csv_path is None:
+            csv_path = os.path.join(DATA_DIR, 'discount.csv')
+            
+        cls._all_discounts = []  # Clear existing data
+        
+        if not os.path.exists(csv_path):
+            print(f"Warning: CSV file not found at {csv_path}")
+            return
+    
+        with open(csv_path, 'r', encoding='utf-8') as file:
+            reader = csv.DictReader(file)
+            for row in reader:
+                discount = cls(
+                    id=process_csv_value(row['id'], int),
+                    product_id=process_csv_value(row['product_id'], int),
+                    minimum_clv=process_csv_value(row['minimum_clv'], str),
+                    percentage=process_csv_value(row['percentage'], float),
+                    duration_months=process_csv_value(row['duration_months'], int)
+                )
+                cls._all_discounts.append(discount)
+        cls._loaded = True
+
+    @classmethod
+    def find_by_minimum_clv(cls, clv_value: str) -> List["Discount"]:
+        """Find discounts for a specific CLV level"""
+        return [discount for discount in cls.get_all() if discount.minimum_clv == clv_value]
+    
+    @classmethod
+    def find_by_product_id(cls, product_id: int) -> List["Discount"]:
+        """Find discounts for a specific product"""
+        return [discount for discount in cls.get_all() if discount.product_id == product_id]

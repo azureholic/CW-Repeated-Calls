@@ -18,6 +18,7 @@ from semantic_kernel.processes.local_runtime.local_kernel_process import start
 from azure.identity import DefaultAzureCredential
 
 from entities.states import IncomingMessage
+from steps.determine_customer_advice import DetermineCustomerAdviceStep
 from steps.get_customer_data_step import GetCustomerDataStep
 from steps.determine_repeated_caller_step import DetermineRepeatedCallerStep
 from steps.determine_cause_step import DetermineCauseStep
@@ -31,15 +32,10 @@ async def run_sequence() -> None:
     # Load environment variables
     load_dotenv()
     
-    # Configure LLM connection details from environment variables
-    endpoint = os.getenv("AZURE_OPENAI_ENDPOINT")
-    deployment = os.getenv("AZURE_OPENAI_COMPLETION_MODEL")
-    
     # Create Semantic Kernel instance
     kernel = Kernel()
     
     # Add Azure OpenAI chat completion service
-    credential = DefaultAzureCredential()
     kernel.add_service(AzureChatCompletion())
     
     # This is the incoming message that will be processed (simulating a customer call)
@@ -56,6 +52,7 @@ async def run_sequence() -> None:
     get_customer_context_step = process_builder.add_step(GetCustomerDataStep)
     determine_repeated_caller_step = process_builder.add_step(DetermineRepeatedCallerStep)
     determine_cause_step = process_builder.add_step(DetermineCauseStep)
+    determine_customer_advice_step = process_builder.add_step(DetermineCustomerAdviceStep)
     exit_step = process_builder.add_step(ExitStep)
     
     # Orchestrate the events
@@ -66,8 +63,11 @@ async def run_sequence() -> None:
     determine_repeated_caller_step.on_event("IsRepeatedCall").send_event_to(determine_cause_step, function_name="determine_cause", parameter_name="result")
     determine_repeated_caller_step.on_event("IsNotRepeatedCall").send_event_to(exit_step)
     
+    determine_cause_step.on_event("CauseDetermined").send_event_to(determine_customer_advice_step, function_name="get_advice", parameter_name="cause_result")
     determine_cause_step.on_event("NotCauseDetermined").send_event_to(exit_step)
-    determine_cause_step.on_event("CauseDetermined").send_event_to(exit_step)
+
+    determine_customer_advice_step.on_event("AdviceProvided").send_event_to(exit_step)
+    determine_customer_advice_step.on_event("NotAdviceProvided").send_event_to(exit_step)
     
     # Build and run the process
     process = process_builder.build()
