@@ -91,7 +91,6 @@ class DetermineCauseStep(KernelProcessStep):
             response_format=CauseResult
         )
 
-        
         # Get model response
         response = await chat_service.get_chat_message_content(chat_history = chat_history,settings=execution_settings)
         
@@ -102,6 +101,7 @@ class DetermineCauseStep(KernelProcessStep):
             # Convert to CauseResult object
             result = CauseResult(
                 customer_id=result.customer_id,
+                product_id=formatted_response.get("product_id", 0),
                 analysis=formatted_response.get("analysis", ""),
                 conclusion=formatted_response.get("conclusion", ""),
                 is_operations_cause=formatted_response.get("is_operations_cause", False)

@@ -17,6 +17,15 @@ class RepeatedCallResult:
 class CauseResult:
     """Result class for cause determination analysis."""
     customer_id: int
+    product_id: int
     analysis: str
     conclusion: str
     is_operations_cause: bool
+
+@dataclass
+class OfferResult:
+    """Result class for offer."""
+    customer_id: int
+    product_id: int
+    advice: str
+
