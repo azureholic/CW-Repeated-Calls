@@ -27,7 +27,7 @@ Given a scenario definition in JSON (see placeholder below), produce:
 1. **A new `call_event` row** for the “primary_call_date” in the JSON, with:
    - A unique integer `id`
    - The `customer_id` from the JSON
-   - An appropriate one-sentence `sdc` (self-described call reason) reflecting the “call_reason”
+   - An appropriate one-sentence `sdc` (self-described call reason) reflecting the “call_reason”. This cannot the be same as in the input json, but is something that a customer would say into the recording machine at the beginning of their service call.
    - A `time_stamp` on the primary call date (ISO 8601 datetime)
 
 2. **One or more `historic_call_event` rows** for each date in `previous_call_dates`, with:
