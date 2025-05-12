@@ -1,7 +1,8 @@
 [
     {
         "name": "Scenario 1",
-        "title": "Repeat Complaint with Update Impact – AutoMow 3000 Not Functioning",
+        "title": "Repeat complaint - Update impact - High CLV - Make offer",
+        "call_event_id": 1,
         "customer": {
             "name": "Porter Osborne",
             "customer_id": 7,
@@ -30,7 +31,8 @@
     },
     {
         "name": "Scenario 2",
-        "title": "Second unrelated call - HedgeBot Compact not working.",
+        "title": "Not repeat complaint - No offer",
+        "call_event_id": 2,
         "customer": {
             "name": "Andrew Lyons",
             "customer_id": 22,
@@ -48,7 +50,7 @@
             "call_reason": "HedgeBot Compact is not turning on.",
             "call_history_analysis": "Customer called two days ago inquiring about an offer on the Aquaspray X. This deal had already expired, and the customer was recommended to sign up to the email list to receive future offers. As this is an unrelated reason for calling, this is not a repeat call.",
             "operational_insight": "No relevant operational insights.",
-            "customer_insights_and_retention_strategy": "Customer is marked as high CSV. Since this is not a repeat call, do not offer a discount.",
+            "customer_insights_and_retention_strategy": "Customer is marked as high CSV. But since this is not a repeat call, flow should never reach this stage and no offer should be made.",
             "recommended_system_response": [
                 "As this is no repeat call, do not offer a discount.", 
                 "Find out what the customer is calling about and assist them with their inquiry."
@@ -57,7 +59,8 @@
     },
     {
         "name": "Scenario 3",
-        "title": "Customer complained multiple times over the last month about the same issue with AutoMow Mini.",
+        "title": "Repeat complaint (21 days) - Update impact - Low CLV - No offer",
+        "call_event_id": 3,
         "customer": {
             "name": "Saul Brandt",
             "customer_id": 37,
