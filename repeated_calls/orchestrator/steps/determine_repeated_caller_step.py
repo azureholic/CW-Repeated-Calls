@@ -9,7 +9,7 @@ from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.functions import kernel_function
 from semantic_kernel.processes.kernel_process import KernelProcessStep, KernelProcessStepContext
 
-from repeated_calls.prompt_engineering.repeat_caller_prompt import RepeatCallerPrompt
+from repeated_calls.prompt_engineering.prompts import RepeatCallerPrompt
 
 
 class DetermineRepeatedCallerStep(KernelProcessStep):
@@ -29,7 +29,8 @@ class DetermineRepeatedCallerStep(KernelProcessStep):
             kernel: The semantic kernel instance
             callstate: The current call state with customer information
         """
-        prompt = RepeatCallerPrompt().from_callstate(callstate)
+        # Construct prompt
+        prompt = RepeatCallerPrompt(callstate)
 
         # Create the chat completion
         chat_service, _ = kernel.select_ai_service(type=ChatCompletionClientBase)
