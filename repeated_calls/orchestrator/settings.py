@@ -1,0 +1,28 @@
+from pydantic import SecretStr
+from pydantic_settings import BaseSettings, SettingsConfigDict
+
+
+class AzureOpenAISettings(BaseSettings):
+    """Settings for Azure OpenAI.
+
+    Pydantic will determine the values of all fields in the following order of precedence
+    (descending order of priority):
+    1. Arguments passed to the class constructor
+    2. Environment variables (prefixed with `AZURE_OPENAI_`)
+    3. Variables in a .env file if present (prefixed with `AZURE_OPENAI_`)
+
+    Attributes:
+        endpoint (str): The endpoint URL for the Azure OpenAI service.
+        api_key (SecretStr | None): The API key for the Azure OpenAI service. Set to `None` to use
+            identity-based authentication (requires correctly assigned IAM roles). Defaults to
+            `None`.
+        deployment (str): Deployment name of the Chat Completion model.
+    """
+
+    endpoint: str
+    api_key: SecretStr | None = None
+    deployment: str
+
+    model_config = SettingsConfigDict(
+        env_nested_delimiter="__", env_file=".env", env_prefix="AZURE_OPENAI_", extra="ignore"
+    )
