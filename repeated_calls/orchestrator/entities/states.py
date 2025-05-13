@@ -3,7 +3,7 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from typing import List, Optional
 
-from entities.database import CallEvent, Customer, HistoricCallEvent
+from repeated_calls.orchestrator.entities.database import Customer, CallEvent, HistoricCallEvent
 
 
 @dataclass
