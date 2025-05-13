@@ -51,7 +51,7 @@ If you encounter import errors, make sure:
 - `entities/` - Contains domain models and data classes
 - `steps/` - Contains process steps for the workflow
 - `utils/` - Contains utility functions for data retrieval
-- `main.py` - Main entry point that sets up the process 
+- `main.py` - Main entry point that sets up the process
 
 ## How it Works
 
