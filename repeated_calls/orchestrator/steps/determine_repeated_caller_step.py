@@ -9,105 +9,40 @@ from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.functions import kernel_function
 from semantic_kernel.processes.kernel_process import KernelProcessStep, KernelProcessStepContext
 
+from repeated_calls.prompt_engineering.repeat_caller_prompt import RepeatCallerPrompt
+
 
 class DetermineRepeatedCallerStep(KernelProcessStep):
     """Step to determine if a call is a repeated call about the same issue."""
 
     def __init__(self):
+        """Initialize the DetermineRepeatedCallerStep."""
         super().__init__()
-        self._system_prompt = (
-            "Your job is to provide the context for a customer. "
-            "You will be provided with a customer ID and you must return the customer object, "
-            "the call event object, and the historic call event object. "
-            "Determine if the current events are considered a repeateable event."
-        )
 
     @kernel_function
-    async def repeated_call(
-        self, context: KernelProcessStepContext, kernel: Kernel, callstate
-    ) -> None:
-        """Process function to determine if a call is a repeated call.
+    async def repeated_call(self, context: KernelProcessStepContext, kernel: Kernel, callstate) -> None:
+        """
+        Process function to determine if a call is a repeated call.
 
         Args:
             context: The process step context
             kernel: The semantic kernel instance
             callstate: The current call state with customer information
         """
-
-        # Build the user message with detailed context
-        user_message = []
-
-        # Add customer information
-        if hasattr(callstate, "customer") and callstate.customer:
-            user_message.append("## Customer Information")
-            user_message.append(f"ID: {callstate.customer.id}")
-            user_message.append(f"Name: {callstate.customer.name}")
-            user_message.append(f"Customer Lifetime Value: {callstate.customer.clv}")
-            user_message.append(
-                f"Customer Since: {callstate.customer.relation_start_date.strftime('%Y-%m-%d')}"
-            )
-            user_message.append("")
-
-        # Add current call information
-        if hasattr(callstate, "call_event") and callstate.call_event:
-            user_message.append("## Current Call Details")
-            user_message.append(f"Call ID: {callstate.call_event.id}")
-            user_message.append(f"Call Description: {callstate.call_event.sdc}")
-            user_message.append(
-                f"Timestamp: {callstate.call_event.time_stamp.strftime('%Y-%m-%d %H:%M:%S')}"
-            )
-            user_message.append("")
-
-        # Add call history in reverse chronological order (most recent first)
-        if callstate.call_history and len(callstate.call_history) > 0:
-            user_message.append("## Previous Call History")
-
-            # Sort history by start time in descending order
-            sorted_history = sorted(
-                callstate.call_history, key=lambda h: h.start_time, reverse=True
-            )
-
-            for call in sorted_history:
-                duration = call.end_time - call.start_time
-                duration_minutes = duration.total_seconds() / 60
-
-                user_message.append(f"### Call on {call.start_time.strftime('%Y-%m-%d %H:%M:%S')}")
-                user_message.append(f"Description: {call.sdc}")
-                user_message.append(f"Summary: {call.call_summary}")
-                user_message.append(f"Duration: {duration_minutes:.1f} minutes")
-                user_message.append(f"Start: {call.start_time.strftime('%Y-%m-%d %H:%M:%S')}")
-                user_message.append(f"End: {call.end_time.strftime('%Y-%m-%d %H:%M:%S')}")
-
-                # If there's a current call, calculate time between this historic call and the
-                # current one
-                if callstate.call_event:
-                    time_since_call = callstate.call_event.time_stamp - call.end_time
-                    hours_since_call = time_since_call.total_seconds() / 3600
-                    user_message.append(f"Time since this call: {hours_since_call:.1f} hours")
-
-                user_message.append("")
-
-        # Add specific question for the model
-        user_message.append(
-            "Based on this information, is the current call a repeated call about the same issue? "
-            "Please analyze the timing between calls, similarity of issues discussed, and provide "
-            "your reasoning."
-        )
+        prompt = RepeatCallerPrompt().from_callstate(callstate)
 
         # Create the chat completion
-        chat_service, settings = kernel.select_ai_service(type=ChatCompletionClientBase)
+        chat_service, _ = kernel.select_ai_service(type=ChatCompletionClientBase)
         assert isinstance(chat_service, ChatCompletionClientBase)  # nosec
 
         # Create a chat history object
         chat_history = ChatHistory()
-        chat_history.add_system_message(self._system_prompt)
-        chat_history.add_user_message("\n".join(user_message))
+        chat_history.add_system_message(prompt.get_system_prompt())
+        chat_history.add_user_message(prompt.get_user_prompt())
 
         execution_settings = AzureChatPromptExecutionSettings(response_format=RepeatedCallResult)
 
-        response = await chat_service.get_chat_message_content(
-            chat_history=chat_history, settings=execution_settings
-        )
+        response = await chat_service.get_chat_message_content(chat_history=chat_history, settings=execution_settings)
 
         try:
             # Parse the JSON response
