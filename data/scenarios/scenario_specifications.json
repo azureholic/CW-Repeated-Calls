@@ -10,7 +10,8 @@
         },
         "product": {
             "name": "AutoMow 3000",
-            "type": "Self-Driving Mower"
+            "type": "Self-Driving Mower",
+            "id": 101
         },
         "dates": {
             "primary_call_date": "2024-01-10",
@@ -42,7 +43,8 @@
         },
         "product": {
             "name": "HedgeBot Compact",
-            "type": "Robotic Trimmer"
+            "type": "Robotic Trimmer",
+            "id": 106
         },
         "dates": {
             "primary_call_date": "2025-02-15",
@@ -72,7 +74,8 @@
         },
         "product": {
             "name": "AutoMow Mini",
-            "type": "Self-Driving Mower"
+            "type": "Self-Driving Mower",
+            "id": 105
         },
         "dates": {
             "primary_call_date": "2024-10-15",
@@ -105,7 +108,8 @@
         },
         "product": {
             "name": "AquaSpray X",
-            "type": "Smart Sprinkler"
+            "type": "Smart Sprinkler",
+            "id": 103
         },
         "dates": {
             "primary_call_date": "2025-03-16",
@@ -137,7 +141,8 @@
         },
         "product": {
             "name": "GrowMaster AI Greenhouse System",
-            "type": "Smart Greenhouse"
+            "type": "Smart Greenhouse",
+            "id": 108
         },
         "dates": {
             "primary_call_date": "30-1-2025",
@@ -169,7 +174,8 @@
         },
         "product": {
             "name": "SoilSense Lite",
-            "type": "Soil Monitor"
+            "type": "Soil Monitor",
+            "id": 104
         },
         "dates": {
             "primary_call_date": "2024-02-15",
@@ -201,7 +207,8 @@
         },
         "product": {
             "name": "AquaSpray Duo",
-            "type": "Smart Sprinkler"
+            "type": "Smart Sprinkler",
+            "id": 107
         },
         "dates": {
             "primary_call_date": "2024-10-21",
@@ -233,7 +240,8 @@
         },
         "product": {
             "name": "HedgeBot Pro",
-            "type": "Robotic Trimmer"
+            "type": "Robotic Trimmer",
+            "id": 102
         },
         "dates": {
             "primary_call_date": "2024-10-01",
@@ -266,7 +274,8 @@
         },
         "product": {
             "name": "AutoMow Mini",
-            "type": "Self-Driving Mower"
+            "type": "Self-Driving Mower",
+            "id": 105
         },
         "dates": {
             "primary_call_date": "2024-10-01",
