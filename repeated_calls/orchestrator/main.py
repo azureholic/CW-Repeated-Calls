@@ -2,7 +2,6 @@
 import asyncio
 from datetime import datetime
 
-from dotenv import load_dotenv
 from entities.states import IncomingMessage
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
@@ -15,17 +14,25 @@ from steps.determine_repeated_caller_step import DetermineRepeatedCallerStep
 from steps.exit_step import ExitStep
 from steps.get_customer_data_step import GetCustomerDataStep
 
+from repeated_calls.orchestrator.settings import AzureOpenAISettings
+
 
 async def run_sequence() -> None:
     """Main function to run the repeated calls process."""
-    # Load environment variables
-    load_dotenv()
+    # Load OpenAI settings
+    settings = AzureOpenAISettings()
 
     # Create Semantic Kernel instance
     kernel = Kernel()
 
     # Add Azure OpenAI chat completion service
-    kernel.add_service(AzureChatCompletion())
+    kernel.add_service(
+        AzureChatCompletion(
+            endpoint=settings.endpoint,
+            api_key=settings.api_key.get_secret_value() if settings.api_key else None,
+            deployment_name=settings.deployment,
+        )
+    )
 
     # This is the incoming message that will be processed (simulating a customer call)
     incoming_message = IncomingMessage(
