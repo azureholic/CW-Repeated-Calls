@@ -10,26 +10,24 @@ from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.functions import kernel_function
 from semantic_kernel.processes.kernel_process import KernelProcessStep, KernelProcessStepContext
 
+from repeated_calls.prompt_engineering.prompts import CausePrompt
+
 
 class DetermineCauseStep(KernelProcessStep):
-    """Step to determine the cause of a product issue.
+    """
+    Step to determine the cause of a product issue.
 
     Uses the enhanced database objects with static data loading.
     """
 
     def __init__(self):
+        """Initialise the DetermineCauseStep."""
         super().__init__()
-        self._system_prompt = """
-        Your job is to determine the cause of a product issue.
-        You will be provided with a list of software updates and products,
-        and you must identify the associated software updates and products for the given issue.
-        """
 
     @kernel_function
-    async def determine_cause(
-        self, context: KernelProcessStepContext, kernel: Kernel, result
-    ) -> None:
-        """Process function to determine the cause of an issue.
+    async def determine_cause(self, context: KernelProcessStepContext, kernel: Kernel, result) -> None:
+        """
+        Process function to determine the cause of an issue.
 
         Args:
             context: The process step context
@@ -45,56 +43,25 @@ class DetermineCauseStep(KernelProcessStep):
         customer_relevant_updates = []
         for customer_product in customer_products:
             # Find software updates for the customer's products
-            product_software_updates = [
-                s for s in software_updates if s.product_id == customer_product.product_id
-            ]
+            product_software_updates = [s for s in software_updates if s.product_id == customer_product.product_id]
             customer_relevant_updates.extend(product_software_updates)
 
-        # Build the user message with detailed context
-        user_message = []
-
-        user_message.append(f"## Customer ID: {result.customer_id}")
-
-        # Add conclusion from previous analysis
-        if result.conclusion:
-            user_message.append("## Conclusion")
-            user_message.append(result.conclusion)
-            user_message.append("")
-
-        # Add software update information
-        if customer_relevant_updates and customer_products:
-            user_message.append("## Software updates relevant for issue")
-
-            for update in customer_relevant_updates:
-                user_message.append(f"Product ID: {update.product_id}")
-                user_message.append(f"Update ID: {update.id}")
-                user_message.append(f"Update Type: {update.type}")
-                user_message.append(
-                    f"Update Timestamp: {update.rollout_date.strftime('%Y-%m-%d %H:%M:%S')}"
-                )
-                user_message.append("")
-
-        # Add specific question for the model
-        user_message.append(
-            "Based on this information, is the current call a repeated call about the same issue "
-            "and is it due because of software updates?"
-        )
+        # Construct prompt
+        prompt = CausePrompt(result, customer_products, customer_relevant_updates)
 
         # Create the chat completion
-        chat_service, settings = kernel.select_ai_service(type=ChatCompletionClientBase)
+        chat_service, _ = kernel.select_ai_service(type=ChatCompletionClientBase)
         assert isinstance(chat_service, ChatCompletionClientBase)  # nosec
 
         # Create a chat history object
         chat_history = ChatHistory()
-        chat_history.add_system_message(self._system_prompt)
-        chat_history.add_user_message("\n".join(user_message))
+        chat_history.add_system_message(prompt.get_system_prompt())
+        chat_history.add_user_message(prompt.get_user_prompt())
 
         execution_settings = AzureChatPromptExecutionSettings(response_format=CauseResult)
 
         # Get model response
-        response = await chat_service.get_chat_message_content(
-            chat_history=chat_history, settings=execution_settings
-        )
+        response = await chat_service.get_chat_message_content(chat_history=chat_history, settings=execution_settings)
 
         try:
             # Parse the JSON response

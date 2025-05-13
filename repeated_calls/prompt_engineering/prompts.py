@@ -16,7 +16,9 @@ from typing import Any
 
 from jinja2 import Environment, FileSystemLoader
 
+from repeated_calls.orchestrator.entities.database import Discount, SoftwareUpdate, Subscription
 from repeated_calls.orchestrator.entities.states import RepeatedCallState
+from repeated_calls.orchestrator.entities.structured_output import CauseResult, RepeatedCallResult
 
 
 class PromptTemplate:
@@ -104,7 +106,12 @@ class RepeatCallerPrompt(PromptTemplatePair):
 class CausePrompt(PromptTemplatePair):
     """Prompt class for determining the cause of a product issue, managing both system and user prompts."""
 
-    def __init__(self, result, customer_products, customer_relevant_updates) -> None:
+    def __init__(
+        self,
+        result: RepeatedCallResult,
+        customer_products: list[Subscription],
+        customer_relevant_updates: list[SoftwareUpdate],
+    ) -> None:
         """Initialise the CausePrompt with specific templates."""
         super().__init__(user_template_name="cause_user.j2", system_template_name="cause_system.j2")
 
@@ -118,7 +125,7 @@ class CausePrompt(PromptTemplatePair):
 class RecommendationPrompt(PromptTemplatePair):
     """Prompt class for formulating the offer recommendation, managing both system and user prompts."""
 
-    def __init__(self, cause_result, customer_clv, matching_discount) -> None:
+    def __init__(self, cause_result: CauseResult, customer_clv: str, matching_discount: Discount) -> None:
         """Initialise the RecommendationPrompt with specific templates."""
         super().__init__(user_template_name="recommendation_user.j2", system_template_name="recommendation_system.j2")
 
