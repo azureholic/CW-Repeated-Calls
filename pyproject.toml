@@ -16,6 +16,7 @@ psycopg-binary = "^3.2.7"
 pandas = "^2.2.3"
 streamlit = "^1.45.0"
 polars = "^1.29.0"
+jupytext = "^1.17.1"
 
 [tool.poetry.group.dev.dependencies]
 jupyter = "^1.1.1"
