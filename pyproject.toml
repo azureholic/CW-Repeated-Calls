@@ -24,6 +24,7 @@ mcp-client = "^0.2.0"
 jinja2 = "3.1.6"
 streamlit = "^1.45.0"
 polars = "^1.29.0"
+jupytext = "^1.17.1"
 
 [tool.poetry.group.dev.dependencies]
 jupyter = "^1.1.1"
