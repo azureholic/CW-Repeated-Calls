@@ -16,6 +16,7 @@ class DetermineCustomerAdviceStep(KernelProcessStep):
     """Step to determine customer value and advice based on the call event."""
 
     def __init__(self):
+        """Initialise the DetermineCustomerAdviceStep."""
         super().__init__()
         self._state = RepeatedCallState()
         self._system_prompt = """
@@ -29,11 +30,9 @@ class DetermineCustomerAdviceStep(KernelProcessStep):
         """
 
     @kernel_function
-    async def get_advice(
-        self, cause_result, kernel: Kernel, context: KernelProcessStepContext
-    ) -> None:
-        """Process function to retrieve customer data and call events using the enhanced database
-        objects.
+    async def get_advice(self, cause_result, kernel: Kernel, context: KernelProcessStepContext) -> None:
+        """
+        Process function to retrieve customer data and call events using the enhanced database objects.
 
         Args:
             cause_result: The result of the cause event
@@ -72,16 +71,13 @@ class DetermineCustomerAdviceStep(KernelProcessStep):
 
         if not matching_discount:
             print(
-                f"Warning: No matching discount found for customer CLV value {customer_clv_value} "
-                f"and product ID {cause_result.product_id}"
+                f"Warning: No matching discount found for customer CLV value {customer_clv_value} and product ID {cause_result.product_id}"
             )
             return
 
         # Now we have a single discount object that matches the customer's CLV value
         print(
-            f"Found matching discount: {matching_discount.percentage}% for customer ID "
-            f"{customer_id} with CLV {customer_clv_value} and duration "
-            f"{matching_discount.duration_months} months"
+            f"Found matching discount: {matching_discount.percentage}% for customer ID {customer_id} with CLV {customer_clv_value} and duration {matching_discount.duration_months} months"
         )
 
         # Build the user message with detailed context
@@ -103,9 +99,7 @@ class DetermineCustomerAdviceStep(KernelProcessStep):
 
         execution_settings = AzureChatPromptExecutionSettings(response_format=OfferResult)
 
-        response = await chat_service.get_chat_message_content(
-            chat_history=chat_history, settings=execution_settings
-        )
+        response = await chat_service.get_chat_message_content(chat_history=chat_history, settings=execution_settings)
 
         try:
             # Parse the JSON response

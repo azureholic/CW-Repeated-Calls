@@ -10,7 +10,7 @@ Templates are used to generate structured prompts with variable content for
 consistent interactions with AI models.
 """
 import os
-from abc import ABC, abstractmethod
+from abc import ABC
 from importlib.resources import files
 from typing import Any
 
@@ -80,11 +80,3 @@ class PromptTemplatePair(ABC):
     def get_system_prompt(self) -> str:
         """Render and return the system prompt."""
         return self.system_prompt.render()
-
-    @abstractmethod
-    def from_callstate(self, callstate: Any) -> "PromptTemplatePair":
-        """
-        Populate the prompt variables from a callstate object.
-
-        Must be implemented by subclasses.
-        """
