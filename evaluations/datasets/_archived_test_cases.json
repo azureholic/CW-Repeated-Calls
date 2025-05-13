@@ -1,0 +1,65 @@
+[
+  {
+    "question": "Your job is to determine the cause of a product issue. You will be provided with a list of software updates and products, and you must identify the associated software updates and products for the given issue.",
+    "context": {
+      "id": 1,
+      "customer": {
+        "id": 7,
+        "name": "Emily Harper",
+        "customer_lifetime_value": "High",
+        "customer_since": "2023-09-16"
+      },
+      "product": {
+        "id": 101,
+        "product_name": "AutoMow 3000",
+        "product_type": "Self-Driving Mower"
+      },
+      "current_call_event": {
+        "call_id": 123,
+        "description": "Customer complaint: Their lawnmower is not working and has not functioned since yesterday.",
+        "timestamp": "2024-01-10"
+      },
+      "historic_call_event": {
+        "call_date": "2024-01-09",
+        "description": "Customer previously reported the same issue with the AutoMow 3000 not functioning.",
+        "summary": "The issue was reported the day prior and a resolution was expected before the current call. Issue remains unresolved."
+      },
+      "software_update": {
+        "id": 7001,
+        "product_id": 101,
+        "rollout_date": "2024-01-09",
+        "type": "major"
+      }
+    },
+    "response": "Based on the provided information, this issue is the fault of the company due to a software update. The evidence shows that a major software update (id: 7001) was rolled out for the AutoMow 3000 on January 9, 2024, which is the same day the customer first reported issues with their mower. The timing of the software update strongly suggests it caused the malfunction. Additionally, despite the customer reporting the issue and being promised a resolution, the problem remains unresolved the next day, indicating the company's responsibility for both the initial problem and the failure to fix it promptly."
+  },
+  {
+    "question": "Your job is to determine the cause of a product issue. You will be provided with a list of software updates and products, and you must identify the associated software updates and products for the given issue.",
+    "context": {
+      "id": 2,
+      "customer": {
+        "id": 4,
+        "name": "Benjamin Silva",
+        "customer_lifetime_value": "Med",
+        "customer_since": "2024-04-17"
+      },
+      "product": {
+        "id": 104,
+        "product_name": "SoilSense Lite",
+        "product_type": "Soil Monitor"
+      },
+      "current_call_event": {
+        "call_id": 124,
+        "description": "Customer complaint: Their soil monitor is not showing readings despite being placed in the garden. Claims the product might be defective.",
+        "timestamp": "2025-05-12"
+      },
+      "historic_call_event": {
+        "call_date": "2025-05-05",
+        "description": "Customer previously reported that their SoilSense Lite wasn't showing any readings.",
+        "summary": "Agent explained that sensor needs to be inserted at least 2 inches deep into soil. Customer admitted it was placed on top of the soil. Instructions were provided on proper usage."
+      },
+      "software_update": null
+    },
+    "response": "Based on the provided information, this issue is the fault of the customer due to incompetence in using the product correctly. The historical call record from May 5, 2025 shows that the customer previously reported the same issue with their SoilSense Lite not showing readings. During that call, the agent explained that the sensor needs to be inserted at least 2 inches deep into the soil to function properly, and the customer admitted they had only placed it on top of the soil. Despite receiving clear instructions on proper usage, the customer is reporting the same issue again just one week later on May 12, 2025, suggesting they failed to follow the instructions provided. There is no software update associated with this product that could explain the malfunction."
+  }
+]
