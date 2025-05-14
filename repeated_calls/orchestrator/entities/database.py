@@ -24,7 +24,7 @@ def parse_datetime(value: str) -> datetime:
     if not value:
         raise ValueError("Empty value provided for datetime parsing.")
 
-    formats = ["%Y-%m-%d %H:%M:%S", "%d-%m-%Y", "%Y-%m-%d", "%Y/%m/%d %H:%M:%S"]
+    formats = ["%Y-%m-%d %H:%M:%S", "%d-%m-%Y", "%Y-%m-%d", "%d/%m/%Y"]
 
     for fmt in formats:
         try:
@@ -204,7 +204,6 @@ class HistoricCallEvent:
 
     def compute_time_since(self, timestamp: datetime) -> None:
         """Compute time since the call event."""
-        # print("FLAGGGG TESTTTT")
         total_hours_since = (timestamp - self.end_time).total_seconds() / 3600
         self.days_since = round(int(total_hours_since // 24), 1)
         self.remaining_hours_since = round(total_hours_since % 24, 1)

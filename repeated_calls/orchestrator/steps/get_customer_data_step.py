@@ -42,7 +42,6 @@ class GetCustomerDataStep(KernelProcessStep):
             except Exception as e:
                 raise TypeError(f"Cannot convert input to IncomingMessage: {str(e)}")
             
-        print(f"Incoming message: {incoming_message}")
         customer_id = incoming_message.customer_id
 
         # Find customer's call event using the enhanced class method
@@ -67,8 +66,6 @@ class GetCustomerDataStep(KernelProcessStep):
             call_event=customer_call_event,
             call_history=customer_historic_call_events,
         )
-
-        print(repeated_call_state)
 
         # Emit event to continue process flow
         await context.emit_event("FetchingContextDone", data=repeated_call_state)
