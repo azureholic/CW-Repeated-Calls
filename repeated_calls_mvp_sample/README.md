@@ -2,6 +2,37 @@
 
 A tool for analyzing call events to identify repeated calls, determine fault, and recommend appropriate compensation.
 
+## Project Structure
+
+```
+repeated_calls_mvp_sample/
+├── main.py                        # Main entry point for the application
+├── src/                           # Source code directory
+│   ├── processor.py               # Core processing logic
+│   ├── agents.py                  # Agent definitions
+│   ├── models.py                  # Data models
+│   ├── data_loader.py             # Data loading utilities
+│   └── __init__.py                # Package initialization
+├── database/                      # Sample data for call analysis
+│   ├── call_event.csv             # Current call events
+│   ├── historic_call_event.csv    # Past call events
+│   ├── customer.csv               # Customer information
+│   ├── product.csv                # Product details
+│   ├── subscription.csv           # Customer subscriptions
+│   ├── discount.csv               # Available discounts
+│   ├── software_update.csv        # Software update history
+│   └── scenarios/                 # Test scenarios
+├── output/                        # Generated recommendations saved here
+│   └── [timestamp]_[call_id]/     # Output folder for each processed call
+│       ├── recommendation.json    # Final recommendation and analysis
+│       └── context/               # Context data used in analysis
+│           ├── calls.json         # Current and historic call data
+│           ├── customer.json      # Customer profile information
+│           └── disruptions.json   # Relevant system disruptions
+├── pyproject.toml                 # Project dependencies
+└── .venv/                         # Virtual environment directory
+```
+
 ## Installation
 
 1. Install `uv` from [uv's installation guide](https://docs.astral.sh/uv/getting-started/installation/)
