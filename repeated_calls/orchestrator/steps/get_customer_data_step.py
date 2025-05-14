@@ -14,13 +14,13 @@ class GetCustomerDataStep(KernelProcessStep):
     """
 
     def __init__(self):
+        """Initialise the GetCustomerDataStep."""
         super().__init__()
         self._state = RepeatedCallState()
 
     @kernel_function
     async def get_call_event(self, incoming_message, context: KernelProcessStepContext) -> None:
-        """Process function to retrieve customer data and call events using the enhanced database
-        objects.
+        """Process function to retrieve customer data and call events using the enhanced database objects.
 
         Args:
             incoming_message: The incoming message with customer ID
@@ -36,8 +36,8 @@ class GetCustomerDataStep(KernelProcessStep):
                 incoming_message = IncomingMessage(
                     customer_id=incoming_message.customer_id,
                     message=incoming_message.message,
-                    time_stamp=incoming_message.time_stamp
-                    if hasattr(incoming_message, "time_stamp")
+                    timestamp=incoming_message.timestamp
+                    if hasattr(incoming_message, "timestamp")
                     else datetime.utcnow(),
                 )
             except Exception as e:

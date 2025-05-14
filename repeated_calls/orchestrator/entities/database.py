@@ -1,7 +1,7 @@
 """Entity classes for representing database models."""
 import csv
 import os
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime
 from typing import ClassVar, List, Optional, Type, TypeVar
 
@@ -12,7 +12,8 @@ T = TypeVar("T")
 
 
 def parse_datetime(value: str) -> datetime:
-    """Parse a datetime string in various formats.
+    """
+    Parse a datetime string in various formats.
 
     Args:
         value: Datetime string
@@ -55,14 +56,22 @@ def process_csv_value(value: str, field_type: Type) -> any:
 class Customer:
     """Customer entity class."""
 
+    # Input attributes
     id: int
     name: str
     clv: str
     relation_start_date: datetime
 
+    # Computed attributes
+    relation_start_date_str: str = field(init=False)
+
     # Static storage for all customer instances
     _all_customers: ClassVar[List["Customer"]] = []
     _loaded: ClassVar[bool] = False
+
+    def __post_init__(self):
+        """Post-initialisation."""
+        self.relation_start_date_str = self.relation_start_date.strftime("%Y-%m-%d")
 
     @classmethod
     def get_all(cls) -> List["Customer"]:
@@ -109,14 +118,22 @@ class Customer:
 class CallEvent:
     """Call event entity class."""
 
+    # Input attributes
     id: int
     customer_id: int
-    sdc: str  # Service Description Code
-    time_stamp: datetime
+    sdc: str  # self-described callreason
+    timestamp: datetime
+
+    # Computed attributes
+    timestamp_str: str = field(init=False)
 
     # Static storage for all call event instances
     _all_call_events: ClassVar[List["CallEvent"]] = []
     _loaded: ClassVar[bool] = False
+
+    def __post_init__(self):
+        """Post-initialisation."""
+        self.timestamp_str = self.timestamp.strftime("%Y-%m-%d %H:%M:%S")
 
     @classmethod
     def get_all(cls) -> List["CallEvent"]:
@@ -144,7 +161,7 @@ class CallEvent:
                     id=process_csv_value(row["id"], int),
                     customer_id=process_csv_value(row["customer_id"], int),
                     sdc=process_csv_value(row["sdc"], str),
-                    time_stamp=process_csv_value(row["time_stamp"], datetime),
+                    timestamp=process_csv_value(row["timestamp"], datetime),
                 )
                 cls._all_call_events.append(call_event)
 
@@ -160,16 +177,38 @@ class CallEvent:
 class HistoricCallEvent:
     """Historic call event entity class."""
 
+    # Input attributes
     id: int
     customer_id: int
-    sdc: str  # Service Description Code
+    sdc: str  # self-described callreason
     call_summary: str
     start_time: datetime
     end_time: datetime
 
+    # Computed attributes
+    start_time_str: str = field(init=False)
+    end_time_str: str = field(init=False)
+    duration_minutes: float = field(init=False)
+    days_since: float | None = field(init=False, default=None)
+    remaining_hours_since: float | None = field(init=False, default=None)
+
     # Static storage for all historic call event instances
     _all_historic_call_events: ClassVar[List["HistoricCallEvent"]] = []
     _loaded: ClassVar[bool] = False
+
+    def __post_init__(self):
+        """Post-initialisation."""
+        datetime_format = "%Y-%m-%d %H:%M:%S"
+        self.start_time_str = self.start_time.strftime(datetime_format)
+        self.end_time_str = self.end_time.strftime(datetime_format)
+        self.duration_minutes = round((self.end_time - self.start_time).total_seconds() / 60, 1)
+
+    def compute_time_since(self, timestamp: datetime) -> None:
+        """Compute time since the call event."""
+        # print("FLAGGGG TESTTTT")
+        total_hours_since = (timestamp - self.end_time).total_seconds() / 3600
+        self.days_since = round(int(total_hours_since // 24), 1)
+        self.remaining_hours_since = round(total_hours_since % 24, 1)
 
     @classmethod
     def get_all(cls) -> List["HistoricCallEvent"]:
@@ -358,9 +397,7 @@ class Subscription:
                     customer_id=process_csv_value(row["customer_id"], int),
                     product_id=process_csv_value(row["product_id"], int),
                     start_date=process_csv_value(row["start_date"], datetime),
-                    end_date=process_csv_value(row["end_date"], Optional[datetime])
-                    if "end_date" in row
-                    else None,
+                    end_date=process_csv_value(row["end_date"], Optional[datetime]) if "end_date" in row else None,
                 )
                 cls._all_subscriptions.append(subscription)
 

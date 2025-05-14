@@ -1,0 +1,24 @@
+## Customer Information
+ID: {{ customer.id }}
+Name: {{ customer.name }}
+Customer Lifetime Value: {{ customer.clv }}
+Customer Since: {{ customer.relation_start_date_str }}
+
+## Current Call Details
+Call ID: {{ call_event.id }}
+Call Description: {{ call_event.sdc }}
+Timestamp: {{ call_event.timestamp_str }}
+
+{% if call_history %}
+## Previous Call History
+{% for call in call_history %}
+### Call on {{ call.start_time_str }}
+Description: {{ call.sdc }}
+Summary: {{ call.call_summary }}
+Duration: {{ call.duration_minutes }} minutes
+Start: {{ call.start_time_str }}
+End: {{ call.end_time_str }}
+Time since this call: {{ call.days_since }} days and {{ call.remaining_hours_since }} hours
+{% endfor %}
+{% endif %}
+Based on this information, is the current call a repeated call about the same issue? Please analyze the timing between calls, similarity of issues discussed, and provide your reasoning.
