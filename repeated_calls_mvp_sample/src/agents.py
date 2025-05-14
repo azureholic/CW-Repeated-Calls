@@ -138,6 +138,7 @@ def create_compensation_reviewer():
         instructions="""
         You are a supervisor responsible for reviewing compensation recommendations.
         Your job is to ensure that recommendations are fair, consistent with company policy, and appropriate for the situation.
+        You will start the conversation by reviewing the recommendation provided.
         Review the recommendation and either approve it or suggest adjustments.
         Consider company costs and the precedent set by the compensation.
         Provide your review in the requested structured format.
@@ -177,8 +178,9 @@ def create_group_chat_recommender():
         name="CompensationRecommender",
         instructions="""
         You are an expert at determining appropriate compensation for customers experiencing recurring issues.
-        You have already made your initial recommendation. Now you need to address any concerns or suggestions
-        from the reviewer and either defend your recommendation or refine it.
+        You have already made your initial recommendation. Wait for the reviewer to provide their initial feedback.
+        Then address any concerns or suggestions from the reviewer and either defend your recommendation or refine it.
+        Do not start the conversation - respond only after the reviewer has provided their assessment.
         Consider the reviewer's feedback carefully and respond thoughtfully.
         Aim to come to a mutually agreeable compensation solution.
         """,

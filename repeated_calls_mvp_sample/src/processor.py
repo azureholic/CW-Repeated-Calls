@@ -161,7 +161,7 @@ async def process_call(calls, customer_data, disruption_data, result_dir):
 
             # 5. Create a group chat between the recommender and reviewer
             group_chat = AgentGroupChat(
-                agents=[recommender_agent, reviewer_agent],
+                agents=[reviewer_agent, recommender_agent],
                 termination_strategy=ApprovalTerminationStrategy(
                     agents=[reviewer_agent],
                     maximum_iterations=5,
@@ -179,7 +179,7 @@ async def process_call(calls, customer_data, disruption_data, result_dir):
             INITIAL RECOMMENDATION:
             {json.dumps(compensation_recommendation, indent=2)}
 
-            Please review this compensation recommendation.
+            @CompensationReviewer: Please start by reviewing this compensation recommendation.
             """
 
             await group_chat.add_chat_message(message=group_chat_input)
@@ -187,6 +187,16 @@ async def process_call(calls, customer_data, disruption_data, result_dir):
             # Collect messages from the group chat
             chat_messages = []
             conversation_messages = []
+
+            # Add the initial recommendation as a system message to the conversation history
+            conversation_messages.append(
+                {
+                    "name": "System",
+                    "content": f"The following is a compensation review conversation. The initial recommendation is: {json.dumps(compensation_recommendation, indent=2)}. The reviewer will start by evaluating this recommendation, and then the recommender will respond to the reviewer's assessment.",
+                    "timestamp": datetime.now().isoformat(),
+                }
+            )
+
             async for message in group_chat.invoke():
                 message_text = f"# {message.name}: {message.content}"
                 chat_messages.append(message_text)
