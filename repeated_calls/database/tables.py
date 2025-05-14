@@ -1,3 +1,5 @@
+"""This module defines the database tables using SQLAlchemy ORM."""
+
 from datetime import date, datetime
 
 from sqlalchemy import Date, DateTime, Float, ForeignKey, Integer, String
@@ -5,10 +7,12 @@ from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 
 class Base(DeclarativeBase):
-    pass
+    """Base class for all database tables."""
 
 
 class Customer(Base):
+    """Customer table."""
+
     __tablename__ = "customer"
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
@@ -18,6 +22,8 @@ class Customer(Base):
 
 
 class Subscription(Base):
+    """Subscription table."""
+
     __tablename__ = "subscription"
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
@@ -30,15 +36,19 @@ class Subscription(Base):
 
 
 class CallEvent(Base):
+    """Call event table."""
+
     __tablename__ = "call_event"
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     customer_id: Mapped[int] = mapped_column(Integer(), ForeignKey("customer.id"))
     sdc: Mapped[str] = mapped_column(String())
-    time_stamp: Mapped[datetime] = mapped_column(DateTime())
+    timestamp: Mapped[datetime] = mapped_column(DateTime())
 
 
 class HistoricCallEvent(Base):
+    """Historic call event table."""
+
     __tablename__ = "historic_call_event"
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
@@ -50,6 +60,8 @@ class HistoricCallEvent(Base):
 
 
 class Product(Base):
+    """Product table."""
+
     __tablename__ = "product"
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
@@ -59,6 +71,8 @@ class Product(Base):
 
 
 class Discount(Base):
+    """Discount table."""
+
     __tablename__ = "discount"
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
@@ -69,6 +83,8 @@ class Discount(Base):
 
 
 class SoftwareUpdate(Base):
+    """Software update table."""
+
     __tablename__ = "software_update"
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)

@@ -18,7 +18,7 @@ from repeated_calls.orchestrator.settings import AzureOpenAISettings
 
 
 async def run_sequence() -> None:
-    """Main function to run the repeated calls process."""
+    """Run the sequence of steps for the Repeated Calls process."""
     # Load OpenAI settings
     settings = AzureOpenAISettings()
 
@@ -38,7 +38,7 @@ async def run_sequence() -> None:
     incoming_message = IncomingMessage(
         customer_id=7,
         message="My self-driving mower isn't working since this morning",
-        time_stamp=datetime.fromisoformat("2024-01-10 10:05:22"),
+        timestamp=datetime.fromisoformat("2024-01-10 10:05:22"),
     )
 
     # Create the process builder
@@ -52,9 +52,7 @@ async def run_sequence() -> None:
     exit_step = process_builder.add_step(ExitStep)
 
     # Orchestrate the events
-    process_builder.on_input_event("Start").send_event_to(
-        get_customer_context_step, function_name="get_call_event"
-    )
+    process_builder.on_input_event("Start").send_event_to(get_customer_context_step, function_name="get_call_event")
 
     get_customer_context_step.on_event("FetchingContextDone").send_event_to(
         determine_repeated_caller_step, function_name="repeated_call", parameter_name="callstate"
@@ -84,7 +82,7 @@ async def run_sequence() -> None:
 
 
 async def main():
-    """Main entry point for the application."""
+    """Run the main function as entry point of the application."""
     await run_sequence()
 
 

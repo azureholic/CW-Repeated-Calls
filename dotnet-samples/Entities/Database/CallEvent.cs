@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace cw_repeated_calls_dotnet.Entities.Database
 {
     // JsonProperties not needed when reading from csv files
-    
+
     public class CallEvent
     {
      //   [JsonProperty("id")]
@@ -20,7 +20,7 @@ namespace cw_repeated_calls_dotnet.Entities.Database
       //  [JsonProperty("sdc")]
         public string Sdc { get; set; }
 
-     //   [JsonProperty("time_stamp")]
+     //   [JsonProperty("timestamp")]
         public DateTime TimeStamp { get; set; }
     }
 }
