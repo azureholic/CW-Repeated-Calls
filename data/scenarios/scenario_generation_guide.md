@@ -27,18 +27,20 @@ Given a scenario definition in JSON (see placeholder below), produce:
 1. **A new `call_event` row** for the “primary_call_date” in the JSON, with:
    - A unique integer `id`
    - The `customer_id` from the JSON
-   - An appropriate one-sentence `sdc` (self-described call reason) reflecting the “call_reason”
+   - An appropriate one-sentence `sdc` (self-described call reason) reflecting the “call_reason”. This cannot the be same as in the input json, but is something that a customer would say into the recording machine at the beginning of their service call.
    - A `time_stamp` on the primary call date (ISO 8601 datetime)
 
 2. **One or more `historic_call_event` rows** for each date in `previous_call_dates`, with:
    - Unique integer `id` values
    - The same `customer_id`
-   - The same or similar `sdc` as the primary call
+   - An `sdc`, defined the same as in the primary call. Its content must be different from that of the primary call event (although for repeat calls the meaning can be the same).
    - A `call_summary` that:
      - Summarizes what was discussed (per `call_history_analysis`)
      - Mentions the promised resolution date
      - Does **not** mention any “operational_insight” items that were not yet known then
    - `start_time` and `end_time` datetimes on each historic date
+
+These `historic_call_event` rows cannot be identical to eachother and/or to the `call_event`, they represent a unique event in history that should have its own characteristics, even if they are calls about a similar issue.
 
 Use these table schemas:
 call_event:
@@ -54,6 +56,9 @@ historic_call_event:
   call_summary: str
   start_time: datetime str
   end_time: datetime str
+
+The data you generate must be rows that can be added to existing CSV files with the schema specified above. 
+The datetime format for all generated timestamps should be: YYYY-MM-DD HH:MM:SS
 
 Expected system behavior (for validation in your tests):
 
