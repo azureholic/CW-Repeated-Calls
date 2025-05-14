@@ -24,7 +24,7 @@ def parse_datetime(value: str) -> datetime:
     if not value:
         raise ValueError("Empty value provided for datetime parsing.")
 
-    formats = ["%Y-%m-%d %H:%M:%S", "%Y-%m-%d", "%m/%d/%Y %H:%M:%S", "%m/%d/%Y"]
+    formats = ["%Y-%m-%d %H:%M:%S", "%Y-%m-%d", "%m/%d/%Y %H:%M:%S", "%d-%m-%Y"]
 
     for fmt in formats:
         try:
