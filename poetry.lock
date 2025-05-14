@@ -563,7 +563,6 @@ files = [
     {file = "cffi-1.17.1-cp39-cp39-win_amd64.whl", hash = "sha256:d016c76bdd850f3c626af19b0542c9677ba156e4ee4fccfdd7848803533ef662"},
     {file = "cffi-1.17.1.tar.gz", hash = "sha256:1c39c6016c32bc48dd54561950ebd6836e1670f2ae46128f67cf49e789c52824"},
 ]
-markers = {main = "platform_python_implementation != \"PyPy\""}
 
 [package.dependencies]
 pycparser = "*"
@@ -690,6 +689,20 @@ files = [
     {file = "charset_normalizer-3.4.2-py3-none-any.whl", hash = "sha256:7f56930ab0abd1c45cd15be65cc741c28b1c9a34876ce8c17a2fa107810c0af0"},
     {file = "charset_normalizer-3.4.2.tar.gz", hash = "sha256:5baececa9ecba31eff645232d59845c07aa030f0c81ee70184a90d35099a0e63"},
 ]
+
+[[package]]
+name = "click"
+version = "8.2.0"
+description = "Composable command line interface toolkit"
+optional = false
+python-versions = ">=3.10"
+files = [
+    {file = "click-8.2.0-py3-none-any.whl", hash = "sha256:6b303f0b2aa85f1cb4e5303078fadcbcd4e476f114fab9b5007005711839325c"},
+    {file = "click-8.2.0.tar.gz", hash = "sha256:f5452aeddd9988eefa20f90f05ab66f17fce1ee2a36907fd30b05bbb5953814d"},
+]
+
+[package.dependencies]
+colorama = {version = "*", markers = "platform_system == \"Windows\""}
 
 [[package]]
 name = "cloudevents"
@@ -1269,7 +1282,6 @@ version = "0.4.0"
 description = "Consume Server-Sent Event (SSE) messages with HTTPX."
 optional = false
 python-versions = ">=3.8"
-groups = ["main"]
 files = [
     {file = "httpx-sse-0.4.0.tar.gz", hash = "sha256:1e81a3a3070ce322add1d3529ed42eb5f70817f45ed6ec915ab753f961139721"},
     {file = "httpx_sse-0.4.0-py3-none-any.whl", hash = "sha256:f329af6eae57eaa2bdfd962b42524764af68075ea87370a2de920af5341e318f"},
@@ -2041,7 +2053,6 @@ version = "1.8.1"
 description = "Model Context Protocol SDK"
 optional = false
 python-versions = ">=3.10"
-groups = ["main"]
 files = [
     {file = "mcp-1.8.1-py3-none-any.whl", hash = "sha256:948e03783859fa35abe05b9b6c0a1d5519be452fc079dc8d7f682549591c1770"},
     {file = "mcp-1.8.1.tar.gz", hash = "sha256:ec0646271d93749f784d2316fb5fe6102fb0d1be788ec70a9e2517e8f2722c0e"},
@@ -2069,7 +2080,6 @@ version = "0.2.0"
 description = "Python client for Unity MCP server"
 optional = false
 python-versions = ">=3.7"
-groups = ["main"]
 files = [
     {file = "mcp_client-0.2.0-py3-none-any.whl", hash = "sha256:fb3339682799c665bcf251e301688067d28fca87bf8197373c9cd78447432156"},
     {file = "mcp_client-0.2.0.tar.gz", hash = "sha256:334b1da6fcc520fd9437d8b9395b9f2cdf510d624d8fb76f6b43fa4fe7752c37"},
@@ -3057,7 +3067,6 @@ version = "3.2.6"
 description = "Connection Pool for Psycopg"
 optional = false
 python-versions = ">=3.8"
-groups = ["main"]
 files = [
     {file = "psycopg_pool-3.2.6-py3-none-any.whl", hash = "sha256:5887318a9f6af906d041a0b1dc1c60f8f0dda8340c2572b74e10907b51ed5da7"},
     {file = "psycopg_pool-3.2.6.tar.gz", hash = "sha256:0f92a7817719517212fbfe2fd58b8c35c1850cdd2a80d36b581ba2085d9148e5"},
@@ -3114,7 +3123,6 @@ files = [
     {file = "pycparser-2.22-py3-none-any.whl", hash = "sha256:c3702b6d3dd8c7abc1afa565d7e63d53a1d0bd86cdc24edd75470f4de499cfcc"},
     {file = "pycparser-2.22.tar.gz", hash = "sha256:491c8be9c040f5390f5bf44a5b07752bd07f56edf992381b05c701439eec10f6"},
 ]
-markers = {main = "platform_python_implementation != \"PyPy\""}
 
 [[package]]
 name = "pydantic"
@@ -3418,6 +3426,17 @@ files = [
 
 [package.extras]
 dev = ["backports.zoneinfo", "black", "build", "freezegun", "mdx_truly_sane_lists", "mike", "mkdocs", "mkdocs-awesome-pages-plugin", "mkdocs-gen-files", "mkdocs-literate-nav", "mkdocs-material (>=8.5)", "mkdocstrings[python]", "msgspec", "mypy", "orjson", "pylint", "pytest", "tzdata", "validate-pyproject[all]"]
+
+[[package]]
+name = "python-multipart"
+version = "0.0.20"
+description = "A streaming multipart parser for Python"
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "python_multipart-0.0.20-py3-none-any.whl", hash = "sha256:8a62d3a8335e06589fe01f2a3e178cdcc632f3fbe0d492ad9ee0ec35aab1f104"},
+    {file = "python_multipart-0.0.20.tar.gz", hash = "sha256:8dd0cab45b8e23064ae09147625994d090fa46f5b0d1e13af944c331a7fa9d13"},
+]
 
 [[package]]
 name = "pytz"
@@ -4190,7 +4209,6 @@ version = "2.3.5"
 description = "SSE plugin for Starlette"
 optional = false
 python-versions = ">=3.9"
-groups = ["main"]
 files = [
     {file = "sse_starlette-2.3.5-py3-none-any.whl", hash = "sha256:251708539a335570f10eaaa21d1848a10c42ee6dc3a9cf37ef42266cdb1c52a8"},
     {file = "sse_starlette-2.3.5.tar.gz", hash = "sha256:228357b6e42dcc73a427990e2b4a03c023e2495ecee82e14f07ba15077e334b2"},
@@ -4229,7 +4247,6 @@ version = "0.46.2"
 description = "The little ASGI library that shines."
 optional = false
 python-versions = ">=3.9"
-groups = ["main"]
 files = [
     {file = "starlette-0.46.2-py3-none-any.whl", hash = "sha256:595633ce89f8ffa71a015caed34a5b2dc1c0cdb3f0f1fbd1e69339cf2abeec35"},
     {file = "starlette-0.46.2.tar.gz", hash = "sha256:7f7361f34eed179294600af672f565727419830b54b7b084efe44bb82d2fccd5"},
@@ -4420,7 +4437,6 @@ version = "0.34.2"
 description = "The lightning-fast ASGI server."
 optional = false
 python-versions = ">=3.9"
-groups = ["main"]
 files = [
     {file = "uvicorn-0.34.2-py3-none-any.whl", hash = "sha256:deb49af569084536d269fe0a6d67e3754f104cf03aba7c11c40f01aadf33c403"},
     {file = "uvicorn-0.34.2.tar.gz", hash = "sha256:0e929828f6186353a80b58ea719861d2629d766293b6d19baf086ba31d4f3328"},
@@ -4431,7 +4447,7 @@ click = ">=7.0"
 h11 = ">=0.8"
 
 [package.extras]
-standard = ["colorama (>=0.4) ; sys_platform == \"win32\"", "httptools (>=0.6.3)", "python-dotenv (>=0.13)", "pyyaml (>=5.1)", "uvloop (>=0.14.0,!=0.15.0,!=0.15.1) ; sys_platform != \"win32\" and sys_platform != \"cygwin\" and platform_python_implementation != \"PyPy\"", "watchfiles (>=0.13)", "websockets (>=10.4)"]
+standard = ["colorama (>=0.4)", "httptools (>=0.6.3)", "python-dotenv (>=0.13)", "pyyaml (>=5.1)", "uvloop (>=0.14.0,!=0.15.0,!=0.15.1)", "watchfiles (>=0.13)", "websockets (>=10.4)"]
 
 [[package]]
 name = "virtualenv"
@@ -4836,4 +4852,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "c62767368f4610616d32e9dc2207a77aeb97297613f7524ce192f3c1e7fcfbb8"
+content-hash = "b58bf3b8423529b2e8133ecd3de0898137405b097e3ecea0b4109f596b4f015f"
