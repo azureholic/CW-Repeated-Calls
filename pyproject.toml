@@ -16,6 +16,7 @@ sqlalchemy = "^2.0.40"
 psycopg = "^3.2.7"
 psycopg-binary = "^3.2.7"
 pandas = "^2.2.3"
+mcp = {extras = ["cli"], version = "^1.8.1"}
 
 [tool.poetry.group.dev.dependencies]
 jupyter = "^1.1.1"
