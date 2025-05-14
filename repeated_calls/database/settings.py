@@ -26,5 +26,5 @@ class DatabaseSettings(BaseSettings):
     port: int = 5432
 
     model_config = SettingsConfigDict(
-        env_nested_delimiter="__", env_file=".env", env_prefix="POSTGRES_"
+        env_nested_delimiter="__", env_file=".env", env_prefix="POSTGRES_", extra="ignore"
     )
