@@ -2,6 +2,52 @@
 
 A tool for analyzing call events to identify repeated calls, determine fault, and recommend appropriate compensation.
 
+## Table of Contents
+
+- [Agent Workflow](#agent-workflow)
+  - [Workflow Overview](#workflow-overview)
+  - [Agent Roles](#agent-roles)
+  - [Group Chat Process](#group-chat-process)
+- [Project Structure](#project-structure)
+- [Installation](#installation)
+- [Usage](#usage)
+- [Example Calls](#example-calls)
+- [Example Responses](#example-responses)
+
+## Agent Workflow
+
+### Workflow Overview
+
+Call → Repeat Detection → (If repeat) Fault Analysis → (If our fault) Compensation Recommendation → Review → Call Agent Summary
+
+The system processes each call through a sequential pipeline of specialized agents. First determining if it's a repeat call, then analyzing fault for repeat calls, generating compensation recommendations for company-fault cases, and finally producing agent guidance for all scenarios.
+
+### Agent Roles
+
+1. **RepeatCallDetector**: Determines if a call is related to a previous contact within 7 days by analyzing call history, product information, and issue similarity.
+
+2. **FaultAnalyzer**: For repeat calls, assesses whether the issue is the company's responsibility by examining operational disruptions, usage patterns, and previous resolution attempts.
+
+3. **CompensationRecommender**: Generates compensation recommendations for company-fault scenarios, considering customer lifetime value, issue severity, and previous compensations.
+
+4. **CompensationReviewer**: Reviews compensation recommendations for fairness and consistency with company policy, approving or suggesting adjustments.
+
+5. **RecommendationPublisher**: Creates practical guidance for call agents with talking points, technical solutions, and compensation details (if applicable).
+
+### Group Chat Process
+
+For company-fault cases, a structured conversation occurs:
+
+1. **CompensationRecommender** generates an initial recommendation based on customer data and issue details.
+
+2. **CompensationReviewer** starts the conversation by evaluating this recommendation, either approving it or suggesting changes.
+
+3. If adjustments are suggested, the recommender responds to defend or refine their proposal.
+
+4. This exchange continues until agreement is reached or maximum iterations are completed.
+
+5. The final decision is incorporated into the call agent summary.
+
 ## Project Structure
 
 ```
