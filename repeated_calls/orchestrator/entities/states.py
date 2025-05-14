@@ -3,7 +3,7 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from typing import List, Optional
 
-from repeated_calls.orchestrator.entities.database import Customer, CallEvent, HistoricCallEvent
+from repeated_calls.orchestrator.entities.database import CallEvent, Customer, HistoricCallEvent
 
 
 @dataclass
@@ -12,7 +12,7 @@ class IncomingMessage:
 
     customer_id: int
     message: str
-    time_stamp: datetime = field(default_factory=datetime.utcnow)
+    timestamp: datetime = field(default_factory=datetime.utcnow)
 
 
 @dataclass

@@ -13,7 +13,7 @@ All scenarios must first be defined in a structured JSON format. These are store
  - Retention or goodwill offers
  - Recommended system response behavior
 
-See `scenario_specification.json` for existing scenarios. 
+See `scenario_specification.json` for existing scenarios.
 
 ## Step 2: Generate Call History and Events
 
@@ -21,14 +21,14 @@ Once your scenario JSON is ready, use the following prompt with ChatGPT or anoth
 
 **Prompt template**
 ```text
-You are a data generator for our Customer Service System test environment.  
+You are a data generator for our Customer Service System test environment.
 Given a scenario definition in JSON (see placeholder below), produce:
 
 1. **A new `call_event` row** for the “primary_call_date” in the JSON, with:
    - A unique integer `id`
    - The `customer_id` from the JSON
    - An appropriate one-sentence `sdc` (self-described call reason) reflecting the “call_reason”. This cannot the be same as in the input json, but is something that a customer would say into the recording machine at the beginning of their service call.
-   - A `time_stamp` on the primary call date (ISO 8601 datetime)
+   - A `timestamp` on the primary call date (ISO 8601 datetime)
 
 2. **One or more `historic_call_event` rows** for each date in `previous_call_dates`, with:
    - Unique integer `id` values
@@ -47,7 +47,7 @@ call_event:
   id: int
   customer_id: int
   sdc: str
-  time_stamp: datetime str
+  timestamp: datetime str
 
 historic_call_event:
   id: int
@@ -57,7 +57,7 @@ historic_call_event:
   start_time: datetime str
   end_time: datetime str
 
-The data you generate must be rows that can be added to existing CSV files with the schema specified above. 
+The data you generate must be rows that can be added to existing CSV files with the schema specified above.
 The datetime format for all generated timestamps should be: YYYY-MM-DD HH:MM:SS
 
 Expected system behavior (for validation in your tests):

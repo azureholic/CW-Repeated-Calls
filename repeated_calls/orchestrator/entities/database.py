@@ -161,7 +161,7 @@ class CallEvent:
                     id=process_csv_value(row["id"], int),
                     customer_id=process_csv_value(row["customer_id"], int),
                     sdc=process_csv_value(row["sdc"], str),
-                    time_stamp=process_csv_value(row["time_stamp"], datetime),
+                    timestamp=process_csv_value(row["timestamp"], datetime),
                 )
                 cls._all_call_events.append(call_event)
 
@@ -189,8 +189,8 @@ class HistoricCallEvent:
     start_time_str: str = field(init=False)
     end_time_str: str = field(init=False)
     duration_minutes: float = field(init=False)
-    days_since: float = field(init=False)
-    remaining_hours_since: float = field(init=False)
+    days_since: float | None = field(init=False, default=None)
+    remaining_hours_since: float | None = field(init=False, default=None)
 
     # Static storage for all historic call event instances
     _all_historic_call_events: ClassVar[List["HistoricCallEvent"]] = []
@@ -205,6 +205,7 @@ class HistoricCallEvent:
 
     def compute_time_since(self, timestamp: datetime) -> None:
         """Compute time since the call event."""
+        # print("FLAGGGG TESTTTT")
         total_hours_since = (timestamp - self.end_time).total_seconds() / 3600
         self.days_since = round(int(total_hours_since // 24), 1)
         self.remaining_hours_since = round(total_hours_since % 24, 1)
