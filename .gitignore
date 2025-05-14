@@ -406,3 +406,5 @@ FodyWeavers.xsd
 
 # Environment variable files
 .env
+
+!repeated_calls_mvp_sample/.python-version
