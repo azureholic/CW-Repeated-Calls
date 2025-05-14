@@ -1,0 +1,28 @@
+{
+  "customer_id": "22",
+  "call_id": "c2",
+  "timestamp": "2025-05-14T14:17:37.154575",
+  "repeat_call_analysis": {
+    "is_repeat_call": false,
+    "related_call_ids": [],
+    "issue_summary": "Not applicable — current call does not repeat any known issue.",
+    "reasoning": "The current call appears to concern a new issue related to a HedgeBot Compact product not powering on, whereas the previous call addressed a promotional inquiry about a different product, the Aquaspray X. Since the subjects are entirely distinct, this current call is unrelated to any former issues and is therefore not a repeat call."
+  },
+  "call_agent_summary": {
+    "one_sentence_recommendation": "Provide troubleshooting steps to Andrew Lyons to resolve the issue with his HedgeBot Compact not turning on.",
+    "compensation_details": "No compensation is required at this time as this is not a repeat call.",
+    "technical_resolution": "Guide the customer through checking the HedgeBot Compact's power connections, ensuring the battery is fully charged, and performing a reset if needed.",
+    "customer_context": "Andrew Lyons is a high-value customer with two products from the company including the HedgeBot Compact which is the subject of this inquiry.",
+    "talking_points": [
+      "Thank you for reaching out, Mr. Lyons.",
+      "Let me assist you with your HedgeBot Compact issue.",
+      "Could you confirm if the HedgeBot is connected to a power source or if the battery is fully charged?",
+      "I can also guide you on how to perform a device reset if necessary.",
+      "Our goal is to ensure your HedgeBot is working perfectly."
+    ],
+    "next_steps": "Log the resolution steps taken during the call or escalate the issue to technical support if the problem persists."
+  },
+  "conversation_history": {
+    "messages": []
+  }
+}

@@ -1,0 +1,36 @@
+{
+  "customer_id": "45",
+  "call_id": "c12",
+  "timestamp": "2025-05-14T14:33:35.396793",
+  "repeat_call_analysis": {
+    "is_repeat_call": true,
+    "related_call_ids": [
+      "h17"
+    ],
+    "days_since_first_call": 2,
+    "issue_summary": "The customer is experiencing recurring issues with their HedgeBot Pro related to usage in wet conditions, contrary to product usage instructions.",
+    "reasoning": "The current call is classified as a repeat call because the issue pertains to the same product (HedgeBot Pro) and involves the same underlying cause (usage in conditions involving rain or moisture) as the previous call on 2024-05-10. Additionally, the time gap between the two calls is only 2 days, which is within the 7-day window defining a repeat call. Therefore, it meets all the criteria for a repeat call."
+  },
+  "fault_analysis": {
+    "is_our_fault": false,
+    "matching_disruption_ids": [],
+    "recommended_action": "Reiterate product care guidelines to the customer and advise not to operate the equipment in unsuitable conditions as per the manual.",
+    "reasoning": "The issue is clearly outlined in the product manual regarding unsuitable use in wet conditions, which the customer has previously acknowledged as their mistake."
+  },
+  "call_agent_summary": {
+    "one_sentence_recommendation": "Reassure the customer about resolving their concerns while clarifying proper product use in wet conditions.",
+    "compensation_details": "No compensation is required as the issue is due to improper usage and not product malfunction.",
+    "technical_resolution": "Advise the customer on resetting or drying the product as per manual instructions to restore functionality.",
+    "customer_context": "The customer is experiencing recurring issues with using their HedgeBot Pro contrary to guidelines and has acknowledged misuse previously.",
+    "talking_points": [
+      "Hello Reagan, thank you for contacting us again.",
+      "Regarding the HedgeBot Pro issue, it's important to follow the guidelines which recommend against using it on wet hedges.",
+      "Please refer to the manual for step-by-step instructions on resolving the error code, typically involving drying the appliance thoroughly and performing a reset.",
+      "We're here to assist if you encounter any further difficulties."
+    ],
+    "next_steps": "Document the call outcomes and any customer feedback, offering to escalate the issue if additional help is requested."
+  },
+  "conversation_history": {
+    "messages": []
+  }
+}

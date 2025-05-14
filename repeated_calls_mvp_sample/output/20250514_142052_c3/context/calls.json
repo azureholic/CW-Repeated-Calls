@@ -1,0 +1,34 @@
+[
+  {
+    "call_id": "h3",
+    "customer_id": "37",
+    "timestamp": "2024-09-24 10:30:00",
+    "call_reason": "AutoMow Mini shuts down randomly while mowing.",
+    "details": "Customer reported that the AutoMow Mini had powered off mid-mow for the first time. Initially assumed to be user error or a one-off fault. Customer was asked to observe further and report back if issue persists. Promised resolution if problem reoccurred within the week.",
+    "resolved": true
+  },
+  {
+    "call_id": "h4",
+    "customer_id": "37",
+    "timestamp": "2024-10-10 11:05:00",
+    "call_reason": "AutoMow Mini shut down again mid-use.",
+    "details": "Customer followed up to say the mower shut off again. We began a basic diagnostics process but did not escalate yet. Informed customer to keep device running under observation. Estimated resolution by early next week.",
+    "resolved": true
+  },
+  {
+    "call_id": "h5",
+    "customer_id": "37",
+    "timestamp": "2024-10-12 15:20:00",
+    "call_reason": "Still having the same AutoMow Mini shutdown issue.",
+    "details": "Customer expressed growing frustration as the mower continued shutting off. Noted that issue is now clearly persistent. Escalation initiated to product support team. Promised an update within 3 working days.",
+    "resolved": true
+  },
+  {
+    "call_id": "c3",
+    "customer_id": "37",
+    "timestamp": "2024-10-15 09:45:31",
+    "call_reason": "My AutoMow Mini still keeps turning off while mowing.",
+    "details": "",
+    "resolved": false
+  }
+]

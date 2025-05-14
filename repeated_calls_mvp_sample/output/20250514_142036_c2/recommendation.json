@@ -1,0 +1,28 @@
+{
+  "customer_id": "22",
+  "call_id": "c2",
+  "timestamp": "2025-05-14T14:20:45.431926",
+  "repeat_call_analysis": {
+    "is_repeat_call": false,
+    "related_call_ids": [],
+    "issue_summary": "Customer's HedgeBot Compact won't turn on.",
+    "reasoning": "The current call is not considered a repeat call because it concerns a specific operational issue with the customer's HedgeBot Compact device, whereas the previous call was about a promotional inquiry regarding a different product, the Aquaspray X. The nature of the issues, the described call reasons, and the details of the respective interactions are entirely distinct, and they are not related to the same problem. Additionally, the resolved status of the earlier call further suggests it was independently addressed and not part of an ongoing concern."
+  },
+  "call_agent_summary": {
+    "one_sentence_recommendation": "Guide the customer through power-troubleshooting steps for the HedgeBot Compact.",
+    "compensation_details": "No compensation is required, as this is not a repeat call.",
+    "technical_resolution": "Assist the customer in performing basic troubleshooting steps for their device: ensure the device is properly connected to a power source, check for any signs of damage to cables or connectors, and try using it on a different power outlet.",
+    "customer_context": "The customer, Andrew Lyons, purchased the HedgeBot Compact and reached out today regarding a power issue. They have a high customer lifetime value and no prior compensations.",
+    "talking_points": [
+      "Thank you for reaching out, Mr. Lyons. I understand your HedgeBot Compact isn't turning on.",
+      "Let's troubleshoot this together. To start, ensure the device is plugged into a working power source.",
+      "Check the power cord and connectors for any visible damage.",
+      "Try plugging the device into another power outlet to rule out a socket issue.",
+      "If these steps don't resolve the issue, I can assist further or connect you to technical support."
+    ],
+    "next_steps": "If troubleshooting fails, advise the customer on warranty options or escalate the case to the technical support team for in-depth assistance."
+  },
+  "conversation_history": {
+    "messages": []
+  }
+}

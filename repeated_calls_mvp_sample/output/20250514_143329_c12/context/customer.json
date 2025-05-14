@@ -1,0 +1,12 @@
+{
+  "customer_id": "45",
+  "name": "Reagan Michael",
+  "email": "reagan.michael@example.com",
+  "phone": "+1-555-45-0000",
+  "customer_lifetime_value": "Med",
+  "account_start_date": "30-01-2023",
+  "products": [
+    "HedgeBot Compact"
+  ],
+  "previous_compensations": []
+}

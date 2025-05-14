@@ -1,0 +1,14 @@
+{
+  "customer_id": "7",
+  "name": "Porter Osborne",
+  "email": "porter.osborne@example.com",
+  "phone": "+1-555-7-0000",
+  "customer_lifetime_value": "High",
+  "account_start_date": "16-09-2023",
+  "products": [
+    "AutoMow 3000",
+    "AquaSpray X",
+    "HedgeBot Compact"
+  ],
+  "previous_compensations": []
+}

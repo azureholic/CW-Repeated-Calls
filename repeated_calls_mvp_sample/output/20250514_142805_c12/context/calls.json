@@ -1,0 +1,18 @@
+[
+  {
+    "call_id": "h17",
+    "customer_id": "45",
+    "timestamp": "2024-05-10 13:45:00",
+    "call_reason": "My HedgeBot Pro stopped working after I used it in the rain yesterday.",
+    "details": "Customer reported that their HedgeBot Pro stopped functioning after being used in rainy conditions. Agent explained that the user manual explicitly states the device is not waterproof and should not be used in wet conditions. Advised to let device dry completely before attempting to use again. No warranty coverage for water damage was explained. Customer acknowledged they were aware of the warnings.",
+    "resolved": true
+  },
+  {
+    "call_id": "c12",
+    "customer_id": "45",
+    "timestamp": "2024-05-12 10:30:00",
+    "call_reason": "My HedgeBot Pro is showing an error code after I used it to trim wet hedges this morning after the rain.",
+    "details": "",
+    "resolved": false
+  }
+]

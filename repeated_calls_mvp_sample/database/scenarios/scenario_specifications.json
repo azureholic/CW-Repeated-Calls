@@ -1,0 +1,367 @@
+[
+    {
+        "name": "Scenario 1",
+        "title": "Repeat complaint - Update impact - High CLV - Make offer",
+        "call_event_id": 1,
+        "customer": {
+            "name": "Porter Osborne",
+            "customer_id": 7,
+            "clv": "High"
+        },
+        "product": {
+            "name": "AutoMow 3000",
+            "type": "Self-Driving Mower",
+            "id": 101
+        },
+        "dates": {
+            "primary_call_date": "2024-01-10",
+            "previous_call_dates": [
+                "2024-01-09"
+            ]
+        },
+        "scenario_details": {
+            "call_reason": "Customer complaint: Their lawnmower is not working and has not functioned since yesterday.",
+            "call_history_analysis": "The Historic_Calls database shows that the customer called yesterday about the same issue and was told it would be resolved by today. This is a repeat call due to an unresolved issue.",
+            "operational_insight": "The Software_Updates database indicates a major update was rolled out yesterday for the AutoMow 3000. The issue may be linked to the update, suggesting a possible fault introduced on the company’s end.",
+            "customer_insights_and_retention_strategy": "The customer is marked as High CLV. The Discount database indicates a 20% discount for 6 months is available for high CLV customers using this product. It is recommended to offer this discount as a goodwill gesture.",
+            "recommended_system_response": [
+                "Acknowledge the repeat issue and apologize for the inconvenience.",
+                "Confirm that a recent major update might have impacted the product’s functionality.",
+                "Reassure the customer that the issue is being prioritized.",
+                "Offer: 'As a valued customer, we’re offering you a 20% discount for the next 6 months on your lawnmower subscription.'"
+            ]
+        }
+    },
+    {
+        "name": "Scenario 2",
+        "title": "Not repeat complaint - No offer",
+        "call_event_id": 2,
+        "customer": {
+            "name": "Andrew Lyons",
+            "customer_id": 22,
+            "clv": "High"
+        },
+        "product": {
+            "name": "HedgeBot Compact",
+            "type": "Robotic Trimmer",
+            "id": 106
+        },
+        "dates": {
+            "primary_call_date": "2025-02-15",
+            "previous_call_dates": [
+                "2025-02-13"
+            ]
+        },
+        "scenario_details": {
+            "call_reason": "HedgeBot Compact is not turning on.",
+            "call_history_analysis": "Customer called two days ago inquiring about an offer on the Aquaspray X. This deal had already expired, and the customer was recommended to sign up to the email list to receive future offers. As this is an unrelated reason for calling, this is not a repeat call.",
+            "operational_insight": "No relevant operational insights.",
+            "customer_insights_and_retention_strategy": "Customer is marked as high CSV. But since this is not a repeat call, flow should never reach this stage and no offer should be made.",
+            "recommended_system_response": [
+                "As this is no repeat call, do not offer a discount.",
+                "Find out what the customer is calling about and assist them with their inquiry."
+            ]
+        }
+    },
+    {
+        "name": "Scenario 3",
+        "title": "Repeat complaint (21 days) - Update impact - Low CLV - No offer",
+        "call_event_id": 3,
+        "customer": {
+            "name": "Saul Brandt",
+            "customer_id": 37,
+            "clv": "Low"
+        },
+        "product": {
+            "name": "AutoMow Mini",
+            "type": "Self-Driving Mower",
+            "id": 105
+        },
+        "dates": {
+            "primary_call_date": "2024-10-15",
+            "previous_call_dates": [
+                "2024-10-10",
+                "2024-10-12",
+                "2024-9-24"
+            ]
+        },
+        "scenario_details": {
+            "call_reason": "Issue with the Automow is still persisting. Customer is frustrated.",
+            "call_history_analysis": "Customer called multiple times over the last month about the same issue. At first it seemed like a fluke, but the AutoMow Mini seems to be turning off randomly while mowing. Before the first call, the issue was never there.",
+            "operational_insight": "At 2024-9-20, there was a major software update for the AutoMow Mini. Looking at the timeline, it seems likely to be related to the customer issues.",
+            "customer_insights_and_retention_strategy": "The customer is marked as low CLV. The database indicates that low CLV customers are not eligible for discounts.",
+            "recommended_system_response": [
+                "Acknowledge the repeat issue and apologize for the inconvenience.",
+                "Confirm that a recent major update might have impacted the product’s functionality.",
+                "Reassure the customer that the issue is being prioritized."
+            ]
+        }
+    },
+    {
+        "name": "Scenario 4",
+        "title": "Repeat complaint - Minor update - High CLV - No offer",
+        "call_event_id": 4,
+        "customer": {
+            "name": "Riley Rodriguez",
+            "customer_id": 23,
+            "clv": "High"
+        },
+        "product": {
+            "name": "AquaSpray X",
+            "type": "Smart Sprinkler",
+            "id": 103
+        },
+        "dates": {
+            "primary_call_date": "2025-03-16",
+            "previous_call_dates": [
+                "2025-03-15"
+            ]
+        },
+        "scenario_details": {
+            "call_reason": "Customer reports that the AquaSpray X sprinkler paused mid-cycle for the third time in two days.",
+            "call_history_analysis": "Customer called yesterday about this same pause issue; this is a repeat call within the last month.",
+            "operational_insight": "The Software_Updates database indicates a minor firmware patch was applied to AquaSpray X two days ago. No major updates have occurred recently.",
+            "customer_insights_and_retention_strategy": "Customer has High CLV, but since the patch was minor, no offer is triggered according to policy.",
+            "recommended_system_response": [
+                "Acknowledge the repeat issue and apologize for the inconvenience.",
+                "Confirm that only a minor update was applied and that no major fault has been detected.",
+                "Reassure the customer that a deeper investigation is underway.",
+                "Assist the customer with troubleshooting steps; do not offer a discount."
+            ]
+        }
+    },
+    {
+        "name": "Scenario 5",
+        "title": "Repeat complaint - Major update outside window - Low CLV - No offer",
+        "call_event_id": 5,
+        "customer": {
+            "name": "Marcos Buckley",
+            "customer_id": 59,
+            "clv": "Low"
+        },
+        "product": {
+            "name": "GrowMaster AI Greenhouse System",
+            "type": "Smart Greenhouse",
+            "id": 108
+        },
+        "dates": {
+            "primary_call_date": "30-1-2025",
+            "previous_call_dates": [
+                "21-12-2024"
+            ]
+        },
+        "scenario_details": {
+            "call_reason": "GrowMaster AI greenhouse temperature readings fluctuate wildly, causing plant stress.",
+            "call_history_analysis": "Customer called 40 days ago about temperature fluctuations; this is a repeat, but the previous call falls outside the one-month window.",
+            "operational_insight": "A major software update for GrowMaster AI was applied 35 days ago, which is outside the one-month period we consider for fault assessment.",
+            "customer_insights_and_retention_strategy": "Customer has Low CLV and is not eligible for discounts regardless of update timing.",
+            "recommended_system_response": [
+                "Acknowledge the repeat issue and apologize for the inconvenience.",
+                "Explain that the last major update was applied more than one month ago.",
+                "Reassure the customer that the technical team will investigate hardware or environmental factors.",
+                "No discount or offer is provided."
+            ]
+        }
+    },
+    {
+        "name": "Scenario 6",
+        "title": "Repeat complaint - Major update - Medium CLV - Product not eligible - No offer",
+        "call_event_id": 6,
+        "customer": {
+            "name": "Brice Choi",
+            "customer_id": 54,
+            "clv": "Med"
+        },
+        "product": {
+            "name": "SoilSense Lite",
+            "type": "Soil Monitor",
+            "id": 104
+        },
+        "dates": {
+            "primary_call_date": "2024-02-15",
+            "previous_call_dates": [
+                "2024-02-12"
+            ]
+        },
+        "scenario_details": {
+            "call_reason": "SoilSense Lite stops reporting soil moisture after rain events.",
+            "call_history_analysis": "Customer called three days ago about the same sensor blackout; this is a repeat call within the last month.",
+            "operational_insight": "Logs show a major update for SoilSense Lite was deployed four days ago, which may have introduced this issue.",
+            "customer_insights_and_retention_strategy": "Customer has Medium CLV. The Discount database shows no discounts available for SoilSense Lite at Medium CLV.",
+            "recommended_system_response": [
+                "Acknowledge the repeat issue and apologize for the inconvenience.",
+                "Confirm that a recent major update might be related to the sensor blackout.",
+                "Reassure the customer that diagnostics are running on their unit.",
+                "No discount is available for this product/CLV combination."
+            ]
+        }
+    },
+    {
+        "name": "Scenario 7",
+        "title": "Repeat complaint - Major update - Medium CLV - Product eligible - Make offer",
+        "call_event_id": 7,
+        "customer": {
+            "name": "Will Browning",
+            "customer_id": 61,
+            "clv": "Med"
+        },
+        "product": {
+            "name": "AquaSpray Duo",
+            "type": "Smart Sprinkler",
+            "id": 107
+        },
+        "dates": {
+            "primary_call_date": "2024-10-21",
+            "previous_call_dates": [
+                "2024-10-19"
+            ]
+        },
+        "scenario_details": {
+            "call_reason": "AquaSpray Duo cycles are shorter than configured, emptying too quickly.",
+            "call_history_analysis": "Customer called two days ago about the same cycle duration issue; this is a repeat call within the last month.",
+            "operational_insight": "A major software update for AquaSpray Duo was released three days ago that could affect cycle timing.",
+            "customer_insights_and_retention_strategy": "Customer has Medium CLV. The Discount database indicates a 8% discount for three months is available for medium CLV customers on AquaSpray Duo.",
+            "recommended_system_response": [
+                "Acknowledge the repeat issue and apologize for the inconvenience.",
+                "Confirm that a recent major update might have impacted cycle timing.",
+                "Reassure the customer that a fix is in progress.",
+                "Offer: \"As a valued customer, we’re offering you a 8% discount for the next three months on your AquaSpray Duo service.\""
+            ]
+        }
+    },
+    {
+        "name": "Scenario 8",
+        "title": "Not repeat complaint - Major update - High CLV - No offer",
+        "call_event_id": 8,
+        "customer": {
+            "name": "Mina Alvarez",
+            "customer_id": 50,
+            "clv": "High"
+        },
+        "product": {
+            "name": "HedgeBot Pro",
+            "type": "Robotic Trimmer",
+            "id": 102
+        },
+        "dates": {
+            "primary_call_date": "2024-10-01",
+            "previous_call_dates": [
+                "2024-09-15",
+                "2024-09-22"
+            ]
+        },
+        "scenario_details": {
+            "call_reason": "HedgeBot Pro blades are making a grinding noise on first start-up.",
+            "call_history_analysis": "This is the first time the customer has called about this issue in the past month. Customer has called about other unrelated issues in the past month.",
+            "operational_insight": "A major hardware firmware update for HedgeBot Pro was deployed yesterday.",
+            "customer_insights_and_retention_strategy": "Customer has High CLV; however, since this is not a repeat complaint, policy dictates no offer is made.",
+            "recommended_system_response": [
+                "Acknowledge the issue and apologize for the inconvenience.",
+                "Confirm that a recent firmware update might be related.",
+                "Guide the customer through blade inspection and lubrication steps.",
+                "Do not present any discount offer."
+            ]
+        }
+    },
+    {
+        "name": "Scenario 9",
+        "title": "Repeat complaint - No updates - Medium CLV - No offer",
+        "call_event_id": 9,
+        "customer": {
+            "name": "Serenity Kirk",
+            "customer_id": 90,
+            "clv": "Med"
+        },
+        "product": {
+            "name": "AutoMow Mini",
+            "type": "Self-Driving Mower",
+            "id": 105
+        },
+        "dates": {
+            "primary_call_date": "2024-10-01",
+            "previous_call_dates": [
+                "2024-09-24",
+                "2024-09-17"
+            ]
+        },
+        "scenario_details": {
+            "call_reason": "AutoMow Mini randomly stops and resumes mowing sporadically.",
+            "call_history_analysis": "Customer called last week for the same starting and stopping behavior; this is a repeat call within the last month.",
+            "operational_insight": "No software or firmware updates—minor or major—have been applied to AutoMow Mini in the past month.",
+            "customer_insights_and_retention_strategy": "Customer has Medium CLV; since no fault on our side is indicated, no offer is warranted.",
+            "recommended_system_response": [
+                "Acknowledge the repeat issue and apologize for the inconvenience.",
+                "Explain that no updates have been applied recently.",
+                "Reassure the customer that diagnostics will check hardware performance.",
+                "Do not offer a discount."
+            ]
+        }
+    },
+    {
+        "name": "Scenario 10",
+        "title": "Repeat complaint - Major update - High CLV - Special offer for greenhouse system",
+        "call_event_id": 10,
+        "customer": {
+            "name": "Davin Atkinson",
+            "customer_id": 92,
+            "clv": "High"
+        },
+        "product": {
+            "name": "GrowMaster AI",
+            "type": "Greenhouse System",
+            "id": 108
+        },
+        "dates": {
+            "primary_call_date": "2023-10-21",
+            "previous_call_dates": [
+                "2023-10-14",
+                "2023-10-16",
+                "2023-10-18"
+            ]
+        },
+        "scenario_details": {
+            "call_reason": "GrowMaster AI greenhouse humidity control has been failing, causing humidity swings.",
+            "call_history_analysis": "Customer called three times in the last week about the same humidity control failures; repeat calls within one month.",
+            "operational_insight": "A major update for GrowMaster AI was applied ten days ago.",
+            "customer_insights_and_retention_strategy": "Customer has High CLV; the Discount database shows a 30% discount for twelve months is available for high CLV customers on Smart Greenhouse systems.",
+            "recommended_system_response": [
+                "Acknowledge the repeat issue and apologize for the inconvenience.",
+                "Confirm that a recent major update might have impacted humidity controls.",
+                "Reassure the customer that the engineering team is prioritizing a fix.",
+                "Offer: \"As a valued customer, we’re offering you a 30% discount for the next twelve months on your GrowMaster AI subscription.\""
+            ]
+        }
+    },
+    {
+        "name": "Scenario 11",
+        "title": "No call history - Major update - High CLV - No offer",
+        "call_event_id": 11,
+        "customer": {
+            "name": "Tianna Mcpherson",
+            "customer_id": 24,
+            "clv": "High"
+        },
+        "product": {
+            "name": "GrowMaster AI",
+            "type": "Greenhouse System",
+            "id": 108
+        },
+        "dates": {
+            "primary_call_date": "2025-01-18",
+            "previous_call_dates": []
+        },
+        "scenario_details": {
+            "call_reason": "GrowMaster AI stopped syncing data with the mobile app after the recent update.",
+            "call_history_analysis": "No prior call history for this customer regarding this issue or any other issue.",
+            "operational_insight": "A major update for GrowMaster AI was applied three days ago.",
+            "customer_insights_and_retention_strategy": "Customer has High CLV; maintain high service quality to ensure retention.",
+            "recommended_system_response": [
+                "Acknowledge the issue and apologize for the inconvenience.",
+                "Confirm that a recent major update might have impacted app sync functionality.",
+                "Do not offer any discounts or offers as this is the first call and NOT a repeat call.",
+                "Reassure the customer that the engineering team is working on a fix.",
+                "Thank the customer for their patience and loyalty."
+            ]
+        }
+    }
+]
