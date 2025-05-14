@@ -22,7 +22,7 @@ def parse_datetime(value: str) -> datetime:
         Parsed datetime object
     """
     if not value:
-        return datetime.utcnow()
+        raise ValueError("Empty value provided for datetime parsing.")
 
     formats = ["%Y-%m-%d %H:%M:%S", "%Y-%m-%d", "%m/%d/%Y %H:%M:%S", "%m/%d/%Y"]
 
@@ -32,8 +32,7 @@ def parse_datetime(value: str) -> datetime:
         except ValueError:
             continue
 
-    # Default fallback
-    return datetime.utcnow()
+    raise ValueError(f"Value '{value}' does not match any expected datetime format.")
 
 
 def process_csv_value(value: str, field_type: Type) -> any:

@@ -12,7 +12,7 @@ class IncomingMessage:
 
     customer_id: int
     message: str
-    timestamp: datetime = field(default_factory=datetime.utcnow)
+    timestamp: datetime
 
 
 @dataclass

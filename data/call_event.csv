@@ -6,7 +6,7 @@ id,customer_id,sdc,timestamp
 5,59,"My GrowMaster AI system is causing stress to my plants due to erratic temperature readings.",2025-01-30 10:00:00
 6,54,"My SoilSense Lite isn't reporting soil moisture after it rains.",2024-02-15 09:35:00
 7,61,"The AquaSpray Duo isn't working as expected; the cycles are too short.",2024-10-21 10:15:00
-8,50,"The blades on my HedgeBot Pro are making a strange noise when I turn it on.","2024-10-01 10:15:00"
+8,50,"The blades on my HedgeBot Pro are making a strange noise when I turn it on.",2024-10-01 10:15:00
 9,90,"My AutoMow Mini keeps stopping and starting unpredictably.",2024-10-01 10:15:00
 10,92,"Hi, I'm having issues with my GrowMaster AI system controlling humidity properly.",2023-10-21 09:15:00
 11,24,"Hi, my GrowMaster AI system isn't syncing data with the app since the update.",2025-01-18 10:00:00
