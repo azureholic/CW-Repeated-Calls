@@ -3,7 +3,7 @@
 import csv
 from datetime import date, datetime
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, computed_field
 
 
 class Customer(BaseModel):
@@ -78,6 +78,14 @@ class HistoricCallEvent(BaseModel):
     call_summary: str = Field(..., description="Call summary")
     start_time: datetime = Field(..., description="Call start time")
     end_time: datetime = Field(..., description="Call end time")
+    days_since: float | None = Field(None, description="Days since the call event")
+    remaining_hours_since: float | None = Field(None, description="Remaining hours")
+
+    @computed_field
+    @property
+    def duration_minutes(self) -> float:
+        """Calculate the duration of the call in minutes."""
+        return round((self.end_time - self.start_time).total_seconds() / 60, 1)
 
     @staticmethod
     def from_csv(file_path: str) -> list["HistoricCallEvent"]:
@@ -89,6 +97,16 @@ class HistoricCallEvent(BaseModel):
         with open(file_path, mode="r", encoding="utf-8") as f:
             reader = csv.DictReader(f)
             return [HistoricCallEvent(**row) for row in reader]
+
+    def compute_time_since(self, timestamp: datetime) -> None:
+        """Compute the time since the call event.
+
+        Args:
+            timestamp (datetime): The timestamp to compare against.
+        """
+        total_hours_since = (timestamp - self.end_time).total_seconds() / 3600
+        self.days_since = round(int(total_hours_since // 24), 1)
+        self.remaining_hours_since = round(total_hours_since % 24, 1)
 
 
 class Product(BaseModel):
