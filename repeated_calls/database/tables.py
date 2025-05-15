@@ -7,7 +7,7 @@ from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 
 class Base(DeclarativeBase):
-    """Base class for all database tables."""
+    """Base class which all tables inherit from."""
 
 
 class Customer(Base):
