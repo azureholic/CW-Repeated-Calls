@@ -15,6 +15,9 @@ from steps.exit_step import ExitStep
 from steps.get_customer_data_step import GetCustomerDataStep
 
 from repeated_calls.orchestrator.settings import AzureOpenAISettings
+from repeated_calls.utils.loggers import Logger
+
+logger = Logger()
 
 
 async def run_sequence() -> None:
