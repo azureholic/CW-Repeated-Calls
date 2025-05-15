@@ -1,4 +1,5 @@
 """Main application script for the Repeated Calls process."""
+
 import asyncio
 from datetime import datetime
 
@@ -22,71 +23,83 @@ logger = Logger()
 
 async def run_sequence() -> None:
     """Run the sequence of steps for the Repeated Calls process."""
-    # Load OpenAI settings
-    settings = AzureOpenAISettings()
+    try:
+        logger.debug("Initializing Azure OpenAI settings...")
+        settings = AzureOpenAISettings()
 
-    # Create Semantic Kernel instance
-    kernel = Kernel()
+        logger.debug("Creating Semantic Kernel instance...")
+        kernel = Kernel()
 
-    # Add Azure OpenAI chat completion service
-    kernel.add_service(
-        AzureChatCompletion(
-            endpoint=settings.endpoint,
-            api_key=settings.api_key.get_secret_value() if settings.api_key else None,
-            deployment_name=settings.deployment,
+        logger.debug("Adding AzureChatCompletion service to kernel...")
+        kernel.add_service(
+            AzureChatCompletion(
+                endpoint=settings.endpoint,
+                api_key=settings.api_key.get_secret_value() if settings.api_key else None,
+                deployment_name=settings.deployment,
+            )
         )
-    )
 
-    # This is the incoming message that will be processed (simulating a customer call)
-    incoming_message = IncomingMessage(
-        customer_id=7,
-        message="My self-driving mower isn't working since this morning",
-        timestamp=datetime.fromisoformat("2024-01-10 10:05:22"),
-    )
+        incoming_message = IncomingMessage(
+            customer_id=7,
+            message="My self-driving mower isn't working since this morning",
+            timestamp=datetime.fromisoformat("2024-01-10 10:05:22"),
+        )
+        logger.debug("Incoming message initialized: %s", incoming_message.message)
 
-    # Create the process builder
-    process_builder = ProcessBuilder("RepeatedCalls")
+        logger.debug("Building process steps...")
+        process_builder = ProcessBuilder("RepeatedCalls")
 
-    # Add the steps
-    get_customer_context_step = process_builder.add_step(GetCustomerDataStep)
-    determine_repeated_caller_step = process_builder.add_step(DetermineRepeatedCallerStep)
-    determine_cause_step = process_builder.add_step(DetermineCauseStep)
-    determine_customer_advice_step = process_builder.add_step(DetermineCustomerAdviceStep)
-    exit_step = process_builder.add_step(ExitStep)
+        get_customer_context_step = process_builder.add_step(GetCustomerDataStep)
+        determine_repeated_caller_step = process_builder.add_step(DetermineRepeatedCallerStep)
+        determine_cause_step = process_builder.add_step(DetermineCauseStep)
+        determine_customer_advice_step = process_builder.add_step(DetermineCustomerAdviceStep)
+        exit_step = process_builder.add_step(ExitStep)
 
-    # Orchestrate the events
-    process_builder.on_input_event("Start").send_event_to(get_customer_context_step, function_name="get_call_event")
+        logger.debug("Linking events between steps...")
 
-    get_customer_context_step.on_event("FetchingContextDone").send_event_to(
-        determine_repeated_caller_step, function_name="repeated_call", parameter_name="callstate"
-    )
+        process_builder.on_input_event("Start").send_event_to(get_customer_context_step, function_name="get_call_event")
 
-    determine_repeated_caller_step.on_event("IsRepeatedCall").send_event_to(
-        determine_cause_step, function_name="determine_cause", parameter_name="result"
-    )
-    determine_repeated_caller_step.on_event("IsNotRepeatedCall").send_event_to(exit_step)
+        get_customer_context_step.on_event("FetchingContextDone").send_event_to(
+            determine_repeated_caller_step, function_name="repeated_call", parameter_name="callstate"
+        )
 
-    determine_cause_step.on_event("CauseDetermined").send_event_to(
-        determine_customer_advice_step, function_name="get_advice", parameter_name="cause_result"
-    )
-    determine_cause_step.on_event("NotCauseDetermined").send_event_to(exit_step)
+        determine_repeated_caller_step.on_event("IsRepeatedCall").send_event_to(
+            determine_cause_step, function_name="determine_cause", parameter_name="result"
+        )
 
-    determine_customer_advice_step.on_event("AdviceProvided").send_event_to(exit_step)
-    determine_customer_advice_step.on_event("NotAdviceProvided").send_event_to(exit_step)
+        determine_repeated_caller_step.on_event("IsNotRepeatedCall").send_event_to(exit_step)
 
-    # Build and run the process
-    process = process_builder.build()
+        determine_cause_step.on_event("CauseDetermined").send_event_to(
+            determine_customer_advice_step, function_name="get_advice", parameter_name="cause_result"
+        )
 
-    await start(
-        process=process,
-        kernel=kernel,
-        initial_event=KernelProcessEvent(id="Start", data=incoming_message),
-    )
+        determine_cause_step.on_event("NotCauseDetermined").send_event_to(exit_step)
+
+        determine_customer_advice_step.on_event("AdviceProvided").send_event_to(exit_step)
+        determine_customer_advice_step.on_event("NotAdviceProvided").send_event_to(exit_step)
+
+        logger.debug("Building final process...")
+        process = process_builder.build()
+
+        logger.info("Starting process execution...")
+        await start(
+            process=process,
+            kernel=kernel,
+            initial_event=KernelProcessEvent(id="Start", data=incoming_message),
+        )
+
+        logger.info("Process execution completed successfully.")
+
+    except Exception as exc:
+        logger.error("An error occurred during the sequence execution: %s", str(exc), exc_info=True)
+        raise
 
 
-async def main():
-    """Run the main function as entry point of the application."""
+async def main() -> None:
+    """Entry point for the Repeated Calls application."""
+    logger.info("Application started.")
     await run_sequence()
+    logger.info("Application finished.")
 
 
 if __name__ == "__main__":
