@@ -14,7 +14,6 @@ from steps.determine_cause_step import DetermineCauseStep
 from steps.determine_customer_advice import DetermineCustomerAdviceStep
 from steps.determine_repeated_caller_step import DetermineRepeatedCallerStep
 from steps.exit_step import ExitStep
-from steps.get_customer_data_step import GetCustomerDataStep
 
 from repeated_calls.orchestrator.settings import AzureOpenAISettings
 from repeated_calls.utils.loggers import Logger
@@ -27,7 +26,7 @@ async def run_sequence() -> None:
     try:
         logger.debug("Initializing Azure OpenAI settings...")
         settings = AzureOpenAISettings()
-
+        
         logger.debug("Creating Semantic Kernel instance...")
         kernel = Kernel()
 
@@ -50,7 +49,6 @@ async def run_sequence() -> None:
         logger.debug("Building process steps...")
         process_builder = ProcessBuilder("RepeatedCalls")
 
-        get_customer_context_step = process_builder.add_step(GetCustomerDataStep)
         determine_repeated_caller_step = process_builder.add_step(DetermineRepeatedCallerStep)
         determine_cause_step = process_builder.add_step(DetermineCauseStep)
         determine_customer_advice_step = process_builder.add_step(DetermineCustomerAdviceStep)
@@ -58,11 +56,7 @@ async def run_sequence() -> None:
 
         logger.debug("Linking events between steps...")
 
-        process_builder.on_input_event("Start").send_event_to(get_customer_context_step, function_name="get_call_event")
-
-        get_customer_context_step.on_event("FetchingContextDone").send_event_to(
-            determine_repeated_caller_step, function_name="repeated_call", parameter_name="callstate"
-        )
+        process_builder.on_input_event("Start").send_event_to(determine_repeated_caller_step, parameter_name="incoming_message")
 
         determine_repeated_caller_step.on_event("IsRepeatedCall").send_event_to(
             determine_cause_step, function_name="determine_cause", parameter_name="result"
