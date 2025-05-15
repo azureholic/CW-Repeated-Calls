@@ -1,5 +1,6 @@
 """Main application script for the Repeated Calls process."""
 
+import argparse
 import asyncio
 from datetime import datetime
 
@@ -97,6 +98,18 @@ async def run_sequence() -> None:
 
 async def main() -> None:
     """Entry point for the Repeated Calls application."""
+    parser = argparse.ArgumentParser(description="Run the Repeated Calls process.")
+    parser.add_argument(
+        "--loglevel",
+        type=str,
+        choices=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
+        help="Override the default log level (e.g., DEBUG, INFO, WARNING)",
+    )
+    args = parser.parse_args()
+
+    if args.loglevel:
+        logger.setLevel(args.loglevel.upper())
+
     logger.info("Application started.")
     await run_sequence()
     logger.info("Application finished.")
