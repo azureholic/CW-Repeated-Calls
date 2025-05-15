@@ -34,6 +34,9 @@ class CustomerDataAgent:
         # than the ImportPluginFromType in C#
         agent_kernel.add_plugin(CustomerDataPlugin(data_path='/../../../data'), "CustomerDataPlugin")
 
+        settings = AzureChatPromptExecutionSettings()
+        #settings.response_format = RepeatedCallState
+
         # Create and configure the agent
         agent = ChatCompletionAgent(
             name=agent_name,
@@ -45,15 +48,18 @@ class CustomerDataAgent:
             - get_customer_historic_call_events
             
             ## Customer ID: {customer_id}
+
+            The output should be a JSON string with the following structure:
+            {{
+                "customer_details": <customer_details>,
+                "call_event": <call_event>,
+                "historic_call_events": <historic_call_events>
+            }}
+            The customer details should include the customer's name, address, and contact information.
+            Don't decorate the output and indicate the it is json, since that is expected.
             """,
             kernel=agent_kernel,
-            arguments=KernelArguments(
-                execution_settings=AzureChatPromptExecutionSettings(
-                    response_format=RepeatedCallState,
-                    function_choice_behavior="required",
-                    temperature=0,
-                )
-            )
+            arguments=KernelArguments(settings=settings)
         )
         
         return agent

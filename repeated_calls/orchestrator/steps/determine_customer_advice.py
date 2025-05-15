@@ -20,7 +20,7 @@ class DetermineCustomerAdviceStep(KernelProcessStep):
     def __init__(self):
         """Initialise the DetermineCustomerAdviceStep."""
         super().__init__()
-        self._state = RepeatedCallState()
+        #self._state = RepeatedCallState()
 
     @kernel_function
     async def get_advice(self, cause_result, kernel: Kernel, context: KernelProcessStepContext) -> None:
