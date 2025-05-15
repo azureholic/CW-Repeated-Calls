@@ -30,6 +30,7 @@ class GetCustomerDataStep(KernelProcessStep):
         # this code below is to 'fix' semantic_kernel.exceptions.kernel_exceptions.KernelException:
         # The function get_call_event on step GetCustomerDataStep has more than one parameter, so a
         # parameter name must be provided.
+
         if not isinstance(incoming_message, IncomingMessage):
             # If it's a dict or similar with attributes we need, try to convert it
             try:
@@ -37,12 +38,10 @@ class GetCustomerDataStep(KernelProcessStep):
                     customer_id=incoming_message.customer_id,
                     message=incoming_message.message,
                     timestamp=incoming_message.timestamp
-                    if hasattr(incoming_message, "timestamp")
-                    else datetime.utcnow(),
                 )
             except Exception as e:
                 raise TypeError(f"Cannot convert input to IncomingMessage: {str(e)}")
-
+            
         customer_id = incoming_message.customer_id
 
         # Find customer's call event using the enhanced class method
