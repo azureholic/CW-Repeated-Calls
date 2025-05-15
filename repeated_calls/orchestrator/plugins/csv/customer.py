@@ -20,10 +20,9 @@ class CustomerDataPlugin:
     @kernel_function(name="get_customer_details", description="Retrieves a JSON string with customer details.")
     def get_customer_details(self, customer_id: int) -> Annotated[str, "Details of the customer."]:
         # Find customer using the enhanced class method
-        data = [
-            json.dumps(customer.model_dump(mode="json")) for customer in self.customers if customer.id == customer_id
-        ]
-        if not data:
-            logger.warning(f"Warning: No customer found with ID {customer_id}")
-
-        return data
+        for customer in self.customers:
+            if customer.id == customer_id:
+                return json.dumps(customer.model_dump(mode="json"))
+            
+        logger.warning(f"Warning: No customer found with ID {customer_id}")
+        return "No customer found"
