@@ -30,3 +30,28 @@ class CustomerDataPlugin:
 
         logger.warning(f"Warning: No customer found with ID {customer_id}")
         return "No customer found"
+
+    @kernel_function
+    def get_customer_call_event(self, customer_id: str) -> Annotated[str, "Call event of the customer."]:
+        """Retrieve a JSON string of the call event of the customer."""
+        # Find customer's call event using the enhanced class method
+        for call_event in self.call_events:
+            if call_event.customer_id == customer_id:
+                return json.dumps(call_event.model_dump(mode="json"))
+
+        logger.warning(f"Warning: No call event found for customer ID {customer_id}")
+        return "No call event found"
+
+    @kernel_function
+    def get_customer_historic_call_events(self, customer_id: str) -> Annotated[str, "Call events of the customer."]:
+        """Retrieve a JSON string of the historic call events of the customer."""
+        # Find customer's historic call events using the enhanced class method
+        historic_call_events = [
+            event.model_dump(mode="json") for event in self.historic_call_events if event.customer_id == customer_id
+        ]
+
+        if not historic_call_events:
+            logger.warning(f"Warning: No historic call events found for customer ID {customer_id}")
+            return "No historic call events found"
+        else:
+            return json.dumps(historic_call_events)
