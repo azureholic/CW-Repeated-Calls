@@ -7,13 +7,13 @@ using System.Threading.Tasks;
 
 namespace cw_repeated_calls_dotnet.Entities.States
 {
-    public class RepeatedCallState
+    public class OperationsCallState
     {
         public Customer? Customer { get; set; }
-        public CallEvent? CallEvent { get; set; }
-        public List<HistoricCallEvent>? CallHistory { get; set; }
-
+        public Subscription? Subscription { get; set; }
         public List<Product>? Products { get; set; }
-        public bool IsRepeatedCall { get; set; } = false;
+        public List<SoftwareUpdate>? SoftwareUpdates { get; set; }
+        public string Analysis { get; set; } = string.Empty;
+
     }
 }

@@ -12,7 +12,9 @@
     <PackageReference Include="Azure.Identity" Version="1.13.2" />
     <PackageReference Include="CsvHelper" Version="33.0.1" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.4" />
-    <PackageReference Include="Microsoft.SemanticKernel" Version="1.46.0" />
+    <PackageReference Include="Microsoft.SemanticKernel" Version="1.50.0" />
+    <PackageReference Include="Microsoft.SemanticKernel.Agents.AzureAI" Version="1.50.0-preview" />
+    <PackageReference Include="Microsoft.SemanticKernel.Agents.Core" Version="1.50.0" />
     <PackageReference Include="Microsoft.SemanticKernel.Process.Abstractions" Version="1.46.0-alpha" />
     <PackageReference Include="Microsoft.SemanticKernel.Process.Core" Version="1.46.0-alpha" />
     <PackageReference Include="Microsoft.SemanticKernel.Process.LocalRuntime" Version="1.46.0-alpha" />

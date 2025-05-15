@@ -47,6 +47,10 @@ namespace cw_repeated_calls_dotnet
 
         static async Task RunSequenceAsync(Kernel kernel)
         {
+            // Initialize services
+           
+
+
             // This is the incoming message that will be processed (simulating a customer call)
             // Next step is that this message comes from the servicebus
             IncomingMessage incomingMessage = new()
@@ -61,7 +65,6 @@ namespace cw_repeated_calls_dotnet
             ProcessBuilder processBuilder = new("RepeatedCalls");
 
             // Add the steps
-            var getCustomerContextStep = processBuilder.AddStepFromType<GetCustomerDataStep>();
             var determineRepeatedCallerStep = processBuilder.AddStepFromType<DetermineRepeatedCallerStep>();
             var determineCauseStep = processBuilder.AddStepFromType<DetermineCauseStep>();
             var exitStep = processBuilder.AddStepFromType<ExitStep>();
@@ -69,11 +72,11 @@ namespace cw_repeated_calls_dotnet
             // Orchestrate the events
             processBuilder
                 .OnInputEvent("Start")
-                .SendEventTo(new(getCustomerContextStep, functionName: "GetCallEvent"));
-
-            getCustomerContextStep
-                .OnEvent("FetchingContextDone")
                 .SendEventTo(new(determineRepeatedCallerStep));
+
+            //getCustomerContextStep
+            //    .OnEvent("FetchingContextDone")
+            //    .SendEventTo(new(determineRepeatedCallerStep));
 
             determineRepeatedCallerStep
                 .OnEvent("IsRepeatedCall")

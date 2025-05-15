@@ -1,28 +1,26 @@
-﻿using Microsoft.SemanticKernel.ChatCompletion;
+﻿using Azure;
+using cw_repeated_calls_dotnet.Agents;
+using cw_repeated_calls_dotnet.Entities;
+using cw_repeated_calls_dotnet.Entities.Database;
+using cw_repeated_calls_dotnet.Entities.States;
+using cw_repeated_calls_dotnet.Entities.StructuredOutput;
+using cw_repeated_calls_dotnet.Helpers;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Agents;
+using Microsoft.SemanticKernel.ChatCompletion;
+using Microsoft.SemanticKernel.Connectors.OpenAI;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using cw_repeated_calls_dotnet.Entities.States;
-using cw_repeated_calls_dotnet.Entities;
-using Microsoft.SemanticKernel.Connectors.OpenAI;
-using cw_repeated_calls_dotnet.Entities.StructuredOutput;
-using System.Text.Json;
-using cw_repeated_calls_dotnet.Helpers;
-using cw_repeated_calls_dotnet.Entities.Database;
 using System.Runtime.CompilerServices;
+using System.Text;
+using System.Text.Json;
+using System.Threading.Tasks;
 
 
 public class DetermineCauseStep : KernelProcessStep
 {
-    private string systemPrompt =
-        """
-        Your job is to determine the cause of a product issue. 
-        You will be provided with a list of software updates and products, 
-        and you must identify the associated software updates and products for the given issue.
-        """;
+    private string AgentServiceKey { get; set; } = "OperationsDataExtractor";
 
     private string subscriptionCsvPath = "Data\\subscription.csv";
     private string softwareUpdateCsvPath = "Data\\software_update.csv";
@@ -31,79 +29,67 @@ public class DetermineCauseStep : KernelProcessStep
     [KernelFunction]
     public async Task DetermineCause(KernelProcessStepContext context, Kernel kernel, RepeatedCallResult result)
     {
-        var softwareUpdates = RetrieveData.LoadFromCsv<SoftwareUpdate>(softwareUpdateCsvPath);
-        var products = RetrieveData.LoadFromCsv<Product>(productCsvPath);
-        var subscriptions = RetrieveData.LoadFromCsv<Subscription>(subscriptionCsvPath);
 
-        var customerProducts = subscriptions
-            .Where(s => s.CustomerId == result.CustomerId)
-            .ToList();
+        int customerId = result.CustomerId;
 
-        List<SoftwareUpdate> customerRelevantUpdates = new List<SoftwareUpdate>();
-        foreach (var customerProduct in customerProducts)
+        // Get the chat history
+        // IChatHistoryProvider historyProvider = kernel.GetHistory();todo, this doesn't work in current version (kernel.GetHistory)
+        ChatHistory history = new ChatHistory();
+        ChatHistoryAgentThread agentThread = new(history);
+
+        ChatCompletionAgent customerDataAgent = new OperationsAgent().CreateAgent(kernel, AgentServiceKey, customerId);
+
+        var userPrompt = JsonSerializer.Serialize(result);
+
+        // Obtain the agent response todo, this doesn't work in current version (kernel.GetAgent)
+        // ChatCompletionAgent agent = kernel.GetAgent<ChatCompletionAgent>(AgentServiceKey);
+        List<ChatMessageContent> messages = new();
+        await foreach (ChatMessageContent message in customerDataAgent.InvokeAsync(
+            new ChatMessageContent(AuthorRole.User, userPrompt), agentThread))
         {
-            // check for software updates for the used products
-            var productSoftwareUpdates = softwareUpdates
-                .Where(s => s.ProductId == customerProduct!.ProductId)
-                .ToList();
+            // Both the input message and response message will automatically be added to the thread, which will update the internal chat history.
+            messages.Add(message);
+            // Emit event for each agent response
+            // await context.EmitEventAsync(new() { Id = AgentOrchestrationEvents.AgentResponse, Data = message });
+            Console.WriteLine(message.ToString());
 
-            customerRelevantUpdates.AddRange(productSoftwareUpdates);
         }
+        
+        var repeatedCallResult = await IsCausedDeterminedAsync(kernel, history);
 
-        // Add the new product info to the chat history
-        ChatHistory chatHistory = new ChatHistory(systemPrompt);
-
-        // Build the user message with detailed context
-        StringBuilder userMessage = new StringBuilder();
-
-        userMessage.AppendLine($"## Customer ID: {result.CustomerId}");
-
-        // Add current call information
-        if (result.Conclusion != null)
+        if (repeatedCallResult!.IsOperationsCause)
         {
-            userMessage.AppendLine("## Conclusion");
-            userMessage.AppendLine(result.Conclusion);
-        }
-
-        // Add call history in reverse chronological order (most recent first)
-        if (customerRelevantUpdates != null && customerProducts != null)
-        {
-            userMessage.AppendLine("## Software updates relevant for issue");
-            
-            foreach (var update in customerRelevantUpdates)
-            {
-                userMessage.AppendLine($"Product ID: {update.ProductId}");
-                userMessage.AppendLine($"Update ID: {update.Id}");
-                userMessage.AppendLine($"Update Type: {update.Type}");
-                userMessage.AppendLine($"Update Timestamp: {update.RolloutDate:yyyy-MM-dd HH:mm:ss}");
-                userMessage.AppendLine();
-            }
-        }
-
-        // Add specific question for the model
-        userMessage.AppendLine("Based on this information, is the current call a repeated call about the same issue and is it due because of software updates?");
-
-        chatHistory.AddUserMessage(userMessage.ToString());
-
-
-        OpenAIPromptExecutionSettings settings = new OpenAIPromptExecutionSettings();
-        settings.ResponseFormat = typeof(CauseResult);
-
-        // Get a response from the LLM
-        IChatCompletionService chatCompletionService = kernel.GetRequiredService<IChatCompletionService>();
-        var contextResponse = await chatCompletionService.GetChatMessageContentAsync(chatHistory, executionSettings:settings);
-        var formattedResponse = JsonSerializer.Deserialize<CauseResult>(contextResponse.Content!.ToString());
-
-        if (formattedResponse!.IsOperationsCause)
-        {
-            await context.EmitEventAsync("CauseDetermined", data: formattedResponse);
+            await context.EmitEventAsync("CauseDetermined", data: repeatedCallResult);
         }
         else
         {
             await context.EmitEventAsync("NotCauseDetermined");
         }
 
-        Console.WriteLine(contextResponse.Content!.ToString());
+        Console.WriteLine(repeatedCallResult.ToString());
+    }
+
+    private static async Task<CauseResult> IsCausedDeterminedAsync(Kernel kernel, ChatHistory history)
+    {
+        string userInput = $"""
+                Based on the information provided, is the current call a repeated call about the same issue? 
+                Please analyze the timing between calls, similarity of issues discussed, and provide your reasoning.
+                """;
+
+        ChatHistory localHistory =
+        [
+            new ChatMessageContent(AuthorRole.System, userInput),
+            .. history.TakeLast(1)
+        ];
+
+
+        IChatCompletionService service = kernel.GetRequiredService<IChatCompletionService>();
+
+        ChatMessageContent response = await service.GetChatMessageContentAsync(localHistory, new OpenAIPromptExecutionSettings { ResponseFormat = typeof(CauseResult) });
+        CauseResult intent = JsonSerializer.Deserialize<CauseResult>(response.ToString())!;
+
+        Console.WriteLine($"Response: {response}");
+        return intent;
     }
 }
 

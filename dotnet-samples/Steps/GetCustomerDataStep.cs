@@ -21,49 +21,14 @@ namespace cw_repeated_calls_dotnet.Steps
         private string callEventCsvPath = "Data\\call_event.csv";
        
 
-        [KernelFunction]
-        public async Task GetCallEventAsync(IncomingMessage incomingMessage, KernelProcessStepContext context)
-        {
-            int customerId = incomingMessage.CustomerId;
+        //[KernelFunction]
+        //public async Task GetCallEventAsync(IncomingMessage incomingMessage, KernelProcessStepContext context)
+        //{
+            
 
-            // To load a list of Customer objects
-            var callEvents = RetrieveData.LoadFromCsv<CallEvent>(callEventCsvPath);
-            if (callEvents == null || callEvents.Count == 0)
-            {
-                Console.WriteLine($"Warning: No call events found at {callEventCsvPath}");
-            }
+        //    await context.EmitEventAsync("FetchingContextDone", data:repeatedCallState);
 
-            var customerCallEvent = callEvents.FirstOrDefault(x => x.CustomerId == customerId);
-            if (customerCallEvent == null)
-            {
-                Console.WriteLine($"Warning: No call event found for customer ID {customerId}");
-            }
-
-            var historicCallEvents = RetrieveData.LoadFromCsv<HistoricCallEvent>(historicCallEventCsvPath);
-            if (historicCallEvents == null || historicCallEvents.Count == 0)
-            {
-                Console.WriteLine($"Warning: No historic call events found at {historicCallEventCsvPath}");
-            }
-
-            var customerHistoricCallEvent = historicCallEvents.Where(x => x.CustomerId == customerId);
-            if (customerHistoricCallEvent == null)
-            {
-                Console.WriteLine($"Warning: No historic call event found for customer ID {customerId}");
-            }
-
-            var customers = RetrieveData.LoadFromCsv<Customer>(customerCsvPath);
-            var customer = customers.FirstOrDefault(x => x.Id == customerId);
-
-            RepeatedCallState repeatedCallState = new RepeatedCallState
-            {
-                Customer = customer,
-                CallEvent = customerCallEvent,
-                CallHistory = customerHistoricCallEvent.ToList()
-            };
-
-            await context.EmitEventAsync("FetchingContextDone", data:repeatedCallState);
-
-        }
+        //}
 
        
     }

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace cw_repeated_calls_dotnet.Entities
 {
-    internal class IncomingMessage
+    public class IncomingMessage
     {
         public int CustomerId { get; set; }
         public required string Message { get; set; }
