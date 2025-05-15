@@ -1,5 +1,6 @@
 Customer ID: {{ cause_result.customer_id }}
 Product ID: {{ cause_result.product_id }}
-CLV Value: {{ clv_value }}
-Discount: {{ discount_percentage }}%
-Duration: {{ discount_duration_months }} months
+{# TODO: The information below should not be included in the user prompt, but should be retrieved from tool-calling by the agent. #}
+CLV Value: {{ customer_clv }}
+Discount: {{ matching_discount.discount_percentage }}%
+Duration: {{ matching_discount.discount_duration_months }} months
