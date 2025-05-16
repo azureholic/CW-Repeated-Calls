@@ -11,11 +11,11 @@ from repeated_calls.utils.loggers import Logger
 logger = Logger()
 
 
-class DetermineOfferStep(KernelProcessStep):
-    """Step for determining an offer for the customer using a multi-agent system."""
+class DetermineRecommendationStep(KernelProcessStep):
+    """Step for determining a recommendation for the CS employee using a multi-agent system."""
 
     @kernel_function
-    async def offer(
+    async def recommend(
         self,
         state: State,
         context: KernelProcessStepContext,
