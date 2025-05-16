@@ -1,6 +1,7 @@
 """Plugins for the customer domain based on CSV files."""
 
 import json
+import os
 from typing import Annotated
 
 from semantic_kernel.functions import kernel_function
@@ -19,7 +20,7 @@ class OperationsDataPlugin:
         self.software_updates = SoftwareUpdate.from_csv(f"{data_path}/software_update.csv")
 
     @kernel_function
-    def get_software_updates(self, product_id: str) -> Annotated[str, "Software updates of the product."]:
+    def get_software_updates(self, product_id: int) -> Annotated[str, "Software updates of the product."]:
         """Retrieve a JSON string of all software updates of the product."""
         # Find all software updates for the given product ID
         updates = [
@@ -37,7 +38,18 @@ class OperationsDataPlugin:
     # Extra dummy function, always returns "No outages found"
     @kernel_function
     def check_outages(
-        self, product_id: str
+        self, product_id: int
     ) -> Annotated[str, "Check if there is a current outage known for the product"]:
         """Retrieve a string whether a current outage is known for the product."""
         return "No outages found"
+
+
+if __name__ == "__main__":
+    # Example usage: test get_software_updates for product_id '101'
+    # Dynamically set the data path based on the current working directory
+    cwd = os.getcwd()
+    data_path = os.path.join(cwd, "data")
+    plugin = OperationsDataPlugin(data_path)
+    product_id = 101
+    result = plugin.get_software_updates(product_id)
+    print("Software updates for product {product_id}:", result)
