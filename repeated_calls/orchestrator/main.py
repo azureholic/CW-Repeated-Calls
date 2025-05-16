@@ -9,11 +9,13 @@ from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
 from semantic_kernel.processes import ProcessBuilder
 from semantic_kernel.processes.local_runtime.local_event import KernelProcessEvent
 from semantic_kernel.processes.local_runtime.local_kernel_process import start
+from steps.determine_cause import DetermineCauseStep
 from steps.determine_repeated_call import DetermineRepeatedCallStep
 from steps.exit_step import ExitStep
 
 from repeated_calls.database.schemas import CallEvent
 from repeated_calls.orchestrator.plugins.csv.customer import CustomerDataPlugin
+from repeated_calls.orchestrator.plugins.csv.operations import OperationsDataPlugin
 from repeated_calls.orchestrator.settings import AzureOpenAISettings
 from repeated_calls.utils.loggers import Logger
 
@@ -37,7 +39,8 @@ async def run_sequence() -> None:
                 deployment_name=settings.deployment,
             )
         )
-        kernel.add_plugin(CustomerDataPlugin("data"))
+        kernel.add_plugin(CustomerDataPlugin(data_path="data"), "CustomerDataPlugin")
+        kernel.add_plugin(OperationsDataPlugin(data_path="data"), "OperationsDataPlugin")
 
         # Add the message manually now for testing purposes
         call_event = CallEvent(
@@ -51,14 +54,21 @@ async def run_sequence() -> None:
 
         # Add steps
         determine_repeated_call = process_builder.add_step(DetermineRepeatedCallStep)
+        determine_cause = process_builder.add_step(DetermineCauseStep)
         exit_step = process_builder.add_step(ExitStep)
 
         # Orchestrate steps
         process_builder.on_input_event("Start").send_event_to(
             determine_repeated_call, function_name="repeated_call", parameter_name="call_event"
         )
-        process_builder.on_event("IsRepeatedCall").send_event_to(exit_step)
-        process_builder.on_event("IsNotRepeatedCall").send_event_to(exit_step)
+
+        determine_repeated_call.on_event("IsRepeatedCall").send_event_to(
+            determine_cause, function_name="cause", parameter_name="call_event"
+        )
+        determine_repeated_call.on_event("IsNotRepeatedCall").send_event_to(exit_step)
+
+        determine_cause.on_event("IsRelevant").send_event_to(exit_step)
+        determine_cause.on_event("IsNotRelevant").send_event_to(exit_step)
 
         # Compile/build
         process = process_builder.build()

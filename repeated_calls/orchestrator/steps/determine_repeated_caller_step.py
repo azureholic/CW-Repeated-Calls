@@ -1,4 +1,6 @@
 """DetermineRepeatedCaller step for the process framework."""
+
+from typing import Annotated
 import json
 
 from entities.structured_output import RepeatedCallResult
@@ -12,7 +14,7 @@ from semantic_kernel.processes.kernel_process import KernelProcessStep, KernelPr
 from repeated_calls.prompt_engineering.prompts import RepeatCallerPrompt
 from repeated_calls.utils.loggers import Logger
 
-logger = Logger(__name__)
+logger = Logger()
 
 
 class DetermineRepeatedCallerStep(KernelProcessStep):
@@ -26,8 +28,8 @@ class DetermineRepeatedCallerStep(KernelProcessStep):
     async def repeated_call(
         self,
         context: KernelProcessStepContext,
-        kernel: Kernel,
         callstate,
+        kernel: Annotated[Kernel | None, "The kernel", {"include_in_function_choices": False}] = None,
     ) -> None:
         """
         Determine if the given call is a repeated issue based on customer state.

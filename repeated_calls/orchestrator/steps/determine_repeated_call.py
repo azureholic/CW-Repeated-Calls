@@ -83,6 +83,6 @@ class DetermineRepeatedCallStep(KernelProcessStep):
 
         # Emit event to continue process flow
         if state.is_repeated_call:
-            await context.emit_event("IsRepeatedCall", data=state)
+            await context.emit_event("IsRepeatedCall", data=call_event)
         else:
-            await context.emit_event("IsNotRepeatedCall", data=state)
+            await context.emit_event("IsNotRepeatedCall", data=call_event)
