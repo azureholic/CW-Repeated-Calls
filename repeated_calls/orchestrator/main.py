@@ -2,7 +2,10 @@
 
 import argparse
 import asyncio
+import csv
+import os
 from datetime import datetime
+from importlib.resources import files
 
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
@@ -21,6 +24,23 @@ from repeated_calls.orchestrator.settings import AzureOpenAISettings
 from repeated_calls.utils.loggers import Logger
 
 logger = Logger()
+
+
+def get_event() -> CallEvent:
+    """Create a sample CallEvent object."""
+    data_path = os.path.join(os.path.dirname(files("repeated_calls")), "data")
+    csv_path = os.path.join(data_path, "call_event.csv")
+
+    with open(csv_path, "r", newline="") as csvfile:
+        reader = csv.DictReader(csvfile)
+        for row in reader:
+            # Convert the data to appropriate types
+            return CallEvent(
+                id=int(row.get("id", -1)),
+                customer_id=int(row.get("customer_id", -1)),
+                sdc=row.get("sdc", "No description available"),
+                timestamp=datetime.fromisoformat(row.get("timestamp", "1970-01-01 00:00:00")),
+            )
 
 
 async def run_sequence() -> None:
@@ -42,12 +62,7 @@ async def run_sequence() -> None:
         )
 
         logger.debug("Initialising state...")
-        call_event = CallEvent(
-            id=1,
-            customer_id=7,
-            sdc="My self-driving mower isn't working since this morning",
-            timestamp=datetime.fromisoformat("2024-01-10 10:05:22"),
-        )
+        call_event = get_event()
 
         state = State.from_call_event(call_event)
         logger.debug("State initialized: %s", state)
