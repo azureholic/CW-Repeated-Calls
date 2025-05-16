@@ -3,13 +3,14 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from typing import List, Optional
 
-from repeated_calls.orchestrator.entities.database import CallEvent, Customer, HistoricCallEvent
+from repeated_calls.database.schemas import CallEvent, Customer, HistoricCallEvent
 
 
 @dataclass
 class IncomingMessage:
     """Incoming message entity class."""
 
+    id: int
     customer_id: int
     message: str
     timestamp: datetime
