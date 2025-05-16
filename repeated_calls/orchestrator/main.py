@@ -70,13 +70,13 @@ async def run_sequence() -> None:
         )
 
         determine_repeated_caller_step.on_event("IsRepeatedCall").send_event_to(
-            determine_cause_step, function_name="determine_cause", parameter_name="result"
+            determine_cause_step, function_name="determine_cause", parameter_name="state"
         )
 
         determine_repeated_caller_step.on_event("IsNotRepeatedCall").send_event_to(exit_step)
 
         determine_cause_step.on_event("CauseDetermined").send_event_to(
-            determine_customer_advice_step, function_name="get_advice", parameter_name="cause_result"
+            determine_customer_advice_step, function_name="get_advice", parameter_name="state"
         )
 
         determine_cause_step.on_event("NotCauseDetermined").send_event_to(exit_step)

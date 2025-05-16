@@ -1,7 +1,6 @@
 """DetermineRepeatedCaller step for the process framework."""
 import json
 
-from entities.structured_output import RepeatedCallResult
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
 from semantic_kernel.connectors.ai.open_ai import AzureChatPromptExecutionSettings
@@ -10,6 +9,7 @@ from semantic_kernel.functions import kernel_function
 from semantic_kernel.processes.kernel_process import KernelProcessStep, KernelProcessStepContext
 
 from repeated_calls.orchestrator.entities.state import State
+from repeated_calls.orchestrator.entities.structured_output import RepeatedCallResult
 from repeated_calls.prompt_engineering.prompts import RepeatCallerPrompt
 from repeated_calls.utils.loggers import Logger
 
@@ -52,12 +52,6 @@ class DetermineRepeatedCallerStep(KernelProcessStep):
                 await context.emit_event("IsNotRepeatedCall")
                 return
 
-            # Log prompt details #TODO: Remove this later
-            system_prompt = prompt.get_system_prompt()
-            user_prompt = prompt.get_user_prompt()
-            print("--- SYSTEM PROMPT ----:\n %s", system_prompt)
-            print("--- USER PROMPT ---:\n %s", user_prompt)
-
             # Prepare the chat interaction
             chat_history = ChatHistory()
             chat_history.add_system_message(prompt.get_system_prompt())
@@ -71,6 +65,7 @@ class DetermineRepeatedCallerStep(KernelProcessStep):
                 chat_history=chat_history,
                 settings=execution_settings,
             )
+            print("--- DetermineRepeatedCallerStep --- AI response ---:", response.content, sep="\n")
 
             logger.debug("Received AI response: %s", response.content)
 
@@ -80,19 +75,21 @@ class DetermineRepeatedCallerStep(KernelProcessStep):
             # Safely extract customer ID
             customer_id = getattr(state.customer, "id", 0)
 
-            result = RepeatedCallResult(
+            result = RepeatedCallResult(  # TODO: initialise more pretty
                 customer_id=customer_id,
                 analysis=formatted_response.get("analysis", ""),
                 conclusion=formatted_response.get("conclusion", ""),
                 is_repeated_call=formatted_response.get("is_repeated_call", False),
             )
-
             logger.info("Parsed RepeatedCallResult: %s", result)
+
+            # Update the state with the result
+            state.update(result)
 
             # Emit appropriate event
             if result.is_repeated_call:
                 logger.info("Call identified as repeat call.")
-                await context.emit_event("IsRepeatedCall", data=result)
+                await context.emit_event("IsRepeatedCall", data=state)
             else:
                 logger.info("Call identified as not repeat call.")
                 await context.emit_event("IsNotRepeatedCall")
