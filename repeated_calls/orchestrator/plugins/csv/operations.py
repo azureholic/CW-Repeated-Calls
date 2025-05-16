@@ -19,15 +19,20 @@ class OperationsDataPlugin:
         self.software_updates = SoftwareUpdate.from_csv(f"{data_path}/software_update.csv")
 
     @kernel_function
-    def get_software_update(self, product_id: str) -> Annotated[str, "Software update of the product."]:
-        """Retrieve a JSON string of the software update of the product."""
-        # Find customer's software update using the enhanced class method
-        for software_update in self.software_updates:
-            if software_update.product_id == product_id:
-                return json.dumps(software_update.model_dump(mode="json"))
+    def get_software_updates(self, product_id: str) -> Annotated[str, "Software updates of the product."]:
+        """Retrieve a JSON string of all software updates of the product."""
+        # Find all software updates for the given product ID
+        updates = [
+            software_update.model_dump(mode="json")
+            for software_update in self.software_updates
+            if software_update.product_id == product_id
+        ]
 
-        logger.warning(f"Warning: No software update found for product {product_id}")
-        return "No software update found"
+        if updates:
+            return json.dumps(updates)
+
+        logger.warning(f"Warning: No software updates found for product {product_id}")
+        return "No software updates found"
 
     # Extra dummy function, always returns "No outages found"
     @kernel_function
