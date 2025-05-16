@@ -18,13 +18,6 @@ from repeated_calls.utils.loggers import Logger
 logger = Logger()
 
 
-# class CauseDetermination(BaseModel):
-#     """Determination of whether a customer complaint is relevant."""
-
-#     is_relevant: bool = Field(..., description="Whether the company is at fault and a fix is needed.")
-#     explanation: str = Field(..., description="Explanation of the relevancy determination.")
-
-
 class DetermineCauseStep(KernelProcessStep):
     """Step for determining the cause of a product issue.
 
