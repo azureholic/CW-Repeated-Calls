@@ -39,12 +39,12 @@ class DetermineRepeatedCallStep(KernelProcessStep):
 
         # Get customer data and historic calls manually
         func = kernel.get_function("CustomerDataPlugin", "get_customer_historic_call_events")
-        historic_events = await func.invoke(kernel, KernelArguments(customer_id=state.customer_id))
+        historic_events = await func.invoke(kernel, KernelArguments(customer_id=state.call_event.customer_id))
         historic_events = json.loads(historic_events.value)
         historic_events = [HistoricCallEvent(**event) for event in historic_events]
 
         func = kernel.get_function("CustomerDataPlugin", "get_customer_details")
-        customer = await func.invoke(kernel, KernelArguments(customer_id=state.customer_id))
+        customer = await func.invoke(kernel, KernelArguments(customer_id=state.call_event.customer_id))
         customer = json.loads(customer.value)
         customer = Customer(**customer)
 
