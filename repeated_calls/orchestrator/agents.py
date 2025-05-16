@@ -7,7 +7,7 @@ from semantic_kernel.connectors.ai.open_ai import AzureChatPromptExecutionSettin
 from semantic_kernel.functions import KernelArguments
 
 
-def cause_agent(kernel: Kernel) -> ChatCompletionAgent:
+def cause_agent(kernel: Kernel, instructions: str) -> ChatCompletionAgent:
     """Agent for determining the cause of a product issue."""
     # Define temperature and which functions the agent can use
     settings = AzureChatPromptExecutionSettings(
@@ -20,7 +20,7 @@ def cause_agent(kernel: Kernel) -> ChatCompletionAgent:
 
     # Create and configure the agent
     agent = ChatCompletionAgent(
-        instructions="Your job is to determine the cause of a product issue.",
+        instructions=instructions,
         kernel=kernel,
         arguments=KernelArguments(settings=settings),
         plugins=None,

@@ -32,16 +32,9 @@ class DetermineCauseStep(KernelProcessStep):
         kernel: Kernel,
     ) -> None:
         """Process function to determine the cause of a product issue."""
-        # Check if incoming_message is already the correct type
-        # this code below is to 'fix' semantic_kernel.exceptions.kernel_exceptions.KernelException:
-        # The function get_call_event on step GetCustomerDataStep has more than one parameter, so a
-        # parameter name must be provided.
-
         prompts = CausePrompt(state)
-        # logger.debug(f"System prompt:\n{prompts.get_system_prompt()}")
-        # logger.debug(f"User prompt:\n{prompts.get_user_prompt()}")
 
-        agent = cause_agent(kernel=kernel)
+        agent = cause_agent(kernel=kernel, instructions=prompts.get_system_prompt())
 
         response = await agent.get_response(
             messages=prompts.get_user_prompt(),
