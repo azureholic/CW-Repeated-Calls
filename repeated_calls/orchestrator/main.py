@@ -16,6 +16,7 @@ from steps.determine_repeated_caller_step import DetermineRepeatedCallerStep
 from steps.exit_step import ExitStep
 from steps.get_customer_data_step import GetCustomerDataStep
 
+from repeated_calls.orchestrator.plugins.csv.customer import CustomerDataPlugin
 from repeated_calls.orchestrator.settings import AzureOpenAISettings
 from repeated_calls.utils.loggers import Logger
 
@@ -40,6 +41,8 @@ async def run_sequence() -> None:
             )
         )
 
+        kernel.add_plugin(CustomerDataPlugin("data"))
+
         incoming_message = IncomingMessage(
             customer_id=7,
             message="My self-driving mower isn't working since this morning",
@@ -52,8 +55,8 @@ async def run_sequence() -> None:
 
         get_customer_context_step = process_builder.add_step(GetCustomerDataStep)
         determine_repeated_caller_step = process_builder.add_step(DetermineRepeatedCallerStep)
-        determine_cause_step = process_builder.add_step(DetermineCauseStep)
-        determine_customer_advice_step = process_builder.add_step(DetermineCustomerAdviceStep)
+        process_builder.add_step(DetermineCauseStep)
+        process_builder.add_step(DetermineCustomerAdviceStep)
         exit_step = process_builder.add_step(ExitStep)
 
         logger.debug("Linking events between steps...")
@@ -64,20 +67,22 @@ async def run_sequence() -> None:
             determine_repeated_caller_step, function_name="repeated_call", parameter_name="callstate"
         )
 
-        determine_repeated_caller_step.on_event("IsRepeatedCall").send_event_to(
-            determine_cause_step, function_name="determine_cause", parameter_name="result"
-        )
+        determine_repeated_caller_step.on_event("Exit").send_event_to(exit_step)
 
-        determine_repeated_caller_step.on_event("IsNotRepeatedCall").send_event_to(exit_step)
+        # determine_repeated_caller_step.on_event("IsRepeatedCall").send_event_to(
+        #     determine_cause_step, function_name="determine_cause", parameter_name="result"
+        # )
 
-        determine_cause_step.on_event("CauseDetermined").send_event_to(
-            determine_customer_advice_step, function_name="get_advice", parameter_name="cause_result"
-        )
+        # determine_repeated_caller_step.on_event("IsNotRepeatedCall").send_event_to(exit_step)
 
-        determine_cause_step.on_event("NotCauseDetermined").send_event_to(exit_step)
+        # determine_cause_step.on_event("CauseDetermined").send_event_to(
+        #     determine_customer_advice_step, function_name="get_advice", parameter_name="cause_result"
+        # )
 
-        determine_customer_advice_step.on_event("AdviceProvided").send_event_to(exit_step)
-        determine_customer_advice_step.on_event("NotAdviceProvided").send_event_to(exit_step)
+        # determine_cause_step.on_event("NotCauseDetermined").send_event_to(exit_step)
+
+        # determine_customer_advice_step.on_event("AdviceProvided").send_event_to(exit_step)
+        # determine_customer_advice_step.on_event("NotAdviceProvided").send_event_to(exit_step)
 
         logger.debug("Building final process...")
         process = process_builder.build()
