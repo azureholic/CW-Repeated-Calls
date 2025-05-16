@@ -117,3 +117,16 @@ class CausePrompt(_PromptTemplatePair):
         self.update_user_variables(
             call_event=state.call_event,
         )
+
+
+class RecommendationPrompt(_PromptTemplatePair):
+    """Prompt class for generating personalized discount recommendations, managing both system and user prompts."""
+
+    def __init__(self, state: State) -> None:
+        """Initialise the RecommendationPrompt with specific templates."""
+        super().__init__(user_template_name="recommendation_user.j2", system_template_name="recommendation_system.j2")
+
+        self.update_user_variables(
+            call_event=state.call_event,
+            cause_result=state.cause_result,
+        )
