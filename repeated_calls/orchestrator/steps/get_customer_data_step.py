@@ -1,5 +1,4 @@
 """GetCustomerData step for the process framework."""
-from datetime import datetime
 
 from entities.database import CallEvent, Customer, HistoricCallEvent
 from entities.states import IncomingMessage, RepeatedCallState
@@ -12,11 +11,6 @@ class GetCustomerDataStep(KernelProcessStep):
 
     Uses the enhanced database objects with static data loading.
     """
-
-    def __init__(self):
-        """Initialise the GetCustomerDataStep."""
-        super().__init__()
-        self._state = RepeatedCallState()
 
     @kernel_function
     async def get_call_event(self, incoming_message, context: KernelProcessStepContext) -> None:
@@ -37,11 +31,11 @@ class GetCustomerDataStep(KernelProcessStep):
                 incoming_message = IncomingMessage(
                     customer_id=incoming_message.customer_id,
                     message=incoming_message.message,
-                    timestamp=incoming_message.timestamp
+                    timestamp=incoming_message.timestamp,
                 )
             except Exception as e:
                 raise TypeError(f"Cannot convert input to IncomingMessage: {str(e)}")
-            
+
         customer_id = incoming_message.customer_id
 
         # Find customer's call event using the enhanced class method

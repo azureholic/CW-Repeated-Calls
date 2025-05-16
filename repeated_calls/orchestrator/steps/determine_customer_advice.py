@@ -2,7 +2,6 @@
 import json
 
 from entities.database import Customer, Discount
-from entities.states import RepeatedCallState
 from entities.structured_output import OfferResult
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
@@ -16,11 +15,6 @@ from repeated_calls.prompt_engineering.prompts import RecommendationPrompt
 
 class DetermineCustomerAdviceStep(KernelProcessStep):
     """Step to determine customer value and advice based on the call event."""
-
-    def __init__(self):
-        """Initialise the DetermineCustomerAdviceStep."""
-        super().__init__()
-        self._state = RepeatedCallState()
 
     @kernel_function
     async def get_advice(self, cause_result, kernel: Kernel, context: KernelProcessStepContext) -> None:
