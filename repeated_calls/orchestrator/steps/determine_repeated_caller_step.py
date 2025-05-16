@@ -1,7 +1,7 @@
 """DetermineRepeatedCaller step for the process framework."""
 
-from typing import Annotated
 import json
+from typing import Annotated
 
 from entities.structured_output import RepeatedCallResult
 from semantic_kernel import Kernel
