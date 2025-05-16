@@ -1,6 +1,7 @@
-Customer ID: {{ cause_result.customer_id }}
+# CUSTOMER
+Customer ID: {{ call_event.customer_id }}
+Call reason: {{ call_event.sdc }}
+
+# ANALYSIS
 Product ID: {{ cause_result.product_id }}
-{# TODO: The information below should not be included in the user prompt, but should be retrieved from tool-calling by the agent. #}
-CLV Value: {{ customer_clv }}
-Discount: {{ matching_discount.discount_percentage }}%
-Duration: {{ matching_discount.discount_duration_months }} months
+Issue description: {{ cause_result.analysis }}
