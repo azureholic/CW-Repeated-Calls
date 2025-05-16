@@ -46,10 +46,10 @@ class OperationsDataPlugin:
 
 if __name__ == "__main__":
     # Example usage: test get_software_updates for product_id '101'
-    # Dynamically set the data path based on the current working directory
     cwd = os.getcwd()
     data_path = os.path.join(cwd, "data")
     plugin = OperationsDataPlugin(data_path)
     product_id = 101
+    customer_id = 92
     result = plugin.get_software_updates(product_id)
-    print("Software updates for product {product_id}:", result)
+    print(f"Software updates for product {product_id}:", result)
