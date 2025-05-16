@@ -1,18 +1,21 @@
-## Customer ID: {{ result.customer_id }}
+## Customer Information
+ID: {{ customer.id }}
+Name: {{ customer.name }}
+Customer Lifetime Value: {{ customer.clv }}
+Customer Since: {{ customer.relation_start_date }}
 
-{% if result.conclusion %}
-## Conclusion
-{{ conclusion }}
+## Current Call Details
+Call Description: {{ call_description }}
+Timestamp: {{ call_timestamp }}
 
-{% endif %}
-{% if customer_relevant_updates and customer_products %}
-## Software updates relevant for issue
-{% for update in customer_relevant_updates %}
-Product ID: {{ update.product_id }}
-Update ID: {{ update.id }}
-Update Type: {{ update.type }}
-Update Timestamp: {{ update.rollout_date }}
+## Analysis of whether the current call is a repeated call
+{{ result.analysis }}
 
-{% endfor %}
-{% endif %}
-Based on this information, is the current call a repeated call about the same issue and is it due because of software updates?
+## Conclusion of whether the current call is a repeated call
+{{ result.conclusion }}
+
+## Your task
+Determine if one of our systems could be the cause of issue that this repeat call is assumed to be about.
+Use the tools available to you to retrieve information about the products and services that the customer has, and any operational issues that may be affecting them.
+
+Based on that information, return output in the desired format.

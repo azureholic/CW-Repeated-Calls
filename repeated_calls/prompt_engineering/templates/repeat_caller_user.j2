@@ -5,9 +5,8 @@ Customer Lifetime Value: {{ customer.clv }}
 Customer Since: {{ customer.relation_start_date }}
 
 ## Current Call Details
-Call ID: {{ call_event.id }}
-Call Description: {{ call_event.sdc }}
-Timestamp: {{ call_event.timestamp }}
+Call Description: {{ call_description }}
+Timestamp: {{ call_timestamp }}
 
 {% if call_history %}
 ## Previous Call History
