@@ -17,6 +17,7 @@ def cause_agent(kernel: Kernel, instructions: str) -> ChatCompletionAgent:
             filters={"included_plugins": ["CustomerDataPlugin", "OperationsDataPlugin"]},
         ),
         temperature=0.0,
+        seed=1337,
     )
 
     # Create and configure the agent
@@ -48,6 +49,7 @@ def offer_agent(kernel: Kernel, draft_instructions: str, reviewer_instructions: 
                     filters={"included_plugins": ["CustomerDataPlugin"]},
                 ),
                 temperature=0.0,
+                seed=1337,
             )
         ),
     )
@@ -63,6 +65,7 @@ def offer_agent(kernel: Kernel, draft_instructions: str, reviewer_instructions: 
                     filters={"included_plugins": ["CustomerDataPlugin"]},
                 ),
                 temperature=0.0,
+                seed=1337,
             )
         ),
     )
