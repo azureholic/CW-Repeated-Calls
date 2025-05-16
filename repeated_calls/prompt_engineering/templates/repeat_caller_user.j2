@@ -5,19 +5,18 @@ Customer Lifetime Value: {{ customer.clv }}
 Customer Since: {{ customer.relation_start_date_str }}
 
 ## Current Call Details
-Call ID: {{ call_event.id }}
-Call Description: {{ call_event.sdc }}
-Timestamp: {{ call_event.timestamp_str }}
+Call Description: {{ call_description }}
+Timestamp: {{ call_timestamp }}
 
 {% if call_history %}
 ## Previous Call History
 {% for call in call_history %}
-### Call on {{ call.start_time_str }}
+### Call on {{ call.start_time }}
 Description: {{ call.sdc }}
 Summary: {{ call.call_summary }}
 Duration: {{ call.duration_minutes }} minutes
-Start: {{ call.start_time_str }}
-End: {{ call.end_time_str }}
+Start: {{ call.start_time }}
+End: {{ call.end_time }}
 Time since this call: {{ call.days_since }} days and {{ call.remaining_hours_since }} hours
 {% endfor %}
 {% endif %}

@@ -9,6 +9,7 @@ from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.functions import kernel_function
 from semantic_kernel.processes.kernel_process import KernelProcessStep, KernelProcessStepContext
 
+from repeated_calls.orchestrator.entities.state import State
 from repeated_calls.prompt_engineering.prompts import RepeatCallerPrompt
 from repeated_calls.utils.loggers import Logger
 
@@ -27,7 +28,7 @@ class DetermineRepeatedCallerStep(KernelProcessStep):
         self,
         context: KernelProcessStepContext,
         kernel: Kernel,
-        callstate,
+        state: State,
     ) -> None:
         """
         Determine if the given call is a repeated issue based on customer state.
@@ -41,7 +42,7 @@ class DetermineRepeatedCallerStep(KernelProcessStep):
 
         try:
             # Construct the prompt from call state
-            prompt = RepeatCallerPrompt(callstate)
+            prompt = RepeatCallerPrompt(state)
             logger.debug("Constructed RepeatCallerPrompt.")
 
             # Retrieve a compatible AI chat completion service
@@ -50,6 +51,12 @@ class DetermineRepeatedCallerStep(KernelProcessStep):
                 logger.error("Invalid AI service type.")
                 await context.emit_event("IsNotRepeatedCall")
                 return
+
+            # Log prompt details #TODO: Remove this later
+            system_prompt = prompt.get_system_prompt()
+            user_prompt = prompt.get_user_prompt()
+            print("--- SYSTEM PROMPT ----:\n %s", system_prompt)
+            print("--- USER PROMPT ---:\n %s", user_prompt)
 
             # Prepare the chat interaction
             chat_history = ChatHistory()
@@ -71,7 +78,7 @@ class DetermineRepeatedCallerStep(KernelProcessStep):
             formatted_response = json.loads(response.content)
 
             # Safely extract customer ID
-            customer_id = getattr(callstate.customer, "id", 0)
+            customer_id = getattr(state.customer, "id", 0)
 
             result = RepeatedCallResult(
                 customer_id=customer_id,

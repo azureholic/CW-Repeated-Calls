@@ -1,9 +1,12 @@
 """Entity classes for representing database models."""
 import csv
 import os
-from dataclasses import dataclass, field
+from dataclasses import asdict, dataclass, field
 from datetime import datetime
 from typing import ClassVar, List, Optional, Type, TypeVar
+
+from repeated_calls.database.schemas import Customer as CustomerSchema
+from repeated_calls.database.schemas import HistoricCallEvent as HistoricCallEventSchema
 
 # Base directory for data files
 DATA_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..", "data"))
@@ -77,7 +80,8 @@ class Customer:
         """Get all customer instances, loading from CSV if not already loaded."""
         if not cls._loaded:
             cls.load_from_csv()
-        return cls._all_customers
+
+        return [CustomerSchema(**asdict(customer)) for customer in cls._all_customers]
 
     @classmethod
     def load_from_csv(cls, csv_path: str = None) -> None:
@@ -109,7 +113,9 @@ class Customer:
         """Find a customer by ID."""
         for customer in cls.get_all():
             if customer.id == customer_id:
+                assert isinstance(customer, CustomerSchema), "Expected a schemas.Customer instance"
                 return customer
+
         return None
 
 
@@ -245,7 +251,7 @@ class HistoricCallEvent:
     @classmethod
     def find_by_customer_id(cls, customer_id: int) -> List["HistoricCallEvent"]:
         """Find historic call events for a specific customer."""
-        return [event for event in cls.get_all() if event.customer_id == customer_id]
+        return [HistoricCallEventSchema(**asdict(event)) for event in cls.get_all() if event.customer_id == customer_id]
 
 
 @dataclass
