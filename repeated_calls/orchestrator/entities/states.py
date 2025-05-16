@@ -24,3 +24,11 @@ class RepeatedCallState:
     call_event: Optional[CallEvent] = None
     call_history: List[HistoricCallEvent] = field(default_factory=list)
     is_repeated_call: bool = False
+
+
+@dataclass
+class State:
+    """State class to hold the current state of the process."""
+
+    is_repeated_call: bool
+    explanation: str
