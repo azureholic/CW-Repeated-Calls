@@ -21,8 +21,8 @@ from typing import Any
 
 from jinja2 import Environment, FileSystemLoader
 
+from repeated_calls.database.schemas import CallEvent, Customer, HistoricCallEvent
 from repeated_calls.orchestrator.entities.database import Discount, SoftwareUpdate, Subscription
-from repeated_calls.orchestrator.entities.states import RepeatedCallState
 from repeated_calls.orchestrator.entities.structured_output import CauseResult, RepeatedCallResult
 
 
@@ -94,17 +94,22 @@ class _PromptTemplatePair(ABC):
 class RepeatCallerPrompt(_PromptTemplatePair):
     """Prompt class for determining repeated calls, managing both system and user prompts."""
 
-    def __init__(self, callstate: RepeatedCallState) -> None:
+    def __init__(
+        self,
+        customer: Customer,
+        call_event: CallEvent,
+        historic_calls: list[HistoricCallEvent],
+    ) -> None:
         """Initialise the RepeatCallerPrompt with specific templates."""
         super().__init__(user_template_name="repeat_caller_user.j2", system_template_name="repeat_caller_system.j2")
 
-        for call in callstate.call_history:
-            call.compute_time_since(callstate.call_event.timestamp)
+        for call in historic_calls:
+            call.compute_time_since(call_event.timestamp)
 
         self.update_user_variables(
-            customer=callstate.customer,
-            call_event=callstate.call_event,
-            call_history=sorted(callstate.call_history, key=lambda h: h.start_time, reverse=True),
+            customer=customer,
+            call_event=call_event,
+            call_history=sorted(historic_calls, key=lambda h: h.start_time, reverse=True),
         )
 
 
