@@ -3,7 +3,7 @@
 import csv
 from datetime import date, datetime
 
-from pydantic import BaseModel, Field, computed_field
+from pydantic import BaseModel, ConfigDict, Field, computed_field
 
 
 class Customer(BaseModel):
@@ -13,6 +13,8 @@ class Customer(BaseModel):
     name: str = Field(..., description="Customer name")
     clv: str = Field(..., description="Customer lifetime value")
     relation_start_date: date = Field(..., description="Customer relation start date")
+
+    model_config = ConfigDict(json_encoders={datetime: lambda v: v.strftime("%Y-%m-%d")})
 
     @staticmethod
     def from_csv(file_path: str) -> list["Customer"]:
@@ -80,6 +82,8 @@ class HistoricCallEvent(BaseModel):
     end_time: datetime = Field(..., description="Call end time")
     days_since: float | None = Field(None, description="Days since the call event")
     remaining_hours_since: float | None = Field(None, description="Remaining hours")
+
+    model_config = ConfigDict(json_encoders={datetime: lambda v: v.strftime("%Y-%m-%d %H:%M:%S")})
 
     @computed_field
     @property

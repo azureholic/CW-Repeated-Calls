@@ -21,9 +21,9 @@ from typing import Any
 
 from jinja2 import Environment, FileSystemLoader
 
-from repeated_calls.orchestrator.entities.database import Discount, SoftwareUpdate, Subscription
-from repeated_calls.orchestrator.entities.states import RepeatedCallState
-from repeated_calls.orchestrator.entities.structured_output import CauseResult, RepeatedCallResult
+from repeated_calls.orchestrator.entities.database import Discount
+from repeated_calls.orchestrator.entities.state import State
+from repeated_calls.orchestrator.entities.structured_output import CauseResult
 
 
 class _PromptTemplate:
@@ -94,36 +94,30 @@ class _PromptTemplatePair(ABC):
 class RepeatCallerPrompt(_PromptTemplatePair):
     """Prompt class for determining repeated calls, managing both system and user prompts."""
 
-    def __init__(self, callstate: RepeatedCallState) -> None:
+    def __init__(self, state: State) -> None:
         """Initialise the RepeatCallerPrompt with specific templates."""
         super().__init__(user_template_name="repeat_caller_user.j2", system_template_name="repeat_caller_system.j2")
 
-        for call in callstate.call_history:
-            call.compute_time_since(callstate.call_event.timestamp)
+        for call in state.call_history:
+            call.compute_time_since(state.call_event.timestamp)
 
         self.update_user_variables(
-            customer=callstate.customer,
-            call_event=callstate.call_event,
-            call_history=sorted(callstate.call_history, key=lambda h: h.start_time, reverse=True),
+            customer=state.customer,
+            call_event=state.call_event,
+            call_timestamp=state.call_event.timestamp.strftime("%Y-%m-%d %H:%M:%S"),
+            call_history=sorted(state.call_history, key=lambda h: h.start_time, reverse=True),
         )
 
 
 class CausePrompt(_PromptTemplatePair):
     """Prompt class for determining the cause of a product issue, managing both system and user prompts."""
 
-    def __init__(
-        self,
-        result: RepeatedCallResult,
-        customer_products: list[Subscription],
-        customer_relevant_updates: list[SoftwareUpdate],
-    ) -> None:
+    def __init__(self, state: State) -> None:
         """Initialise the CausePrompt with specific templates."""
         super().__init__(user_template_name="cause_user.j2", system_template_name="cause_system.j2")
 
         self.update_user_variables(
-            result=result,
-            customer_products=customer_products,
-            customer_relevant_updates=customer_relevant_updates,
+            call_event=state.call_event,
         )
 
 

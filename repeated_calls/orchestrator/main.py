@@ -2,24 +2,45 @@
 
 import argparse
 import asyncio
+import csv
+import os
 from datetime import datetime
+from importlib.resources import files
 
-from entities.states import IncomingMessage
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
 from semantic_kernel.processes import ProcessBuilder
 from semantic_kernel.processes.local_runtime.local_event import KernelProcessEvent
 from semantic_kernel.processes.local_runtime.local_kernel_process import start
-from steps.determine_cause_step import DetermineCauseStep
-from steps.determine_customer_advice import DetermineCustomerAdviceStep
-from steps.determine_repeated_caller_step import DetermineRepeatedCallerStep
+from steps.determine_cause import DetermineCauseStep
+from steps.determine_repeated_call import DetermineRepeatedCallStep
 from steps.exit_step import ExitStep
-from steps.get_customer_data_step import GetCustomerDataStep
 
+from repeated_calls.database.schemas import CallEvent
+from repeated_calls.orchestrator.entities.state import State
+from repeated_calls.orchestrator.plugins.csv.customer import CustomerDataPlugin
+from repeated_calls.orchestrator.plugins.csv.operations import OperationsDataPlugin
 from repeated_calls.orchestrator.settings import AzureOpenAISettings
 from repeated_calls.utils.loggers import Logger
 
 logger = Logger()
+
+
+def get_event() -> CallEvent:
+    """Create a sample CallEvent object."""
+    data_path = os.path.join(os.path.dirname(files("repeated_calls")), "data")
+    csv_path = os.path.join(data_path, "call_event.csv")
+
+    with open(csv_path, "r", newline="") as csvfile:
+        reader = csv.DictReader(csvfile)
+        for row in reader:
+            # Convert the data to appropriate types
+            return CallEvent(
+                id=int(row.get("id", -1)),
+                customer_id=int(row.get("customer_id", -1)),
+                sdc=row.get("sdc", "No description available"),
+                timestamp=datetime.fromisoformat(row.get("timestamp", "1970-01-01 00:00:00")),
+            )
 
 
 async def run_sequence() -> None:
@@ -39,54 +60,43 @@ async def run_sequence() -> None:
                 deployment_name=settings.deployment,
             )
         )
+        kernel.add_plugin(CustomerDataPlugin(data_path="data"), "CustomerDataPlugin")
+        kernel.add_plugin(OperationsDataPlugin(data_path="data"), "OperationsDataPlugin")
 
-        incoming_message = IncomingMessage(
-            customer_id=7,
-            message="My self-driving mower isn't working since this morning",
-            timestamp=datetime.fromisoformat("2024-01-10 10:05:22"),
-        )
-        logger.debug("Incoming message initialized: %s", incoming_message.message)
+        logger.debug("Initialising state...")
+        call_event = get_event()
 
-        logger.debug("Building process steps...")
+        state = State.from_call_event(call_event)
+        logger.debug("State initialized: %s", state)
+
         process_builder = ProcessBuilder("RepeatedCalls")
 
-        get_customer_context_step = process_builder.add_step(GetCustomerDataStep)
-        determine_repeated_caller_step = process_builder.add_step(DetermineRepeatedCallerStep)
-        determine_cause_step = process_builder.add_step(DetermineCauseStep)
-        determine_customer_advice_step = process_builder.add_step(DetermineCustomerAdviceStep)
+        # Add steps
+        determine_repeated_call = process_builder.add_step(DetermineRepeatedCallStep)
+        determine_cause = process_builder.add_step(DetermineCauseStep)
         exit_step = process_builder.add_step(ExitStep)
 
-        logger.debug("Linking events between steps...")
-
-        process_builder.on_input_event("Start").send_event_to(get_customer_context_step, function_name="get_call_event")
-
-        get_customer_context_step.on_event("FetchingContextDone").send_event_to(
-            determine_repeated_caller_step, function_name="repeated_call", parameter_name="callstate"
+        # Orchestrate steps
+        process_builder.on_input_event("Start").send_event_to(
+            determine_repeated_call, function_name="repeated_call", parameter_name="state"
         )
 
-        determine_repeated_caller_step.on_event("IsRepeatedCall").send_event_to(
-            determine_cause_step, function_name="determine_cause", parameter_name="result"
+        determine_repeated_call.on_event("IsRepeatedCall").send_event_to(
+            determine_cause, function_name="cause", parameter_name="state"
         )
+        determine_repeated_call.on_event("IsNotRepeatedCall").send_event_to(exit_step)
 
-        determine_repeated_caller_step.on_event("IsNotRepeatedCall").send_event_to(exit_step)
+        determine_cause.on_event("IsRelevant").send_event_to(exit_step)
+        determine_cause.on_event("IsNotRelevant").send_event_to(exit_step)
 
-        determine_cause_step.on_event("CauseDetermined").send_event_to(
-            determine_customer_advice_step, function_name="get_advice", parameter_name="cause_result"
-        )
-
-        determine_cause_step.on_event("NotCauseDetermined").send_event_to(exit_step)
-
-        determine_customer_advice_step.on_event("AdviceProvided").send_event_to(exit_step)
-        determine_customer_advice_step.on_event("NotAdviceProvided").send_event_to(exit_step)
-
-        logger.debug("Building final process...")
+        # Compile/build
         process = process_builder.build()
 
         logger.info("Starting process execution...")
         await start(
             process=process,
             kernel=kernel,
-            initial_event=KernelProcessEvent(id="Start", data=incoming_message),
+            initial_event=KernelProcessEvent(id="Start", data=state),
         )
 
         logger.info("Process execution completed successfully.")

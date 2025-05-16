@@ -32,7 +32,7 @@ class OperationsDataPlugin:
             return json.dumps(updates)
 
         logger.warning(f"Warning: No software updates found for product {product_id}")
-        return "No software updates found"
+        return f"No software updates found for product ID {product_id}"
 
     # Extra dummy function, always returns "No outages found"
     @kernel_function
@@ -40,4 +40,4 @@ class OperationsDataPlugin:
         self, product_id: int
     ) -> Annotated[str, "Check if there is a current outage known for the product"]:
         """Retrieve a string whether a current outage is known for the product."""
-        return "No outages found"
+        return f"No outages found for product ID {product_id}"

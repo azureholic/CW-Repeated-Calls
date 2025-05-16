@@ -31,7 +31,7 @@ class CustomerDataPlugin:
                 return json.dumps(customer.model_dump(mode="json"))
 
         logger.warning(f"Warning: No customer found with ID {customer_id}")
-        return "No customer found"
+        return f"No customer found with ID {customer_id}"
 
     @kernel_function
     def get_customer_call_event(self, customer_id: int) -> Annotated[str, "Call event of the customer."]:
@@ -42,7 +42,7 @@ class CustomerDataPlugin:
                 return json.dumps(call_event.model_dump(mode="json"))
 
         logger.warning(f"Warning: No call event found for customer ID {customer_id}")
-        return "No call event found"
+        return f"No call event found for customer ID {customer_id}"
 
     @kernel_function
     def get_customer_historic_call_events(self, customer_id: int) -> Annotated[str, "Call events of the customer."]:
@@ -54,7 +54,7 @@ class CustomerDataPlugin:
 
         if not historic_call_events:
             logger.warning(f"Warning: No historic call events found for customer ID {customer_id}")
-            return "No historic call events found"
+            return f"No historic call events found for customer ID {customer_id}"
         else:
             return json.dumps(historic_call_events)
 
@@ -70,7 +70,7 @@ class CustomerDataPlugin:
 
         if not customer_subscriptions:
             logger.warning(f"Warning: No subscriptions found for customer ID {customer_id}")
-            return "No subscriptions found"
+            return f"No subscriptions found for customer ID {customer_id}"
         else:
             return json.dumps(customer_subscriptions)
 
@@ -82,4 +82,4 @@ class CustomerDataPlugin:
             if product.id == product_id:
                 return json.dumps(product.model_dump(mode="json"))
         logger.warning(f"Warning: No product found with ID {product_id}")
-        return "No product found"
+        return f"No product found with ID {product_id}"

@@ -1,18 +1,5 @@
-## Customer ID: {{ result.customer_id }}
-
-{% if result.conclusion %}
-## Conclusion
-{{ conclusion }}
-
-{% endif %}
-{% if customer_relevant_updates and customer_products %}
-## Software updates relevant for issue
-{% for update in customer_relevant_updates %}
-Product ID: {{ update.product_id }}
-Update ID: {{ update.id }}
-Update Type: {{ update.type }}
-Update Timestamp: {{ update.rollout_date }}
-
-{% endfor %}
-{% endif %}
-Based on this information, is the current call a repeated call about the same issue and is it due because of software updates?
+## Customer Information
+Customer ID: {{ call_event.customer_id }}
+Call ID: {{ call_event.id }}
+Reason: {{ call_event.sdc }}
+Call timestamp: {{ call_event.timestamp }}
