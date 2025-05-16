@@ -99,12 +99,12 @@ class RepeatCallerPrompt(_PromptTemplatePair):
         super().__init__(user_template_name="repeat_caller_user.j2", system_template_name="repeat_caller_system.j2")
 
         for call in state.call_history:
-            call.compute_time_since(state.timestamp)
+            call.compute_time_since(state.call_event.timestamp)
 
         self.update_user_variables(
             customer=state.customer,
-            call_description=state.sdc,
-            call_timestamp=state.timestamp.strftime("%Y-%m-%d %H:%M:%S"),
+            call_event=state.call_event,
+            call_timestamp=state.call_event.timestamp.strftime("%Y-%m-%d %H:%M:%S"),
             call_history=sorted(state.call_history, key=lambda h: h.start_time, reverse=True),
         )
 
@@ -117,10 +117,7 @@ class CausePrompt(_PromptTemplatePair):
         super().__init__(user_template_name="cause_user.j2", system_template_name="cause_system.j2")
 
         self.update_user_variables(
-            customer=state.customer,
-            call_description=state.sdc,
-            call_timestamp=state.timestamp.strftime("%Y-%m-%d %H:%M:%S"),
-            result=state.repeated_call_result,
+            call_event=state.call_event,
         )
 
 

@@ -1,21 +1,5 @@
 ## Customer Information
-ID: {{ customer.id }}
-Name: {{ customer.name }}
-Customer Lifetime Value: {{ customer.clv }}
-Customer Since: {{ customer.relation_start_date }}
-
-## Current Call Details
-Call Description: {{ call_description }}
-Timestamp: {{ call_timestamp }}
-
-## Analysis of whether the current call is a repeated call
-{{ result.analysis }}
-
-## Conclusion of whether the current call is a repeated call
-{{ result.conclusion }}
-
-## Your task
-Determine if one of our systems could be the cause of issue that this repeat call is assumed to be about.
-Use the tools available to you to retrieve information about the products and services that the customer has, and any operational issues that may be affecting them.
-
-Based on that information, return output in the desired format.
+Customer ID: {{ call_event.customer_id }}
+Call ID: {{ call_event.id }}
+Reason: {{ call_event.sdc }}
+Call timestamp: {{ call_event.timestamp }}

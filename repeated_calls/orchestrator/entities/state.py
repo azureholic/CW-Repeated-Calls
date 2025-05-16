@@ -13,9 +13,7 @@ logger = Logger()
 class State(BaseModel):
     """State class for the flow."""
 
-    customer_id: int
-    sdc: str
-    timestamp: datetime
+    call_event: CallEvent
     customer: Customer | None = Field(default=None)
     call_history: list[HistoricCallEvent] = Field(default_factory=list)
     repeated_call_result: RepeatedCallResult | None = Field(default=None)
@@ -28,9 +26,7 @@ class State(BaseModel):
     def from_call_event(cls, call_event: CallEvent) -> "State":
         """Create a State instance from a CallEvent object."""
         return cls(
-            customer_id=call_event.customer_id,
-            sdc=call_event.sdc,
-            timestamp=call_event.timestamp,
+            call_event=call_event,
         )
 
     def update(self, *args) -> None:
