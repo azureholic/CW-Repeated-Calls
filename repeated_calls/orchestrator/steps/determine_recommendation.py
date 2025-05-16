@@ -36,7 +36,7 @@ class DetermineRecommendationStep(KernelProcessStep):
         )
 
         await chat.add_chat_message(
-            message=f"Customer ID: {state.call_event.customer_id}\nReason: {state.cause_result.analysis}"
+            message=prompts.get_user_prompt(),
         )
 
         async for content in chat.invoke():
