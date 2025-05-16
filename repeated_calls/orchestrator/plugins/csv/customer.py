@@ -1,7 +1,6 @@
 """Plugins for the customer domain based on CSV files."""
 
 import json
-import os
 from typing import Annotated
 
 from semantic_kernel.functions import kernel_function
@@ -84,18 +83,3 @@ class CustomerDataPlugin:
                 return json.dumps(product.model_dump(mode="json"))
         logger.warning(f"Warning: No product found with ID {product_id}")
         return "No product found"
-
-
-if __name__ == "__main__":
-    # Example usage: test get_software_updates for product_id '101'
-    cwd = os.getcwd()
-    data_path = os.path.join(cwd, "data")
-    plugin = CustomerDataPlugin(data_path)
-    product_id = 108
-    customer_id = 92
-    result = plugin.get_customer_historic_call_events(customer_id)
-    print(f"Customer details for customer {customer_id}:", plugin.get_customer_details(customer_id))
-    print(f"Call event for customer {customer_id}:", plugin.get_customer_call_event(customer_id))
-    print(f"Subscriptions for customer {customer_id}:", plugin.get_customer_subscriptions(customer_id))
-    print(f"Historic call events for customer {customer_id}:", result)
-    print(f"Product details for product {product_id}:", plugin.get_product_details(product_id))

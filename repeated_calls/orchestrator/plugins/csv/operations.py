@@ -1,7 +1,6 @@
 """Plugins for the customer domain based on CSV files."""
 
 import json
-import os
 from typing import Annotated
 
 from semantic_kernel.functions import kernel_function
@@ -42,14 +41,3 @@ class OperationsDataPlugin:
     ) -> Annotated[str, "Check if there is a current outage known for the product"]:
         """Retrieve a string whether a current outage is known for the product."""
         return "No outages found"
-
-
-if __name__ == "__main__":
-    # Example usage: test get_software_updates for product_id '101'
-    cwd = os.getcwd()
-    data_path = os.path.join(cwd, "data")
-    plugin = OperationsDataPlugin(data_path)
-    product_id = 101
-    customer_id = 92
-    result = plugin.get_software_updates(product_id)
-    print(f"Software updates for product {product_id}:", result)
