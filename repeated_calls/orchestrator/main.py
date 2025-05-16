@@ -13,6 +13,7 @@ from semantic_kernel.processes import ProcessBuilder
 from semantic_kernel.processes.local_runtime.local_event import KernelProcessEvent
 from semantic_kernel.processes.local_runtime.local_kernel_process import start
 from steps.determine_cause import DetermineCauseStep
+from steps.determine_offer import DetermineOfferStep
 from steps.determine_repeated_call import DetermineRepeatedCallStep
 from steps.exit_step import ExitStep
 
@@ -74,6 +75,7 @@ async def run_sequence() -> None:
         # Add steps
         determine_repeated_call = process_builder.add_step(DetermineRepeatedCallStep)
         determine_cause = process_builder.add_step(DetermineCauseStep)
+        determine_offer = process_builder.add_step(DetermineOfferStep)
         exit_step = process_builder.add_step(ExitStep)
 
         # Orchestrate steps
@@ -86,8 +88,12 @@ async def run_sequence() -> None:
         )
         determine_repeated_call.on_event("IsNotRepeatedCall").send_event_to(exit_step)
 
-        determine_cause.on_event("IsRelevant").send_event_to(exit_step)
+        determine_cause.on_event("IsRelevant").send_event_to(
+            determine_offer, function_name="offer", parameter_name="state"
+        )
         determine_cause.on_event("IsNotRelevant").send_event_to(exit_step)
+
+        determine_offer.on_event("Exit").send_event_to(exit_step)
 
         # Compile/build
         process = process_builder.build()
