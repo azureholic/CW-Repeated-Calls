@@ -91,8 +91,11 @@ if __name__ == "__main__":
     cwd = os.getcwd()
     data_path = os.path.join(cwd, "data")
     plugin = CustomerDataPlugin(data_path)
-    product_id = 101
+    product_id = 108
     customer_id = 92
     result = plugin.get_customer_historic_call_events(customer_id)
+    print(f"Customer details for customer {customer_id}:", plugin.get_customer_details(customer_id))
+    print(f"Call event for customer {customer_id}:", plugin.get_customer_call_event(customer_id))
+    print(f"Subscriptions for customer {customer_id}:", plugin.get_customer_subscriptions(customer_id))
     print(f"Historic call events for customer {customer_id}:", result)
     print(f"Product details for product {product_id}:", plugin.get_product_details(product_id))
