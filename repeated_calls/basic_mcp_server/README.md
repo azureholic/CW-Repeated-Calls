@@ -36,10 +36,10 @@ basic_mcp_server/
     poetry install
     ```
 
-2. **Set up environment variables**  
+2. **Set up environment variables**
    Define the environment variables `PGHOST`, `PGUSER`, `PGPASSWORD`, `PGDATABASE`, and optionally `PGPORT`, either as environment variables or in a `.env` file in project root.
 
-3. **Run the server:**
+3. **Run the server:** (from project root):
     ```bash
     python repeated_calls/basic_mcp_server/mcp_server.py --host 0.0.0.0 --port 8000
     ```
@@ -47,17 +47,43 @@ basic_mcp_server/
 ---
 
 ## Dockerization
-
 To build and run the MCP server with Docker:
 
-1. Create a `Dockerfile-mcp-server` in project root folder.
+1. Set the following variables in your terminal (update values as needed):
+    ```bash
+    export ACR_NAME="acrcodewithdev"
+    export ACR_LOGIN_SERVER="${ACR_NAME}.azurecr.io"
+    export IMAGE_NAME="mcp-server"
+    export IMAGE_TAG="latest"
+    ```
+
+    > **Note:** The value `acrcodewithdev` refers to an existing Azure Container Registry (ACR) in Azure environment.
+    > You can replace this value with your own Azure Container Registry name if needed.
+    > Make sure you have access to this ACR before pushing images.
+
 2. Build the Docker image from project root folder:
     ```bash
-    docker build -f Dockerfile-mcp-server -t mcp-server:latest .
+    docker build -f Dockerfile-mcp-server -t ${IMAGE_NAME}:${IMAGE_TAG} .
     ```
 3. Run the container:
     ```bash
-    docker run -p 8000:8000 --env-file .env mcp-server:latest
+    docker run -p 8000:8000 --env-file .env ${IMAGE_NAME}:${IMAGE_TAG}
+    ```
+4. Tag your image for ACR:
+    ```bash
+    docker tag mcp-server:latest ${ACR_LOGIN_SERVER}/${IMAGE_NAME}:${IMAGE_TAG}
+    ```
+5. Login to Azure environment
+    ```bash
+    az login
+    ```
+6. Login to Azure ACR environment
+    ```bash
+    az acr login --name ${ACR_NAME}
+    ```
+7. Push the image to ACR:
+    ```bash
+    docker push ${ACR_LOGIN_SERVER}/${IMAGE_NAME}:${IMAGE_TAG}
     ```
 
 ---
@@ -68,6 +94,58 @@ You can use `test_server.py` to run sanity checks against your running MCP serve
 
 ```bash
 python repeated_calls/basic_mcp_server/test_server.py --host localhost:8000 --customer 7 --product 101
+```
+
+---
+
+## Deploying to Azure Container Apps
+
+After pushing your Docker image to Azure Container Registry (ACR), you can deploy it to Azure Container Apps using the Azure CLI.
+
+### 1. Set Deployment Variables
+
+Set the following variables in your terminal (update values as needed):
+
+```bash
+export CONTAINERAPP_NAME="ca-mcp-server-codewith-dev"
+export RESOURCE_GROUP="genai-codewith-dev"
+export ENVIRONMENT_ID="[REPLACE_WITH_CONTAINER_APP_ENV_RESOURCE_ID]"
+export ACR_NAME="acrcodewithdev"
+export ACR_LOGIN_SERVER="${ACR_NAME}.azurecr.io"
+export IMAGE_NAME="mcp-server"
+export IMAGE_TAG="latest"
+export PGHOST="psql-codewith-dev.postgres.database.azure.com"
+export PGUSER="codewith_admin"
+export PGPASSWORD="[REPLACE_WITH_DB_PASSWORD]"
+export PGDATABASE="default"
+export PGPORT="5432"
+export USER_ASSIGNED_IDENTITY="micodewithdev"
+```
+
+> **Note:**
+> - Replace [REPLACE_WITH_CONTAINER_APP_ENV_RESOURCE_ID] and [REPLACE_WITH_DB_PASSWORD] with your actual values.
+> - The value micodewithdev refers to an existing user-assigned managed identity in your Azure environment.
+> - This identity must already exist and must have "AcrPull" role assignment on your Azure Container Registry (acrcodewithdev).
+> - Make sure all referenced Azure resources (ACR, resource group, environment, identity) already exist.
+> - You must be logged in to Azure CLI and have the necessary permissions.
+
+### 2. Create the Azure Container App
+
+Run the following command to create your container app:
+
+```bash
+az login
+az acr login --name ${ACR_NAME}
+az containerapp create \
+  --name ${CONTAINERAPP_NAME} \
+  --resource-group ${RESOURCE_GROUP} \
+  --environment ${ENVIRONMENT_ID} \
+  --image ${ACR_LOGIN_SERVER}/${IMAGE_NAME}:${IMAGE_TAG} \
+  --cpu 1 --memory 2.0Gi \
+  --ingress external --target-port 8000 \
+  --registry-server ${ACR_LOGIN_SERVER} \
+  --env-vars PGHOST="${PGHOST}" PGUSER="${PGUSER}" PGPASSWORD="${PGPASSWORD}" PGDATABASE="${PGDATABASE}" PGPORT="${PGPORT}" \
+  --user-assigned ${USER_ASSIGNED_IDENTITY}
 ```
 
 ---
