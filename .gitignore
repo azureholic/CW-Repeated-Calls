@@ -406,3 +406,6 @@ FodyWeavers.xsd
 
 # Environment variable files
 .env
+connection-string-servicebus.env
+
+

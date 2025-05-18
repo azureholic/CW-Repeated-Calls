@@ -25,6 +25,9 @@ jinja2 = "3.1.6"
 streamlit = "^1.45.0"
 polars = "^1.29.0"
 jupytext = "^1.17.1"
+azure-servicebus = "^7.14.2"
+azure-identity = "^1.23.0"
+aiohttp = "^3.11.18"
 
 [tool.poetry.group.dev.dependencies]
 jupyter = "^1.1.1"
