@@ -408,4 +408,5 @@ FodyWeavers.xsd
 .env
 connection-string-servicebus.env
 
-
+!evaluations/.python-version
+evaluations/results
