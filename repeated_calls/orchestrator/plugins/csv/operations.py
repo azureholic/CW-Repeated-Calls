@@ -41,3 +41,9 @@ class OperationsDataPlugin:
     ) -> Annotated[str, "Check if there is a current outage known for the product"]:
         """Retrieve a string whether a current outage is known for the product."""
         return f"No outages found for product ID {product_id}"
+
+    # Extra dummy function, always returns "No bugs are found for this product"
+    @kernel_function
+    def check_bugs(self, product_id: int) -> Annotated[str, "Check if there are any bugs known for the product"]:
+        """Retrieve a string whether there are any bugs known for the product."""
+        return f"There no known bugs for product ID {product_id}"

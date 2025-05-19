@@ -21,9 +21,7 @@ from typing import Any
 
 from jinja2 import Environment, FileSystemLoader
 
-from repeated_calls.orchestrator.entities.database import Discount
 from repeated_calls.orchestrator.entities.state import State
-from repeated_calls.orchestrator.entities.structured_output import CauseResult
 
 
 class _PromptTemplate:
@@ -122,14 +120,13 @@ class CausePrompt(_PromptTemplatePair):
 
 
 class RecommendationPrompt(_PromptTemplatePair):
-    """Prompt class for formulating the offer recommendation, managing both system and user prompts."""
+    """Prompt class for generating personalized discount recommendations, managing both system and user prompts."""
 
-    def __init__(self, cause_result: CauseResult, customer_clv: str, matching_discount: Discount) -> None:
+    def __init__(self, state: State) -> None:
         """Initialise the RecommendationPrompt with specific templates."""
         super().__init__(user_template_name="recommendation_user.j2", system_template_name="recommendation_system.j2")
 
         self.update_user_variables(
-            cause_result=cause_result,
-            customer_clv=customer_clv,
-            matching_discount=matching_discount,
+            call_event=state.call_event,
+            cause_result=state.cause_result,
         )

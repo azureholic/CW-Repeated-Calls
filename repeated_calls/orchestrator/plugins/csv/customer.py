@@ -5,7 +5,7 @@ from typing import Annotated
 
 from semantic_kernel.functions import kernel_function
 
-from repeated_calls.database.schemas import CallEvent, Customer, HistoricCallEvent, Product, Subscription
+from repeated_calls.database.schemas import CallEvent, Customer, Discount, HistoricCallEvent, Product, Subscription
 from repeated_calls.utils.loggers import Logger
 
 logger = Logger()
@@ -21,6 +21,7 @@ class CustomerDataPlugin:
         self.historic_call_events = HistoricCallEvent.from_csv(f"{data_path}/historic_call_event.csv")
         self.subscriptions = Subscription.from_csv(f"{data_path}/subscription.csv")
         self.products = Product.from_csv(f"{data_path}/product.csv")
+        self.discounts = Discount.from_csv(f"{data_path}/discount.csv")
 
     @kernel_function
     def get_customer_details(self, customer_id: int) -> Annotated[str, "Details of the customer."]:
@@ -83,3 +84,16 @@ class CustomerDataPlugin:
                 return json.dumps(product.model_dump(mode="json"))
         logger.warning(f"Warning: No product found with ID {product_id}")
         return f"No product found with ID {product_id}"
+
+    @kernel_function
+    def get_available_discounts(self, product_id: int) -> Annotated[str, "Available discounts for a product."]:
+        """Retrieve a JSON string of the available discounts for a product."""
+        discounts = [
+            discount.model_dump(mode="json") for discount in self.discounts if discount.product_id == product_id
+        ]
+
+        if not discounts:
+            logger.warning(f"Warning: No discounts found for product ID {product_id}")
+            return f"No discounts found for product ID {product_id}"
+        else:
+            return json.dumps(discounts)
