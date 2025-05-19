@@ -51,14 +51,13 @@ To build and run the MCP server with Docker:
 
 1. Set the following variables in your terminal (update values as needed):
     ```bash
-    export ACR_NAME="acrcodewithdev"
+    export ACR_NAME="[REPLACE_WITH_ACR_NAME]"
     export ACR_LOGIN_SERVER="${ACR_NAME}.azurecr.io"
-    export IMAGE_NAME="mcp-server"
+    export IMAGE_NAME="[REPLACE_WITH_IMAGE_NAME]"
     export IMAGE_TAG="latest"
     ```
 
-    > **Note:** The value `acrcodewithdev` refers to an existing Azure Container Registry (ACR) in Azure environment.
-    > You can replace this value with your own Azure Container Registry name if needed.
+    > **Note:** The value of `ACR_NAME` refers to an existing Azure Container Registry (ACR) in Azure environment.
     > Make sure you have access to this ACR before pushing images.
 
 2. Build the Docker image from project root folder:
@@ -71,7 +70,7 @@ To build and run the MCP server with Docker:
     ```
 4. Tag your image for ACR:
     ```bash
-    docker tag mcp-server:latest ${ACR_LOGIN_SERVER}/${IMAGE_NAME}:${IMAGE_TAG}
+    docker tag ${IMAGE_NAME}:${IMAGE_TAG} ${ACR_LOGIN_SERVER}/${IMAGE_NAME}:${IMAGE_TAG}
     ```
 5. Login to Azure environment
     ```bash
@@ -107,26 +106,26 @@ After pushing your Docker image to Azure Container Registry (ACR), you can deplo
 Set the following variables in your terminal (update values as needed):
 
 ```bash
-export CONTAINERAPP_NAME="ca-mcp-server-codewith-dev"
-export RESOURCE_GROUP="genai-codewith-dev"
+export CONTAINERAPP_NAME="[REPLACE_WITH_CONTAINER_APP_NAME]"
+export RESOURCE_GROUP="[REPLACE_WITH_RESOURCE_GROUP_NAME]"
 export ENVIRONMENT_ID="[REPLACE_WITH_CONTAINER_APP_ENV_RESOURCE_ID]"
-export ACR_NAME="acrcodewithdev"
+export ACR_NAME="[REPLACE_WITH_ACR_NAME]"
 export ACR_LOGIN_SERVER="${ACR_NAME}.azurecr.io"
-export IMAGE_NAME="mcp-server"
+export IMAGE_NAME="[REPLACE_WITH_IMAGE_NAME]"
 export IMAGE_TAG="latest"
-export PGHOST="psql-codewith-dev.postgres.database.azure.com"
-export PGUSER="codewith_admin"
-export PGPASSWORD="[REPLACE_WITH_DB_PASSWORD]"
+export PGHOST="[REPLACE_WITH_POSTGRESQL_HOST_NAME]"
+export PGUSER="[REPLACE_WITH_POSTGRESQL_ADMIN_NAME]"
+export PGPASSWORD="[REPLACE_WITH_POSTGRESQL_ADMIN_PASSWORD]"
 export PGDATABASE="default"
 export PGPORT="5432"
-export USER_ASSIGNED_IDENTITY="micodewithdev"
+export USER_ASSIGNED_IDENTITY="[REPLACE_WITH_USER_ASSIGNED_MANAGED_IDENTITY]"
 ```
 
 > **Note:**
-> - Replace [REPLACE_WITH_CONTAINER_APP_ENV_RESOURCE_ID] and [REPLACE_WITH_DB_PASSWORD] with your actual values.
-> - The value micodewithdev refers to an existing user-assigned managed identity in your Azure environment.
-> - This identity must already exist and must have "AcrPull" role assignment on your Azure Container Registry (acrcodewithdev).
-> - Make sure all referenced Azure resources (ACR, resource group, environment, identity) already exist.
+> - Replace all `[REPLACE_WITH_...]` placeholders above with your actual values.
+> - The value `${USER_ASSIGNED_IDENTITY}` refers to an existing user-assigned managed identity in your Azure environment.
+> - This identity **must already exist** and **must have "AcrPull" role assignment** on your Azure Container Registry (`${ACR_NAME}`).
+> - Make sure all referenced Azure resources (`${ACR_NAME}`, `${RESOURCE_GROUP}`, `${ENVIRONMENT_ID}`, `${USER_ASSIGNED_IDENTITY}`) already exist.
 > - You must be logged in to Azure CLI and have the necessary permissions.
 
 ### 2. Create the Azure Container App
