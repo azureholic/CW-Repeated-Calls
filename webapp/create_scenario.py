@@ -24,6 +24,7 @@ name_ofthe_queue = 'customercalls'
 load_dotenv(dotenv_path='connection-string-servicebus.env')
 connection_str = os.getenv('AZURE_SERVICEBUS_CONNECTION_STRING')
 
+
 ## Different scenarios
 st.title("Test Scenarios")
 
@@ -41,7 +42,7 @@ for i in range(len(pay_load)):
         # Defining the function to send a message
         async def send_single_message(sender):                          # Asynchronous function that takes a sender (Instance of the ServiceBusSender class --> from the servicebus.aio SDK) as input
             message = ServiceBusMessage(f"Customer ID: {pay_load[i]['customer']['customer_id']} \
-                                    \n    Call reason {pay_load[i]['scenario_details']['call_reason']}")        # This creates a ServiceBusMessage 
+                                       \n Call reason: {pay_load[i]['scenario_details']['call_reason']}")        # This creates a ServiceBusMessage 
                                         
             await sender.send_messages(message)                         # Sends the message asynchronous using the send_message method
             print('message sent')                                       # Await ensures that in the sending time Python can handle other tasks, e.g. sending/receiving messages, web requests, etc).
