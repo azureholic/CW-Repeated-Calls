@@ -19,6 +19,7 @@ def get_agent(kernel: Kernel, instructions: str) -> ChatCompletionAgent:
         ),
         temperature=0.0,
         seed=1337,
+        max_tokens=3000,
         response_format=CauseResult,
     )
 
