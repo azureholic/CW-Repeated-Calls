@@ -4,7 +4,7 @@ from semantic_kernel import Kernel
 from semantic_kernel.functions import kernel_function
 from semantic_kernel.processes.kernel_process import KernelProcessStep, KernelProcessStepContext
 
-from repeated_calls.orchestrator.agents import offer_agent
+from repeated_calls.orchestrator.agents.offer_agent import get_agent
 from repeated_calls.orchestrator.entities.state import State
 from repeated_calls.prompt_engineering.prompts import RecommendationPrompt
 from repeated_calls.utils.loggers import Logger
@@ -29,7 +29,7 @@ class DetermineRecommendationStep(KernelProcessStep):
         logger.debug(f"System prompts: {system_prompts}")
         draft_instructions, review_instructions = system_prompts[0], system_prompts[1]
 
-        chat = offer_agent(
+        chat = get_agent(
             kernel=kernel,
             draft_instructions=draft_instructions,
             reviewer_instructions=review_instructions,

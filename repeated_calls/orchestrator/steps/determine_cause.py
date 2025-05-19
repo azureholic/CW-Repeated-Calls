@@ -9,7 +9,7 @@ from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.functions import kernel_function
 from semantic_kernel.processes.kernel_process import KernelProcessStep, KernelProcessStepContext
 
-from repeated_calls.orchestrator.agents import cause_agent
+from repeated_calls.orchestrator.agents.cause_agent import get_agent
 from repeated_calls.orchestrator.entities.state import State
 from repeated_calls.orchestrator.entities.structured_output import CauseResult
 from repeated_calls.prompt_engineering.prompts import CausePrompt
@@ -34,7 +34,7 @@ class DetermineCauseStep(KernelProcessStep):
         """Process function to determine the cause of a product issue."""
         prompts = CausePrompt(state)
 
-        agent = cause_agent(kernel=kernel, instructions=prompts.get_system_prompt())
+        agent = get_agent(kernel=kernel, instructions=prompts.get_system_prompt())
 
         response = await agent.get_response(
             messages=prompts.get_user_prompt(),
