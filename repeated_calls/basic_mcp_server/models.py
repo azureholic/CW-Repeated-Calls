@@ -36,7 +36,7 @@ class CallEvent(BaseModel):
     id: int
     customer_id: int
     sdc: str
-    time_stamp: datetime
+    timestamp: datetime
 
 
 class CallEventResponse(BaseModel):

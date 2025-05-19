@@ -18,8 +18,8 @@ from dotenv import load_dotenv
 from mcp.server.fastmcp import FastMCP, Context
 
 # ────────────────────────────── project ─────────────────────────────
-from .db import create_pool
-from .models import (
+from repeated_calls.basic_mcp_server.db import create_pool
+from repeated_calls.basic_mcp_server.models import (
     # domain + response models
     CallEvent, CallEventResponse,
     HistoricCallEvent, HistoricCallEventResponse,
@@ -29,7 +29,7 @@ from .models import (
     SoftwareUpdate, SoftwareUpdateResponse,
     Discount, DiscountResponse,
 )
-from .dao import (
+from repeated_calls.basic_mcp_server.dao import (
     call_event as call_event_dao,
     historic_call_event as hce_dao,
     customer as customer_dao,
