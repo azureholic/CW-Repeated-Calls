@@ -1,5 +1,6 @@
 """Step for drafting an offer."""
 
+from typing import Annotated
 from semantic_kernel import Kernel
 from semantic_kernel.functions import kernel_function
 from semantic_kernel.processes.kernel_process import KernelProcessStep, KernelProcessStepContext
@@ -20,7 +21,7 @@ class DetermineRecommendationStep(KernelProcessStep):
         self,
         state: State,
         context: KernelProcessStepContext,
-        kernel: Kernel,
+        kernel: Annotated[Kernel | None, "The kernel", {"include_in_function_choices": False}] # this is important to avoid json serializing errors (https://github.com/microsoft/semantic-kernel/issues/12067)
     ) -> None:
         """Process function to determine the cause of a product issue."""
         prompts = RecommendationPrompt(state)

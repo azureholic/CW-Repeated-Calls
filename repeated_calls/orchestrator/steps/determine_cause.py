@@ -1,6 +1,7 @@
 """Step for determining the cause of a product issue."""
 
 import json
+from typing import Annotated
 
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
@@ -29,7 +30,7 @@ class DetermineCauseStep(KernelProcessStep):
         self,
         state: State,
         context: KernelProcessStepContext,
-        kernel: Kernel,
+        kernel: Annotated[Kernel | None, "The kernel", {"include_in_function_choices": False}] # this is important to avoid json serializing errors (https://github.com/microsoft/semantic-kernel/issues/12067)
     ) -> None:
         """Process function to determine the cause of a product issue."""
         prompts = CausePrompt(state)
@@ -39,28 +40,13 @@ class DetermineCauseStep(KernelProcessStep):
         response = await agent.get_response(
             messages=prompts.get_user_prompt(),
         )
-        logger.debug(f"Cause determination response: {response}")
 
-        # Classify whether the call is a repeated call with an LLM
-        chat_service = kernel.get_service(type=ChatCompletionClientBase)
-        chat_settings = AzureChatPromptExecutionSettings(response_format=CauseResult, temperature=0.0)
+        logger.debug(f"Cause response: {response}")
+        
 
-        # Prepare the chat interaction
-        chat_history = ChatHistory()
-        chat_history.add_system_message(prompts.get_system_prompt())
-        chat_history.add_user_message(prompts.get_user_prompt())
-        chat_history.add_user_message(str(response))
+        state.update(CauseResult(**json.loads(str(response.content))))
 
-        res = await chat_service.get_chat_message_content(
-            chat_history=chat_history,
-            settings=chat_settings,
-        )
-        chat_history.add_assistant_message(res.content)
-        logger.debug(f"Cause determination response: {res.content}")
-
-        state.update(CauseResult(**json.loads(res.content)))
-
-        if json.loads(res.content)["is_relevant"]:
+        if state.cause_result.is_relevant:
             # Send event to next step
             await context.emit_event(
                 "IsRelevant",

@@ -6,8 +6,12 @@ from semantic_kernel.connectors.ai import FunctionChoiceBehavior
 from semantic_kernel.connectors.ai.open_ai import AzureChatPromptExecutionSettings
 from semantic_kernel.functions import KernelArguments
 
+from repeated_calls.orchestrator.entities.structured_output import CauseResult
+
 
 def get_agent(kernel: Kernel, instructions: str) -> ChatCompletionAgent:
+
+    agent_kernel = kernel.clone()
     """Agent for determining the cause of a product issue."""
     # Define temperature and which functions the agent can use
     settings = AzureChatPromptExecutionSettings(
@@ -17,12 +21,13 @@ def get_agent(kernel: Kernel, instructions: str) -> ChatCompletionAgent:
         ),
         temperature=0.0,
         seed=1337,
+        response_format=CauseResult
     )
 
     # Create and configure the agent
     agent = ChatCompletionAgent(
         instructions=instructions,
-        kernel=kernel,
+        kernel=agent_kernel,
         arguments=KernelArguments(settings=settings),
         plugins=None,
     )

@@ -95,16 +95,21 @@ class RepeatCallerPrompt(_PromptTemplatePair):
     def __init__(self, state: State) -> None:
         """Initialise the RepeatCallerPrompt with specific templates."""
         super().__init__(user_template_name="repeat_caller_user.j2", system_template_name="repeat_caller_system.j2")
-
-        for call in state.call_history:
-            call.compute_time_since(state.call_event.timestamp)
-
-        self.update_user_variables(
-            customer=state.customer,
+        print(state)
+      # Update user variables with call event and customer data 
+#         for call in state.call_history:
+#             call.compute_time_since(state.call_event.timestamp)
+        self.update_system_variables(
             call_event=state.call_event,
-            call_timestamp=state.call_event.timestamp.strftime("%Y-%m-%d %H:%M:%S"),
-            call_history=sorted(state.call_history, key=lambda h: h.start_time, reverse=True),
+            cause_result=state.cause_result,
+            call_history=state.call_history
         )
+        # self.update_user_variables(
+        #     customer=state.customer,
+        #     call_event=state.call_event,
+        #     call_timestamp=state.call_event.timestamp.strftime("%Y-%m-%d %H:%M:%S"),
+        #     call_history=sorted(state.call_history, key=lambda h: h.start_time, reverse=True),
+        # )
 
 
 class CausePrompt(_PromptTemplatePair):
@@ -116,6 +121,8 @@ class CausePrompt(_PromptTemplatePair):
 
         self.update_user_variables(
             call_event=state.call_event,
+            cause_result=state.cause_result,
+            call_history=state.call_history
         )
 
 
