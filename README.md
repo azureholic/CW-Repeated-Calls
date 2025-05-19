@@ -22,3 +22,7 @@ poetry run python repeated_calls/database/migrate.py --data /path/to/data
 ```
 
 Note that the CSV files must be named after the tables they will populate. For example, if the table is called `users`, the CSV file should be named `users.csv`.
+
+## MCP Data Service
+
+For details on the MCP Data Service (API, Dockerization, deployment, etc.), see the [Basic MCP Server README](repeated_calls/basic_mcp_server/README.md) .
