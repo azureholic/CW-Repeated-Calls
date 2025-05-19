@@ -9,6 +9,7 @@ import asyncio                                          # For asynchronous execu
 from azure.servicebus.aio import ServiceBusClient       # This class is used to interact with queues asynchronously
 from azure.servicebus import ServiceBusMessage          # This class ensures that a single message can be sent to the queue
 from dotenv import load_dotenv
+from dotenv import load_dotenv
 
 # Importing the path2data and setting up the page
 path_2_data = "/home/burgh512/Python_files/Agentic-AI/CW-Repeated-Calls/data/"

@@ -4,7 +4,7 @@ import json
 import asyncio
 from azure.servicebus.aio import ServiceBusClient
 from dotenv import load_dotenv
-
+import os
 
 name_ofthe_queue = 'customercalls'
 load_dotenv(dotenv_path='connection-string-servicebus.env')
