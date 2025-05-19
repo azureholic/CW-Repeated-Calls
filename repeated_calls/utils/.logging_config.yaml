@@ -19,7 +19,7 @@ handlers:
     formatter: minimal
     stream: ext://sys.stdout
     '.':
-      terminator: "\n\n"
+      terminator: "\n\n===========================\n\n"
 loggers:
   root:
     level: WARNING
