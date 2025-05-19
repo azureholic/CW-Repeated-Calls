@@ -116,7 +116,6 @@ yarl = ">=1.17.0,<2.0"
 speedups = ["Brotli ; platform_python_implementation == \"CPython\"", "aiodns (>=3.2.0) ; sys_platform == \"linux\" or sys_platform == \"darwin\"", "brotlicffi ; platform_python_implementation != \"CPython\""]
 
 [[package]]
-<<<<<<< HEAD
 name = "aioice"
 version = "0.10.1"
 description = "An implementation of Interactive Connectivity Establishment (RFC 5245)"
@@ -161,8 +160,6 @@ pyopenssl = ">=25.0.0"
 dev = ["aiohttp (>=3.7.0)", "coverage[toml] (>=7.2.2)", "numpy (>=1.19.0)"]
 
 [[package]]
-=======
->>>>>>> e8fd802 (linked the azure service bus to the webapp)
 name = "aiosignal"
 version = "1.3.2"
 description = "aiosignal: a list of registered asynchronous callbacks"
@@ -377,7 +374,6 @@ tests = ["cloudpickle ; platform_python_implementation == \"CPython\"", "hypothe
 tests-mypy = ["mypy (>=1.11.1) ; platform_python_implementation == \"CPython\" and python_version >= \"3.10\"", "pytest-mypy-plugins ; platform_python_implementation == \"CPython\" and python_version >= \"3.10\""]
 
 [[package]]
-<<<<<<< HEAD
 name = "av"
 version = "14.4.0"
 description = "Pythonic bindings for FFmpeg's libraries."
@@ -434,8 +430,6 @@ files = [
 ]
 
 [[package]]
-=======
->>>>>>> e8fd802 (linked the azure service bus to the webapp)
 name = "azure-core"
 version = "1.34.0"
 description = "Microsoft Azure Core Library for Python"
@@ -458,23 +452,14 @@ tracing = ["opentelemetry-api (>=1.26,<2.0)"]
 
 [[package]]
 name = "azure-identity"
-<<<<<<< HEAD
 version = "1.22.0"
-=======
-version = "1.23.0"
->>>>>>> e8fd802 (linked the azure service bus to the webapp)
 description = "Microsoft Azure Identity Library for Python"
 optional = false
 python-versions = ">=3.9"
 groups = ["main"]
 files = [
-<<<<<<< HEAD
     {file = "azure_identity-1.22.0-py3-none-any.whl", hash = "sha256:26d6c63f2ca453c77c3e74be8613941ad074e05d0c8be135247573752c249ad8"},
     {file = "azure_identity-1.22.0.tar.gz", hash = "sha256:c8f5ef23e5295c2fa300c984dd9f5e1fe43503fc25c121c37ff6a15e39b800b9"},
-=======
-    {file = "azure_identity-1.23.0-py3-none-any.whl", hash = "sha256:dbbeb64b8e5eaa81c44c565f264b519ff2de7ff0e02271c49f3cb492762a50b0"},
-    {file = "azure_identity-1.23.0.tar.gz", hash = "sha256:d9cdcad39adb49d4bb2953a217f62aec1f65bbb3c63c9076da2be2a47e53dde4"},
->>>>>>> e8fd802 (linked the azure service bus to the webapp)
 ]
 
 [package.dependencies]
@@ -485,8 +470,6 @@ msal-extensions = ">=1.2.0"
 typing-extensions = ">=4.0.0"
 
 [[package]]
-<<<<<<< HEAD
-=======
 name = "azure-servicebus"
 version = "7.14.2"
 description = "Microsoft Azure Service Bus Client Library for Python"
@@ -504,7 +487,6 @@ isodate = ">=0.6.0"
 typing-extensions = ">=4.6.0"
 
 [[package]]
->>>>>>> e8fd802 (linked the azure service bus to the webapp)
 name = "babel"
 version = "2.17.0"
 description = "Internationalization utilities"
@@ -870,68 +852,12 @@ test = ["pytest"]
 
 [[package]]
 name = "cryptography"
-<<<<<<< HEAD
 version = "45.0.2"
-=======
-version = "44.0.3"
->>>>>>> e8fd802 (linked the azure service bus to the webapp)
 description = "cryptography is a package which provides cryptographic recipes and primitives to Python developers."
 optional = false
 python-versions = "!=3.9.0,!=3.9.1,>=3.7"
 groups = ["main"]
 files = [
-<<<<<<< HEAD
-    {file = "cryptography-45.0.2-cp311-abi3-macosx_10_9_universal2.whl", hash = "sha256:61a8b1bbddd9332917485b2453d1de49f142e6334ce1d97b7916d5a85d179c84"},
-    {file = "cryptography-45.0.2-cp311-abi3-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:4cc31c66411e14dd70e2f384a9204a859dc25b05e1f303df0f5326691061b839"},
-    {file = "cryptography-45.0.2-cp311-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:463096533acd5097f8751115bc600b0b64620c4aafcac10c6d0041e6e68f88fe"},
-    {file = "cryptography-45.0.2-cp311-abi3-manylinux_2_28_aarch64.whl", hash = "sha256:cdafb86eb673c3211accffbffdb3cdffa3aaafacd14819e0898d23696d18e4d3"},
-    {file = "cryptography-45.0.2-cp311-abi3-manylinux_2_28_armv7l.manylinux_2_31_armv7l.whl", hash = "sha256:05c2385b1f5c89a17df19900cfb1345115a77168f5ed44bdf6fd3de1ce5cc65b"},
-    {file = "cryptography-45.0.2-cp311-abi3-manylinux_2_28_x86_64.whl", hash = "sha256:e9e4bdcd70216b08801e267c0b563316b787f957a46e215249921f99288456f9"},
-    {file = "cryptography-45.0.2-cp311-abi3-manylinux_2_34_aarch64.whl", hash = "sha256:b2de529027579e43b6dc1f805f467b102fb7d13c1e54c334f1403ee2b37d0059"},
-    {file = "cryptography-45.0.2-cp311-abi3-manylinux_2_34_x86_64.whl", hash = "sha256:10d68763892a7b19c22508ab57799c4423c7c8cd61d7eee4c5a6a55a46511949"},
-    {file = "cryptography-45.0.2-cp311-abi3-musllinux_1_2_aarch64.whl", hash = "sha256:d2a90ce2f0f5b695e4785ac07c19a58244092f3c85d57db6d8eb1a2b26d2aad6"},
-    {file = "cryptography-45.0.2-cp311-abi3-musllinux_1_2_x86_64.whl", hash = "sha256:59c0c8f043dd376bbd9d4f636223836aed50431af4c5a467ed9bf61520294627"},
-    {file = "cryptography-45.0.2-cp311-abi3-win32.whl", hash = "sha256:80303ee6a02ef38c4253160446cbeb5c400c07e01d4ddbd4ff722a89b736d95a"},
-    {file = "cryptography-45.0.2-cp311-abi3-win_amd64.whl", hash = "sha256:7429936146063bd1b2cfc54f0e04016b90ee9b1c908a7bed0800049cbace70eb"},
-    {file = "cryptography-45.0.2-cp37-abi3-macosx_10_9_universal2.whl", hash = "sha256:e86c8d54cd19a13e9081898b3c24351683fd39d726ecf8e774aaa9d8d96f5f3a"},
-    {file = "cryptography-45.0.2-cp37-abi3-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:e328357b6bbf79928363dbf13f4635b7aac0306afb7e5ad24d21d0c5761c3253"},
-    {file = "cryptography-45.0.2-cp37-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:49af56491473231159c98c2c26f1a8f3799a60e5cf0e872d00745b858ddac9d2"},
-    {file = "cryptography-45.0.2-cp37-abi3-manylinux_2_28_aarch64.whl", hash = "sha256:f169469d04a23282de9d0be349499cb6683b6ff1b68901210faacac9b0c24b7d"},
-    {file = "cryptography-45.0.2-cp37-abi3-manylinux_2_28_armv7l.manylinux_2_31_armv7l.whl", hash = "sha256:9cfd1399064b13043082c660ddd97a0358e41c8b0dc7b77c1243e013d305c344"},
-    {file = "cryptography-45.0.2-cp37-abi3-manylinux_2_28_x86_64.whl", hash = "sha256:18f8084b7ca3ce1b8d38bdfe33c48116edf9a08b4d056ef4a96dceaa36d8d965"},
-    {file = "cryptography-45.0.2-cp37-abi3-manylinux_2_34_aarch64.whl", hash = "sha256:2cb03a944a1a412724d15a7c051d50e63a868031f26b6a312f2016965b661942"},
-    {file = "cryptography-45.0.2-cp37-abi3-manylinux_2_34_x86_64.whl", hash = "sha256:a9727a21957d3327cf6b7eb5ffc9e4b663909a25fea158e3fcbc49d4cdd7881b"},
-    {file = "cryptography-45.0.2-cp37-abi3-musllinux_1_2_aarch64.whl", hash = "sha256:ddb8d01aa900b741d6b7cc585a97aff787175f160ab975e21f880e89d810781a"},
-    {file = "cryptography-45.0.2-cp37-abi3-musllinux_1_2_x86_64.whl", hash = "sha256:c0c000c1a09f069632d8a9eb3b610ac029fcc682f1d69b758e625d6ee713f4ed"},
-    {file = "cryptography-45.0.2-cp37-abi3-win32.whl", hash = "sha256:08281de408e7eb71ba3cd5098709a356bfdf65eebd7ee7633c3610f0aa80d79b"},
-    {file = "cryptography-45.0.2-cp37-abi3-win_amd64.whl", hash = "sha256:48caa55c528617fa6db1a9c3bf2e37ccb31b73e098ac2b71408d1f2db551dde4"},
-    {file = "cryptography-45.0.2-pp310-pypy310_pp73-macosx_10_9_x86_64.whl", hash = "sha256:a8ec324711596fbf21837d3a5db543937dd84597d364769b46e0102250023f77"},
-    {file = "cryptography-45.0.2-pp310-pypy310_pp73-manylinux_2_28_aarch64.whl", hash = "sha256:965611880c3fa8e504b7458484c0697e00ae6e937279cd6734fdaa2bc954dc49"},
-    {file = "cryptography-45.0.2-pp310-pypy310_pp73-manylinux_2_28_x86_64.whl", hash = "sha256:d891942592789fa0ab71b502550bbadb12f540d7413d7d7c4cef4b02af0f5bc6"},
-    {file = "cryptography-45.0.2-pp310-pypy310_pp73-manylinux_2_34_aarch64.whl", hash = "sha256:b19f4b28dd2ef2e6d600307fee656c00825a2980c4356a7080bd758d633c3a6f"},
-    {file = "cryptography-45.0.2-pp310-pypy310_pp73-manylinux_2_34_x86_64.whl", hash = "sha256:7c73968fbb7698a4c5d6160859db560d3aac160edde89c751edd5a8bc6560c88"},
-    {file = "cryptography-45.0.2-pp310-pypy310_pp73-win_amd64.whl", hash = "sha256:501de1296b2041dccf2115e3c7d4947430585601b251b140970ce255c5cfb985"},
-    {file = "cryptography-45.0.2-pp311-pypy311_pp73-macosx_10_9_x86_64.whl", hash = "sha256:1655d3a76e3dedb683c982a6c3a2cbfae2d08f47a48ec5a3d58db52b3d29ea6f"},
-    {file = "cryptography-45.0.2-pp311-pypy311_pp73-manylinux_2_28_aarch64.whl", hash = "sha256:dc7693573f16535428183de8fd27f0ca1ca37a51baa0b41dc5ed7b3d68fe80e2"},
-    {file = "cryptography-45.0.2-pp311-pypy311_pp73-manylinux_2_28_x86_64.whl", hash = "sha256:614bca7c6ed0d8ad1dce683a6289afae1f880675b4090878a0136c3da16bc693"},
-    {file = "cryptography-45.0.2-pp311-pypy311_pp73-manylinux_2_34_aarch64.whl", hash = "sha256:4142e20c29224cec63e9e32eb1e6014fb285fe39b7be66b3564ca978a3a8afe9"},
-    {file = "cryptography-45.0.2-pp311-pypy311_pp73-manylinux_2_34_x86_64.whl", hash = "sha256:9a900036b42f7324df7c7ad9569eb92ba0b613cf699160dd9c2154b24fd02f8e"},
-    {file = "cryptography-45.0.2-pp311-pypy311_pp73-win_amd64.whl", hash = "sha256:057723b79752a142efbc609e90b0dff27b0361ccbee3bd48312d70f5cdf53b78"},
-    {file = "cryptography-45.0.2.tar.gz", hash = "sha256:d784d57b958ffd07e9e226d17272f9af0c41572557604ca7554214def32c26bf"},
-]
-
-[package.dependencies]
-cffi = {version = ">=1.14", markers = "platform_python_implementation != \"PyPy\""}
-
-[package.extras]
-docs = ["sphinx (>=5.3.0)", "sphinx-inline-tabs ; python_full_version >= \"3.8.0\"", "sphinx-rtd-theme (>=3.0.0) ; python_full_version >= \"3.8.0\""]
-docstest = ["pyenchant (>=3)", "readme-renderer (>=30.0)", "sphinxcontrib-spelling (>=7.3.1)"]
-nox = ["nox (>=2024.4.15)", "nox[uv] (>=2024.3.2) ; python_full_version >= \"3.8.0\""]
-pep8test = ["check-sdist ; python_full_version >= \"3.8.0\"", "click (>=8.0.1)", "mypy (>=1.4)", "ruff (>=0.3.6)"]
-sdist = ["build (>=1.0.0)"]
-ssh = ["bcrypt (>=3.1.5)"]
-test = ["certifi (>=2024)", "cryptography-vectors (==45.0.2)", "pretend (>=0.7)", "pytest (>=7.4.0)", "pytest-benchmark (>=4.0)", "pytest-cov (>=2.10.1)", "pytest-xdist (>=3.5.0)"]
-=======
     {file = "cryptography-44.0.3-cp37-abi3-macosx_10_9_universal2.whl", hash = "sha256:962bc30480a08d133e631e8dfd4783ab71cc9e33d5d7c1e192f0b7c06397bb88"},
     {file = "cryptography-44.0.3-cp37-abi3-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:4ffc61e8f3bf5b60346d89cd3d37231019c17a081208dfbbd6e1605ba03fa137"},
     {file = "cryptography-44.0.3-cp37-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:58968d331425a6f9eedcee087f77fd3c927c88f55368f43ff7e0a19891f2642c"},
@@ -982,7 +908,6 @@ pep8test = ["check-sdist ; python_version >= \"3.8\"", "click (>=8.0.1)", "mypy 
 sdist = ["build (>=1.0.0)"]
 ssh = ["bcrypt (>=3.1.5)"]
 test = ["certifi (>=2024)", "cryptography-vectors (==44.0.3)", "pretend (>=0.7)", "pytest (>=7.4.0)", "pytest-benchmark (>=4.0)", "pytest-cov (>=2.10.1)", "pytest-xdist (>=3.5.0)"]
->>>>>>> e8fd802 (linked the azure service bus to the webapp)
 test-randomorder = ["pytest-randomly"]
 
 [[package]]
@@ -2448,7 +2373,6 @@ files = [
 ]
 
 [[package]]
-<<<<<<< HEAD
 name = "more-itertools"
 version = "10.7.0"
 description = "More routines for operating on iterables, beyond itertools"
@@ -2461,8 +2385,6 @@ files = [
 ]
 
 [[package]]
-=======
->>>>>>> e8fd802 (linked the azure service bus to the webapp)
 name = "msal"
 version = "1.32.3"
 description = "The Microsoft Authentication Library (MSAL) for Python library enables your app to access the Microsoft Cloud by supporting authentication of users with Microsoft Azure Active Directory accounts (AAD) and Microsoft Accounts (MSA) using industry standard OAuth2 and OpenID Connect."
@@ -4030,7 +3952,6 @@ docs = ["sphinx", "sphinx-rtd-theme", "zope.interface"]
 tests = ["coverage[toml] (==5.0.4)", "pytest (>=6.0.0,<7.0.0)"]
 
 [[package]]
-<<<<<<< HEAD
 name = "pylibsrtp"
 version = "0.12.0"
 description = "Python wrapper around the libsrtp library"
@@ -4089,8 +4010,6 @@ docs = ["sphinx (!=5.2.0,!=5.2.0.post0,!=7.2.5)", "sphinx_rtd_theme"]
 test = ["pretend", "pytest (>=3.0.1)", "pytest-rerunfailures"]
 
 [[package]]
-=======
->>>>>>> e8fd802 (linked the azure service bus to the webapp)
 name = "python-dateutil"
 version = "2.9.0.post0"
 description = "Extensions to the standard Python datetime module"
@@ -5500,7 +5419,6 @@ files = [
 ]
 
 [[package]]
-<<<<<<< HEAD
 name = "wrapt"
 version = "1.17.2"
 description = "Module for decorators, wrappers and monkey patching."
@@ -5590,8 +5508,6 @@ files = [
 ]
 
 [[package]]
-=======
->>>>>>> e8fd802 (linked the azure service bus to the webapp)
 name = "yarl"
 version = "1.20.0"
 description = "Yet another URL library"
@@ -5710,7 +5626,6 @@ idna = ">=2.0"
 multidict = ">=4.0"
 propcache = ">=0.2.1"
 
-<<<<<<< HEAD
 [[package]]
 name = "zipp"
 version = "3.21.0"
@@ -5736,9 +5651,3 @@ lock-version = "2.1"
 python-versions = "^3.11"
 content-hash = "ea9b6c6b92f2f81a8e370d980449f4168230539b97f7deaacabff754a83f5ee3"
 content-hash = "ac521537eebe0df12fe69a70c673e9c343c43c7a714f28e9b88e506dd7adb735"
-=======
-[metadata]
-lock-version = "2.1"
-python-versions = "^3.11"
-content-hash = "d412e83d20b3961d7124cbc0e11977dcbb1cdce63837a4dac740ac704b7c524e"
->>>>>>> e8fd802 (linked the azure service bus to the webapp)
