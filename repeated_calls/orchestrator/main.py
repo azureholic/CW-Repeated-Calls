@@ -47,13 +47,9 @@ def get_event() -> CallEvent:
 async def run_sequence() -> None:
     """Run the sequence of steps for the Repeated Calls process."""
     try:
-        logger.debug("Initializing Azure OpenAI settings...")
         settings = AzureOpenAISettings()
 
-        logger.debug("Creating Semantic Kernel instance...")
         kernel = Kernel()
-
-        logger.debug("Adding AzureChatCompletion service to kernel...")
         kernel.add_service(
             AzureChatCompletion(
                 endpoint=settings.endpoint,
@@ -64,11 +60,10 @@ async def run_sequence() -> None:
         kernel.add_plugin(CustomerDataPlugin(data_path="data"), "CustomerDataPlugin")
         kernel.add_plugin(OperationsDataPlugin(data_path="data"), "OperationsDataPlugin")
 
-        logger.debug("Initialising state...")
         call_event = get_event()
 
         state = State.from_call_event(call_event)
-        logger.debug("State initialized: %s", state)
+        logger.debug(f"### INCOMING CALL ###\n{state.call_event}")
 
         process_builder = ProcessBuilder("RepeatedCalls")
 
@@ -98,15 +93,11 @@ async def run_sequence() -> None:
         # Compile/build
         process = process_builder.build()
 
-        logger.info("Starting process execution...")
         await start(
             process=process,
             kernel=kernel,
             initial_event=KernelProcessEvent(id="Start", data=state),
         )
-
-        logger.info("Process execution completed successfully.")
-
     except Exception as exc:
         logger.error("An error occurred during the sequence execution: %s", str(exc), exc_info=True)
         raise
