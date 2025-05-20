@@ -6,7 +6,7 @@ from pprint import pprint
 from mcp import ClientSession
 from mcp.client.sse import sse_client
 from psycopg_pool import AsyncConnectionPool
-from repeated_calls.basic_mcp_server.settings import settings  
+from repeated_calls.basic_mcp_server.common.settings import settings  
 
 
 async def invoke_tool(session, name: str, params: dict) -> dict:
@@ -48,8 +48,8 @@ async def create_pool() -> AsyncConnectionPool:
     )
 
 
-async def main(host: str, customer_id: int, product_id: int):
-    async with sse_client(f"http://{host}/sse") as (read, write):
+async def main(host: str, product_id: int):
+    async with sse_client(f"https://{host}/sse") as (read, write):
         async with ClientSession(read, write) as session:
             await session.initialize()
 
@@ -58,16 +58,8 @@ async def main(host: str, customer_id: int, product_id: int):
 
             # One list with (tool_name, params) we want to run
             test_plan = [
-                ("get_historic_call_events", {"customer_id": customer_id}),
-                ("get_customer_by_id",       {"customer_id": customer_id}),
-                ("get_call_event",           {"customer_id": customer_id}),
-                ("get_subscriptions",        {"customer_id": customer_id}),
-                ("get_products",             {}),                       # catalogue (cached)
-                ("get_products",             {"product_id": product_id}),
                 ("get_software_updates",     {}),                       # all updates
                 ("get_software_updates",     {"product_id": product_id}),
-                ("get_discounts",            {}),                       # all discounts
-                ("get_discounts",            {"product_id": product_id}),
             ]
 
             for name, params in test_plan:
@@ -78,10 +70,9 @@ async def main(host: str, customer_id: int, product_id: int):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser("Quick MCP tool sanity-check")
+    parser = argparse.ArgumentParser("Quick Operations MCP tool sanity-check")
     parser.add_argument("--host", default="localhost:8000", help="`hostname:port` of MCP server")
-    parser.add_argument("--customer", type=int, default=7, help="Customer ID used in tests")
     parser.add_argument("--product",  type=int, default=101, help="Product ID used in tests")
     args = parser.parse_args()
 
-    asyncio.run(main(args.host, args.customer, args.product))
+    asyncio.run(main(args.host, args.product))
