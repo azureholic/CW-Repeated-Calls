@@ -14,6 +14,7 @@ from repeated_calls.orchestrator.entities.state import State
 from repeated_calls.orchestrator.entities.structured_output import RepeatedCallResult
 from repeated_calls.prompt_engineering.prompts import RepeatCallerPrompt
 from repeated_calls.utils.loggers import Logger
+from repeated_calls.utils.conversation_saver import save_conversation
 
 logger = Logger()
 
@@ -39,12 +40,16 @@ class DetermineRepeatedCallStep(KernelProcessStep):
 
         # Get customer data and historic calls manually
         func = kernel.get_function("CustomerDataPlugin", "get_customer_historic_call_events")
-        historic_events = await func.invoke(kernel, KernelArguments(customer_id=state.call_event.customer_id))
+        historic_events = await func.invoke(
+            kernel, KernelArguments(customer_id=state.call_event.customer_id)
+        )
         historic_events = json.loads(historic_events.value)
         historic_events = [HistoricCallEvent(**event) for event in historic_events]
 
         func = kernel.get_function("CustomerDataPlugin", "get_customer_details")
-        customer = await func.invoke(kernel, KernelArguments(customer_id=state.call_event.customer_id))
+        customer = await func.invoke(
+            kernel, KernelArguments(customer_id=state.call_event.customer_id)
+        )
         customer = json.loads(customer.value)
         customer = Customer(**customer)
 
@@ -53,7 +58,9 @@ class DetermineRepeatedCallStep(KernelProcessStep):
 
         # Classify whether the call is a repeated call with an LLM
         chat_service = kernel.get_service(type=ChatCompletionClientBase)
-        chat_settings = AzureChatPromptExecutionSettings(response_format=RepeatedCallResult, temperature=0.0)
+        chat_settings = AzureChatPromptExecutionSettings(
+            response_format=RepeatedCallResult, temperature=0.0
+        )
 
         # Prepare the chat interaction
         chat_history = ChatHistory()
@@ -71,6 +78,18 @@ class DetermineRepeatedCallStep(KernelProcessStep):
         )
         chat_history.add_assistant_message(res.content)
         logger.debug(f"Repeated call response: {res.content}")
+
+        # Save conversation to all required locations
+        agent_name = "RepeatedCallDetector"
+        save_results = save_conversation(
+            chat_history=chat_history,
+            agent_name=agent_name,
+            row_id=state.row_id,
+            run_timestamp=state.run_timestamp,
+        )
+        logger.info(f"Saved conversation to {save_results['individual_file']}")
+        logger.info(f"Appended to conversations file: {save_results['conversations_file']}")
+        logger.info(f"Appended to run log: {save_results['run_log_file']}")
 
         state.update(RepeatedCallResult(**json.loads(res.content)))
 

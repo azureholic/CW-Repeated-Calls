@@ -1,5 +1,6 @@
 import os
 import datetime
+import argparse
 from pathlib import Path
 
 from azure.ai.evaluation import (
@@ -39,6 +40,11 @@ def get_output_path(dataset_path: str, model_name: str) -> str:
     """Generate output path with timestamp and model name."""
     dataset_name = Path(dataset_path).stem
     timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+
+    # Create results directory if it doesn't exist
+    results_dir = Path("results")
+    results_dir.mkdir(exist_ok=True)
+
     return f"results/eval_{dataset_name}_{model_name}_{timestamp}.json"
 
 
@@ -88,8 +94,13 @@ def run_evaluation(dataset_path: str):
 
 
 if __name__ == "__main__":
-    dataset_path = "datasets/conversations_repeated_call.jsonl"
-    # dataset_path = "datasets/conversation_example.jsonl"
-    # dataset_path = "datasets/single_turn_example.csv"
+    parser = argparse.ArgumentParser(description="Run model evaluation on a dataset")
+    parser.add_argument(
+        "--dataset",
+        type=str,
+        default="datasets/conversations_repeated_call.jsonl",
+        help="Path to the dataset file (default: datasets/conversations_repeated_call.jsonl)",
+    )
+    args = parser.parse_args()
 
-    run_evaluation(dataset_path)
+    run_evaluation(args.dataset)

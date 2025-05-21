@@ -23,30 +23,53 @@ from repeated_calls.orchestrator.plugins.csv.operations import OperationsDataPlu
 from repeated_calls.orchestrator.settings import AzureOpenAISettings
 from repeated_calls.orchestrator.steps.determine_recommendation import DetermineRecommendationStep
 from repeated_calls.utils.loggers import Logger
+from repeated_calls.utils.conversation_saver import (
+    get_current_timestamp,
+    setup_logging_directories,
+    AGENT_NAMES,
+)
 
 logger = Logger()
 
 
-def get_event() -> CallEvent:
+def get_event(row_id: int | None = None) -> CallEvent:
     """Create a sample CallEvent object."""
     data_path = os.path.join(os.path.dirname(files("repeated_calls")), "data")
     csv_path = os.path.join(data_path, "call_event.csv")
 
     with open(csv_path, "r", newline="") as csvfile:
         reader = csv.DictReader(csvfile)
-        for row in reader:
-            # Convert the data to appropriate types
-            return CallEvent(
-                id=int(row.get("id", -1)),
-                customer_id=int(row.get("customer_id", -1)),
-                sdc=row.get("sdc", "No description available"),
-                timestamp=datetime.fromisoformat(row.get("timestamp", "1970-01-01 00:00:00")),
-            )
+        rows = list(reader)
+
+        if not rows:
+            raise ValueError("CSV file is empty")
+
+        if row_id is None:
+            row = rows[0]
+        else:
+            matching_rows = [r for r in rows if int(r.get("id", -1)) == row_id]
+            if not matching_rows:
+                raise ValueError(f"No row found with ID {row_id}")
+            row = matching_rows[0]
+
+        return CallEvent(
+            id=int(row.get("id", -1)),
+            customer_id=int(row.get("customer_id", -1)),
+            sdc=row.get("sdc", "No description available"),
+            timestamp=datetime.fromisoformat(row.get("timestamp", "1970-01-01 00:00:00")),
+        )
 
 
-async def run_sequence() -> None:
+async def run_sequence(row_id: int = 1) -> None:
     """Run the sequence of steps for the Repeated Calls process."""
     try:
+        # Setup logging directories
+        setup_logging_directories()
+
+        # Generate a run timestamp for this execution
+        run_timestamp = get_current_timestamp()
+        logger.info(f"Starting run with timestamp: {run_timestamp} for row_id: {row_id}")
+
         logger.debug("Initializing Azure OpenAI settings...")
         settings = AzureOpenAISettings()
 
@@ -65,9 +88,12 @@ async def run_sequence() -> None:
         kernel.add_plugin(OperationsDataPlugin(data_path="data"), "OperationsDataPlugin")
 
         logger.debug("Initialising state...")
-        call_event = get_event()
+        call_event = get_event(row_id)
 
+        # Create state and add run_timestamp
         state = State.from_call_event(call_event)
+        state.run_timestamp = run_timestamp
+        state.row_id = str(row_id)  # Store row_id in state for logging
         logger.debug("State initialized: %s", state)
 
         process_builder = ProcessBuilder("RepeatedCalls")
@@ -121,13 +147,19 @@ async def main() -> None:
         choices=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
         help="Override the default log level (e.g., DEBUG, INFO, WARNING)",
     )
+    parser.add_argument(
+        "--row_id",
+        type=int,
+        default=1,
+        help="Row ID to use from the call_event.csv file (default: 1)",
+    )
     args = parser.parse_args()
 
     if args.loglevel:
         logger.setLevel(args.loglevel.upper())
 
     logger.info("Application started.")
-    await run_sequence()
+    await run_sequence(row_id=args.row_id)
     logger.info("Application finished.")
 
 

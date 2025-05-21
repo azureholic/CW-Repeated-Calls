@@ -408,3 +408,4 @@ FodyWeavers.xsd
 .env
 
 !evaluations/.python-version
+repeated_calls/conversation_logs/
