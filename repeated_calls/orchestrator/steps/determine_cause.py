@@ -11,6 +11,7 @@ from repeated_calls.orchestrator.entities.state import State
 from repeated_calls.orchestrator.entities.structured_output import CauseResult
 from repeated_calls.prompt_engineering.prompts import CausePrompt
 from repeated_calls.utils.loggers import Logger
+from repeated_calls.utils.conversation_saver import save_conversation
 
 logger = Logger()
 
@@ -29,9 +30,11 @@ class DetermineCauseStep(KernelProcessStep):
         kernel: Kernel,
     ) -> None:
         """Process function to determine the cause of a product issue."""
-        
-        
+
         prompts = CausePrompt(state)
+
+        # logger.debug(f"System prompt:\n{prompts.get_system_prompt()}")
+        # logger.debug(f"User prompt:\n{prompts.get_user_prompt()}")
 
         agent = get_agent(kernel=kernel, instructions=prompts.get_system_prompt())
 
@@ -45,6 +48,40 @@ class DetermineCauseStep(KernelProcessStep):
             f">> CAUSE AGENT - Product ID: {res.product_id}. Analysis: {res.analysis}. Conclusion: {res.conclusion}"
         )
         state.update(res)
+        logger.debug(f"Cause determination response: {response}")
+
+        # Classify whether the call is a repeated call with an LLM
+        chat_service = kernel.get_service(type=ChatCompletionClientBase)
+        chat_settings = AzureChatPromptExecutionSettings(
+            response_format=CauseResult, temperature=0.0
+        )
+
+        # Prepare the chat interaction
+        chat_history = ChatHistory()
+        chat_history.add_system_message(prompts.get_system_prompt())
+        chat_history.add_user_message(prompts.get_user_prompt())
+        chat_history.add_user_message(str(response))
+
+        res = await chat_service.get_chat_message_content(
+            chat_history=chat_history,
+            settings=chat_settings,
+        )
+        chat_history.add_assistant_message(res.content)
+        logger.debug(f"Cause determination response: {res.content}")
+
+        # Save conversation to all required locations
+        agent_name = "CauseDeterminer"
+        save_results = save_conversation(
+            chat_history=chat_history,
+            agent_name=agent_name,
+            row_id=state.row_id,
+            run_timestamp=state.run_timestamp,
+        )
+        logger.info(f"Saved conversation to {save_results['individual_file']}")
+        logger.info(f"Appended to conversations file: {save_results['conversations_file']}")
+        logger.info(f"Appended to run log: {save_results['run_log_file']}")
+
+        state.update(CauseResult(**json.loads(res.content)))
 
         if res.is_relevant:
             # Send event to next step

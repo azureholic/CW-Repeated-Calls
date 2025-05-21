@@ -410,3 +410,4 @@ connection-string-servicebus.env
 
 !evaluations/.python-version
 evaluations/results
+repeated_calls/conversation_logs/
