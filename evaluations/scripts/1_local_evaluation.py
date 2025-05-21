@@ -5,6 +5,7 @@ from pathlib import Path
 from azure.ai.evaluation import (
     GroundednessEvaluator,
     RelevanceEvaluator,
+    SimilarityEvaluator,
     evaluate,
 )
 from dotenv import load_dotenv
@@ -46,6 +47,7 @@ def run_evaluation(dataset_path: str):
     for model_judge_name, model_judge_config in model_judge_configs.items():
         groundedness_eval = GroundednessEvaluator(model_judge_config)
         relevance_eval = RelevanceEvaluator(model_judge_config)
+        similarity_eval = SimilarityEvaluator(model_judge_config)
 
         output_path = get_output_path(dataset_path, model_judge_name)
         evaluation_name = output_path.replace("results/", "")
@@ -56,6 +58,7 @@ def run_evaluation(dataset_path: str):
             evaluators={
                 "groundedness": groundedness_eval,
                 "relevance": relevance_eval,
+                "similarity": similarity_eval,
             },
             # evaluator_config={    # For single-turn chats
             #     "similarity": {

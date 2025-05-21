@@ -70,7 +70,7 @@ uv run scripts/1_local_evaluation.py
 
 ### General information: evaluator types
 
-There are three categories of ready-made evaluators. The AI-assisted quality metrics appear most promising for the repeated calls project. See the [API reference](https://learn.microsoft.com/en-us/python/api/azure-ai-evaluation/azure.ai.evaluation?view=azure-python) for a detailed description for each evaluator.
+There multiple categories of ready-made evaluators. The AI-assisted quality metrics appear most promising for the repeated calls project. See the [API reference](https://learn.microsoft.com/en-us/python/api/azure-ai-evaluation/azure.ai.evaluation?view=azure-python) for a detailed description for each evaluator.
 
 1. **AI-Assisted Quality Metrics:**
    - Groundedness
@@ -78,6 +78,7 @@ There are three categories of ready-made evaluators. The AI-assisted quality met
    - Coherence
    - Fluency
    - Similarity
+   - Retrieval (suitable for RAG evaluations)
 2. **NLP Metrics:**
    - F1
    - BLEU
@@ -91,6 +92,15 @@ There are three categories of ready-made evaluators. The AI-assisted quality met
    - Sexual
    - Protected material
    - Indirect attack
+4. **Agent Evaluators:**
+   - Intent Resolution
+   - Tool Call Accuracy
+   - Task Adherence
+5. **Azure OpenAI Evaluators:**
+   - Label grader
+   - String checker
+   - Text similarity
+6. You also have the option to create [custom evaluators](https://learn.microsoft.com/en-us/azure/ai-foundry/concepts/evaluation-evaluators/custom-evaluators).
 
 ### Dataset requirements
 
@@ -157,7 +167,9 @@ Assuming the goal is to compare the quality of responses between different model
 - **Evaluation strategies:**
 
   - **Continuously evaluate production:** involves tracing, automatic evaluations, and A/B testing. This approach can be expensive (although sampling can be used to reduce costs).
+    - A guide on how to set this up is provided [here](https://learn.microsoft.com/en-us/azure/ai-foundry/how-to/continuous-evaluation-agents). I made an honest attempt at following the guide to make this work but I was not successful due to the quality of the documentation (or I missed something).
   - **Periodically evaluate production:** save queries and responses/conversations to a database, then perform data preparation and feed them to an evaluation script. This adds storage overhead.
+    - I think this is the most practical approach for the repeated calls project.
   - **Evaluate test scenarios:** run predefined test scenarios with different models. The risk is that these scenarios might not accurately represent production conversations.
 
 - **Evaluation granularity (individual agent responses vs. whole loop output):**
@@ -166,8 +178,7 @@ Assuming the goal is to compare the quality of responses between different model
     - Offers more granular insights.
     - Can be done using `conversation` objects (as shown above).
     - Comparing models at the agent level is useful, as different agents might have different model requirements.
-    - The `single-turn chat` format can also be adapted for individual agent evaluation.
-    - **Note:** The possibility to create custom evaluators exists.
+    - The `single-turn chat` format can also be adapted for individual agent response evaluation.
   - **Whole loop output:**
     - Simpler to implement but may be less useful for pinpointing specific areas for improvement.
     - Can be done using `single-turn chat` objects (e.g., `query` encapsulates all input, `response` is the final output, `context` includes intermediate steps/prompts).
@@ -176,9 +187,11 @@ Assuming the goal is to compare the quality of responses between different model
 
 - **Most interesting evaluators (for code-based evaluation):**
 
-  - Relevance
+  - Relevance and Groundedness
+    - For these, I recommend generating conversational datasets since these evaluators don't require a ground truth.
   - Similarity
-  - Groundedness
+    - For this, I recommend generating single-turn chat datasets since this evaluator requires a ground truth.
+  - Perhaps custom evaluators would be useful for targeting more specifically whether a wrong or right answer is given for any given step (e.g., CorrectnessEvaluator).
 
 - **Data preparation:**
 
@@ -204,9 +217,8 @@ The Azure AI Foundry provides a user interface for conducting evaluations.
     - Contains a feature to generate sample question/answer pairs using a GPT model, but this is limited to simple one-sentence questions and not ideal for large data inputs. I recommended to generate such data independently.
   - **"Dataset":**
     - Highly useful for analyzing a response dataset. The "query" can represent all data the decision is based on.
-    - _(Reference: The original document includes a screenshot `images/ai-foundry-evaluation.png` illustrating this.)_
     - Image: ![ai-foundry-evaluation](images/ai-foundry-evaluation.png)
-    - It's also possible to compare evaluation results between different models. This can be used to compare different models as judges for the same dataset or to compare the response quality of different generative models.
+    - It is also possible to compare evaluation results between different models. This can be used to compare different models as judges for the same dataset or to compare the response quality of different models.
     - Image: ![ai-foundry-evaluation-comparison](images/ai-foundry-evaluation-comparison.png)
   - **"Prompt flow":** Appears to be an evaluator designed for low-code AI flows.
   - **Note:** The Phi-4 model was not available in the Foundry UI at the time of testing, though it was accessible when running evaluation scripts locally.
@@ -226,6 +238,24 @@ The Azure AI Foundry provides a user interface for conducting evaluations.
 - Programmatic evaluation (via code/SDK) offers flexibility for integration but requires setting up data preparation pipelines.
 - The Azure AI Foundry UI provides a user-friendly alternative, especially the "Dataset" feature for both single-turn and conversation evaluations and the "Model and prompt" feature for agent-specific tests.
 - Be aware of potential model compatibility issues (e.g., with reasoning models in certain evaluation setups) and the maturity of the SDK, which is still evolving.
+
+## Additional opportunities to explore
+
+Here are some promising areas that could enhance the evaluation strategy but were not yet explored:
+
+- **Simulator for generating datasets**
+  The simulator available via the Azure AI Evaluation SDK appears to have more potential than the simplistic one in the Foundry UI. It could help in creating realistic, large-scale datasets for training and evaluation.
+  👉 [Simulator documentation](https://learn.microsoft.com/en-us/azure/ai-foundry/how-to/develop/simulator-interaction-data)
+
+- **CI/CD evaluations**
+  Integrating evaluation workflows directly into development pipelines could enable continuous quality control. These tools allow running evaluations automatically as part of GitHub Actions or Azure DevOps pipelines.
+
+  - [GitHub Actions integration](https://learn.microsoft.com/en-us/azure/ai-foundry/how-to/evaluation-github-action)
+  - [Azure DevOps integration](https://learn.microsoft.com/en-us/azure/ai-foundry/how-to/evaluation-azure-devops)
+
+- **Red teaming for risk and safety**
+  While this is outside quality evaluation, red teaming is useful for testing models against harmful, unsafe, or policy-violating content. Particularly useful for models in sensitive domains.
+  👉 [Red teaming concepts](https://learn.microsoft.com/en-us/azure/ai-foundry/concepts/ai-red-teaming-agent)
 
 ## Documentation
 

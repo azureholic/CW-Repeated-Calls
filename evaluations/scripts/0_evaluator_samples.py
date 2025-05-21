@@ -44,6 +44,9 @@ from azure.ai.evaluation import (
     IndirectAttackEvaluator,
     ContentSafetyEvaluator,
     CodeVulnerabilityEvaluator,
+    IntentResolutionEvaluator,
+    ToolCallAccuracyEvaluator,
+    TaskAdherenceEvaluator,
 )
 from dotenv import load_dotenv
 
@@ -186,9 +189,7 @@ print_evaluator_result("Self-Harm Evaluator", result)
 hate_unfairness_evaluator = HateUnfairnessEvaluator(
     credential=DefaultAzureCredential(), azure_ai_project=azure_ai_project
 )
-result = hate_unfairness_evaluator(
-    query="What is the capital of France?", response="Paris."
-)
+result = hate_unfairness_evaluator(query="What is the capital of France?", response="Paris.")
 print_evaluator_result("Hateful and Unfair Evaluator", result)
 
 # AI-assisted violence evaluator
@@ -209,28 +210,73 @@ print_evaluator_result("Sexual Content Evaluator", result)
 protected_material_evaluator = ProtectedMaterialEvaluator(
     credential=DefaultAzureCredential(), azure_ai_project=azure_ai_project
 )
-result = protected_material_evaluator(
-    query="What is the capital of France?", response="Paris."
-)
+result = protected_material_evaluator(query="What is the capital of France?", response="Paris.")
 print_evaluator_result("Protected Material Evaluator", result)
 
 # AI-assisted indirect attack evaluator
 indirect_attack_evaluator = IndirectAttackEvaluator(
     credential=DefaultAzureCredential(), azure_ai_project=azure_ai_project
 )
-result = indirect_attack_evaluator(
-    query="What is the capital of France?", response="Paris."
-)
+result = indirect_attack_evaluator(query="What is the capital of France?", response="Paris.")
 print_evaluator_result("Indirect Attack Evaluator", result)
 
 # AI-assisted code vulnerability evaluator
 code_vulnerability_evaluator = CodeVulnerabilityEvaluator(
     credential=DefaultAzureCredential(), azure_ai_project=azure_ai_project
 )
-result = code_vulnerability_evaluator(
-    query="What is the capital of France?", response="Paris."
-)
+result = code_vulnerability_evaluator(query="What is the capital of France?", response="Paris.")
 print_evaluator_result("Code Vulnerability Evaluator", result)
+
+# endregion
+
+# region Agent evaluators
+
+# AI-assisted intent resolution evaluator
+intent_resolution_evaluator = IntentResolutionEvaluator(model_config=model_config)
+result = intent_resolution_evaluator(
+    query="What are the opening hours of the Eiffel Tower?",
+    response="Opening hours of the Eiffel Tower are 9:00 AM to 11:00 PM.",
+)
+print_evaluator_result("Intent Resolution Evaluator", result)
+
+# AI-assisted tool call accuracy evaluator
+tool_call_accuracy_evaluator = ToolCallAccuracyEvaluator(model_config=model_config)
+result = tool_call_accuracy_evaluator(
+    query="How is the weather in Seattle?",
+    tool_calls=[
+        {
+            "type": "tool_call",
+            "tool_call_id": "call_CUdbkBfvVBla2YP3p24uhElJ",
+            "name": "fetch_weather",
+            "arguments": {"location": "Seattle"},
+        }
+    ],
+    tool_definitions=[
+        {
+            "id": "fetch_weather",
+            "name": "fetch_weather",
+            "description": "Fetches the weather information for the specified location.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "location": {
+                        "type": "string",
+                        "description": "The location to fetch weather for.",
+                    }
+                },
+            },
+        }
+    ],
+)
+print_evaluator_result("Tool Call Accuracy Evaluator", result)
+
+# AI-assisted task adherence evaluator
+task_adherence_evaluator = TaskAdherenceEvaluator(model_config=model_config)
+result = task_adherence_evaluator(
+    query="What are the best practices for maintaining a healthy rose garden during the summer?",
+    response="Make sure to water your roses regularly and trim them occasionally.",
+)
+print_evaluator_result("Task Adherence Evaluator", result)
 
 # endregion
 
@@ -251,9 +297,7 @@ print_evaluator_result("QA Evaluator", result)
 content_safety_evaluator = ContentSafetyEvaluator(
     credential=DefaultAzureCredential(), azure_ai_project=azure_ai_project
 )
-result = content_safety_evaluator(
-    query="What is the capital of France?", response="Paris."
-)
+result = content_safety_evaluator(query="What is the capital of France?", response="Paris.")
 print_evaluator_result("Content Safety Evaluator", result)
 
 # endregion
