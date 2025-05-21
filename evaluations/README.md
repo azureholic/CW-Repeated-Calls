@@ -188,7 +188,7 @@ Assuming the goal is to compare the quality of responses between different model
 - **Most interesting evaluators (for code-based evaluation):**
 
   - Relevance and Groundedness
-    - For these, I recommend generating conversational datasets since these evaluators don't require a ground truth.
+    - For these, I recommend generating conversational datasets since these evaluators don't require a ground truth. (I don't yet know whether conversational datasets support ground truth)
   - Similarity
     - For this, I recommend generating single-turn chat datasets since this evaluator requires a ground truth.
   - Perhaps custom evaluators would be useful for targeting more specifically whether a wrong or right answer is given for any given step (e.g., CorrectnessEvaluator).
