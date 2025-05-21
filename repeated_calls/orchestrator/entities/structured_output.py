@@ -18,8 +18,8 @@ class RepeatedCallResult(BaseModel):
 class CauseResult(BaseModel):
     """Result class for cause determination analysis."""
 
-    customer_id: int
-    product_id: int
+    customer_id: int = Field(..., description="ID of the customer in question (NOT the name).")
+    product_id: int = Field(..., description="ID of the product in question (NOT the name).")
     analysis: str = Field(
         description="A description of your reasoning to determine if one of our systems could be the cause of issue that this repeat call is assumed to be about."
     )
