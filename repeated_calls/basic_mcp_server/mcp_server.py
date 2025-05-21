@@ -16,6 +16,7 @@ from typing import Annotated, Optional, AsyncIterator
 import psycopg_pool
 from dotenv import load_dotenv
 from mcp.server.fastmcp import FastMCP, Context
+from repeated_calls.basic_mcp_server.settings import settings
 
 # ────────────────────────────── project ─────────────────────────────
 from repeated_calls.basic_mcp_server.db import create_pool
@@ -70,12 +71,21 @@ async def lifespan(app) -> AsyncIterator[AppContext]:
 mcp = FastMCP("Repeated Calls Data Service", lifespan=lifespan)
 
 # ────────────────────────────── Tools  ──────────────────────────────
+
+API_KEY=settings.mcpapikey.get_secret_value()
+
+def check_api_key(api_key: str):
+    if api_key != API_KEY:
+        raise Exception("401: Invalid or missing API Key")
+
 @mcp.tool(description="Return the latest call event for a customer")
 async def get_call_event(
     customer_id: Annotated[int, "Customer ID, e.g. 42"],
+    api_key: str,
     ctx: Context = None,
 ) -> CallEventResponse:
     """Fetch one most-recent row from public.call_event for the given customer."""
+    check_api_key(api_key)
     start = time.time()
     pool = ctx.request_context.lifespan_context.pool
     try:
@@ -98,9 +108,11 @@ async def get_call_event(
 @mcp.tool(description="List all historic call events for a customer")
 async def get_historic_call_events(
     customer_id: Annotated[int, "Customer ID"],
+    api_key: str,
     ctx: Context = None,
 ) -> HistoricCallEventResponse:
     """Return every historic call event row belonging to the customer."""
+    check_api_key(api_key)
     start = time.time()
     pool = ctx.request_context.lifespan_context.pool
     try:
@@ -122,9 +134,11 @@ async def get_historic_call_events(
 @mcp.tool(description="Return a single customer record by id")
 async def get_customer_by_id(
     customer_id: Annotated[int, "Customer ID"],
+    api_key: str,
     ctx: Context = None,
 ) -> CustomerResponse:
     """Look up one row in public.customer."""
+    check_api_key(api_key)
     start = time.time()
     pool = ctx.request_context.lifespan_context.pool
     try:
@@ -146,9 +160,11 @@ async def get_customer_by_id(
 @mcp.tool(description="List every subscription a customer currently owns")
 async def get_subscriptions(
     customer_id: Annotated[int, "Customer ID"],
+    api_key: str,
     ctx: Context = None,
 ) -> SubscriptionResponse:
     """Query public.subscription filtered by customer_id."""
+    check_api_key(api_key)
     start = time.time()
     pool = ctx.request_context.lifespan_context.pool
     try:
@@ -170,10 +186,12 @@ async def get_subscriptions(
 
 @mcp.tool(description="Return product catalogue or a single product")
 async def get_products(
+    api_key: str,
     product_id: Annotated[Optional[int], "Optional product id filter"] = None,
     ctx: Context = None,
 ) -> ProductResponse:
     """Uses the cached catalogue; if product_id is given, returns at most one item."""
+    check_api_key(api_key)
     start = time.time()
     pool = ctx.request_context.lifespan_context.pool
     try:
@@ -199,10 +217,12 @@ async def get_products(
 
 @mcp.tool(description="List software updates, optionally filtered by product")
 async def get_software_updates(
+    api_key: str,
     product_id: Annotated[Optional[int], "Optional product id filter"] = None,
     ctx: Context = None,
 ) -> SoftwareUpdateResponse:
     """Query public.software_update with optional product filter."""
+    check_api_key(api_key)
     start = time.time()
     pool = ctx.request_context.lifespan_context.pool
     try:
@@ -223,10 +243,12 @@ async def get_software_updates(
 
 @mcp.tool(description="Return active discount rules, optionally filtered by product")
 async def get_discounts(
+    api_key: str,
     product_id: Annotated[Optional[int], "Optional product id filter"] = None,
     ctx: Context = None,
 ) -> DiscountResponse:
     """Query public.discount with optional product filter."""
+    check_api_key(api_key)
     start = time.time()
     pool = ctx.request_context.lifespan_context.pool
     try:
