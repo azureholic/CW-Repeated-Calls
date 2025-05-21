@@ -2,6 +2,8 @@
 
 import json
 
+from typing import Annotated
+
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
 from semantic_kernel.connectors.ai.open_ai import AzureChatPromptExecutionSettings
@@ -29,7 +31,7 @@ class DetermineRepeatedCallStep(KernelProcessStep):
         self,
         state: State,
         context: KernelProcessStepContext,
-        kernel: Kernel,
+        kernel: Annotated[Kernel | None, "The kernel", {"include_in_function_choices": False}], # this is important to avoid json serializing errors (https://github.com/microsoft/semantic-kernel/issues/12067)
     ) -> None:
         """Process function to retrieve customer data and call events using the enhanced database objects."""
         # Check if incoming_message is already the correct type
