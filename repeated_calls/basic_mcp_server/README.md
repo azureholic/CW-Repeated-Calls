@@ -18,12 +18,18 @@ This folder contains the **Repeated Calls MCP Data Service**—a a FastMCP-based
 
 ```
 basic_mcp_server/
-├── mcp_server.py         # Main server application
-├── test_server.py        # Test client for MCP server
-├── models.py             # Pydantic data models
-├── dao/                  # Data access objects
-├── db.py                 # Database connection helpers
-├── settings.py           # Configuration
+├── customer/
+│   ├── customer_mcp_server.py      # Customer MCP server entrypoint
+│   └── test_customer_mcp_server.py # Customer MCP test client
+├── operations/
+│   ├── operations_mcp_server.py    # Operations MCP server entrypoint
+│   └── test_operations_mcp_server.py # Operations MCP test client
+├── common/                         # Shared components
+│   ├── models.py                   # Shared Pydantic data models
+│   ├── db.py                       # Database connection helpers
+│   └── settings.py                 # Configuration
+├── Dockerfile-customer-mcp-server  # Dockerfile for the Customer MCP Server
+└── Dockerfile-operations-mcp-server # Dockerfile for the Operations MCP Server
 └── ...
 ```
 
@@ -39,15 +45,22 @@ basic_mcp_server/
 2. **Set up environment variables**
    Define the environment variables `PGHOST`, `PGUSER`, `PGPASSWORD`, `PGDATABASE`, and optionally `PGPORT`, either as environment variables or in a `.env` file in project root.
 
-3. **Run the server:** (from project root):
-    ```bash
-    python repeated_calls/basic_mcp_server/mcp_server.py --host 0.0.0.0 --port 8000
-    ```
+3. **Run the servers:** (from project root):
+    *   **Customer MCP Server** (e.g., on port 8000):
+        ```bash
+        python repeated_calls/basic_mcp_server/customer/customer_mcp_server.py --host 0.0.0.0 --port 8000
+        ```
+
+    *   **Operations MCP Server** (e.g., on port 8001):
+        ```bash
+        python repeated_calls/basic_mcp_server/operations/operations_mcp_server.py --host 0.0.0.0 --port 8001
+        ```
+
 
 ---
 
 ## Dockerization
-To build and run the MCP server with Docker:
+To build and run the MCP servers with Docker:
 
 1. Set the following variables in your terminal (update values as needed):
     ```bash
@@ -89,11 +102,17 @@ To build and run the MCP server with Docker:
 
 ## Testing
 
-You can use `test_server.py` to run sanity checks against your running MCP server:
+You can use the provided test clients to run sanity checks against your running MCP servers:
 
-```bash
-python repeated_calls/basic_mcp_server/test_server.py --host localhost:8000 --customer 7 --product 101
-```
+*   **Customer MCP Server** :
+    ```bash
+    python repeated_calls/basic_mcp_server/customer/test_customer_mcp_server.py --host localhost:8000 --customer 7 --product 101
+    ```
+
+*   **Operations MCP Server** :
+    ```bash
+    python repeated_calls/basic_mcp_server/operations/test_operations_mcp_server.py --host localhost:8001 --product 101
+    ```
 
 ---
 
@@ -128,18 +147,44 @@ export USER_ASSIGNED_IDENTITY="[REPLACE_WITH_USER_ASSIGNED_MANAGED_IDENTITY]"
 > - Make sure all referenced Azure resources (`${ACR_NAME}`, `${RESOURCE_GROUP}`, `${ENVIRONMENT_ID}`, `${USER_ASSIGNED_IDENTITY}`) already exist.
 > - You must be logged in to Azure CLI and have the necessary permissions.
 
-### 2. Create the Azure Container App
-
-Run the following command to create your container app:
-
+### 2. Login to Azure 
 ```bash
 az login
 az acr login --name ${ACR_NAME}
+```
+
+### 3. Deploy Customer MCP Server to Azure Container App
+
+```bash
+# Set variables specific to the Customer MCP App
+export CUSTOMER_CONTAINERAPP_NAME="customer-mcp-app" # Or your desired app name
+export CUSTOMER_IMAGE_NAME="customer-mcp-server"    # As defined in Dockerization
+
+# Create the Customer MCP Container App
 az containerapp create \
-  --name ${CONTAINERAPP_NAME} \
+  --name ${CUSTOMER_CONTAINERAPP_NAME} \
   --resource-group ${RESOURCE_GROUP} \
   --environment ${ENVIRONMENT_ID} \
-  --image ${ACR_LOGIN_SERVER}/${IMAGE_NAME}:${IMAGE_TAG} \
+  --image ${ACR_LOGIN_SERVER}/${CUSTOMER_IMAGE_NAME}:${IMAGE_TAG} \
+  --cpu 1 --memory 2.0Gi \
+  --ingress external --target-port 8000 \
+  --registry-server ${ACR_LOGIN_SERVER} \
+  --env-vars PGHOST="${PGHOST}" PGUSER="${PGUSER}" PGPASSWORD="${PGPASSWORD}" PGDATABASE="${PGDATABASE}" PGPORT="${PGPORT}" \
+  --user-assigned ${USER_ASSIGNED_IDENTITY}
+```
+### 4. Deploy Operations MCP Server to Azure Container App
+
+```bash
+# Set variables specific to the Operations MCP App
+export OPERATIONS_CONTAINERAPP_NAME="operations-mcp-app" # Or your desired app name
+export OPERATIONS_IMAGE_NAME="operations-mcp-server"    # As defined in Dockerization
+
+# Create the Operations MCP Container App
+az containerapp create \
+  --name ${OPERATIONS_CONTAINERAPP_NAME} \
+  --resource-group ${RESOURCE_GROUP} \
+  --environment ${ENVIRONMENT_ID} \
+  --image ${ACR_LOGIN_SERVER}/${OPERATIONS_IMAGE_NAME}:${IMAGE_TAG} \
   --cpu 1 --memory 2.0Gi \
   --ingress external --target-port 8000 \
   --registry-server ${ACR_LOGIN_SERVER} \

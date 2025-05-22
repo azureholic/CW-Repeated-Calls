@@ -1,5 +1,5 @@
 from typing import List, Optional
-from ..db import fetch_dicts
+from repeated_calls.basic_mcp_server.common.db import fetch_dicts
 from ..models import SoftwareUpdate
 
 
