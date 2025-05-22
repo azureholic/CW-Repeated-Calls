@@ -407,8 +407,5 @@ FodyWeavers.xsd
 # Environment variable files
 .env
 connection-string-servicebus.env
-<<<<<<< HEAD
 
 
-=======
->>>>>>> dbf8956 (changed the .gitignore file to ignore the .env file where the connection string is stored)
