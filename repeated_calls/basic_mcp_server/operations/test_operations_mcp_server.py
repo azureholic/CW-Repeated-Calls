@@ -37,7 +37,7 @@ async def invoke_tool(session, name: str, params: dict) -> dict:
 
 async def create_pool() -> AsyncConnectionPool:
     """Create a PostgreSQL connection-pool with retry policy."""
-    log.info("Opening PostgreSQL connection-pool")
+    print("Opening PostgreSQL connection-pool")
 
     conninfo = (
         f"host={settings.pghost} "    
