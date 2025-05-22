@@ -2,7 +2,7 @@ import logging
 from typing import Any, Iterable, List, Dict
 
 import psycopg_pool
-from .settings import settings                    # centralised config
+from repeated_calls.basic_mcp_server.common.settings import settings                    # centralised config
 
 log = logging.getLogger(__name__)
 
@@ -16,7 +16,7 @@ async def create_pool() -> psycopg_pool.AsyncConnectionPool:
             f"port={settings.pgport} "
             f"dbname={settings.pgdatabase} "
             f"user={settings.pguser} "
-            f"password={settings.pgpassword}"
+            f"password={settings.pgpassword.get_secret_value()}"
         ),
         min_size=5,
         max_size=20,
