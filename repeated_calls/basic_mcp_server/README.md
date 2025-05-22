@@ -162,7 +162,7 @@ az keyvault secret set --vault-name ${KEYVAULT_NAME} --name MCP-CUSTOMERS-API-KE
 az keyvault secret set --vault-name ${KEYVAULT_NAME} --name MCP-OPERATIONS-API-KEY --value "<your-api-key>"
 ```
 
-### 3. Grant access to the managed identity
+### 4. Grant access to the managed identity
 ```bash
 az keyvault set-policy --name ${KEYVAULT_NAME} --object-id <USER_ASSIGNED_IDENTITY_OBJECT_ID> --secret-permissions get
 ```
