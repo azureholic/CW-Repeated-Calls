@@ -36,10 +36,12 @@ class DetermineCauseStep(KernelProcessStep):
         response = await agent.get_response(
             messages=prompts.get_user_prompt(),
         )
-        logger.debug(f"Cause determination response: {response}")
 
         # Parse the response and update the state
         res = CauseResult(**json.loads(response.content.content))
+        logger.debug(
+            f">> CAUSE AGENT - Product ID: {res.product_id}. Analysis: {res.analysis}. Conclusion: {res.conclusion}"
+        )
         state.update(res)
 
         if res.is_relevant:

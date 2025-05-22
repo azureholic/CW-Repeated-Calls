@@ -70,6 +70,15 @@ class CallEvent(BaseModel):
             reader = csv.DictReader(f)
             return [CallEvent(**row) for row in reader]
 
+    def __str__(self) -> str:
+        """Return a string representation of the call event."""
+        return "ID: {id}\nCustomer ID: {customer_id}\nCall reason: {sdc}\nTimestamp: {timestamp}".format(
+            id=self.id,
+            customer_id=self.customer_id,
+            sdc=self.sdc,
+            timestamp=self.timestamp.strftime("%Y-%m-%d %H:%M:%S"),
+        )
+
 
 class HistoricCallEvent(BaseModel):
     """A historic call event."""
