@@ -165,8 +165,6 @@ az keyvault secret set --vault-name ${KEYVAULT_NAME} --name MCP-OPERATIONS-API-K
 ### 3. Grant access to the managed identity
 ```bash
 az keyvault set-policy --name ${KEYVAULT_NAME} --object-id <USER_ASSIGNED_IDENTITY_OBJECT_ID> --secret-permissions get
-az keyvault set-policy --name ${KEYVAULT_NAME} --object-id <USER_ASSIGNED_IDENTITY_OBJECT_ID> --secret-permissions get
-az keyvault set-policy --name ${KEYVAULT_NAME} --object-id <USER_ASSIGNED_IDENTITY_OBJECT_ID> --secret-permissions get
 ```
 
 ### 5. Deploy Customer MCP Server to Azure Container App
