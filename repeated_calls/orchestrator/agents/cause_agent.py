@@ -25,6 +25,7 @@ def get_agent(kernel: Kernel, instructions: str) -> ChatCompletionAgent:
 
     # Create and configure the agent
     agent = ChatCompletionAgent(
+        name="CauseAgent",
         instructions=instructions,
         kernel=kernel,
         arguments=KernelArguments(settings=settings),

@@ -1,6 +1,7 @@
 """OpenTelemetry configuration for Azure Monitor integration."""
 
 import logging
+import os
 from typing import Optional
 
 from azure.monitor.opentelemetry.exporter import AzureMonitorLogExporter, AzureMonitorTraceExporter
@@ -35,6 +36,9 @@ class TelemetrySetup:
         self.service_name = service_name
         self.resource = Resource.create({"service.name": service_name})
         self._setup_completed = False
+        os.environ["OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT"] = "true"
+        os.environ["AZURE_TRACING_GEN_AI_CONTENT_RECORDING_ENABLED"]= "true"
+        os.environ["SEMANTICKERNEL_EXPERIMENTAL_GENAI_ENABLE_OTEL_DIAGNOSTICS_SENSITIVE"] = "true"
         OpenAIInstrumentor().instrument()
         
     def setup(self):
