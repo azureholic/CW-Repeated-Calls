@@ -64,7 +64,7 @@ def get_event() -> CallEvent:
             )
 
 
-async def run_sequence() -> None:
+async def run_sequence(call_event: CallEvent) -> None:
     """Run the sequence of steps for the Repeated Calls process."""
     # Get OpenTelemetry tracer
     tracer = trace.get_tracer("repeated_calls.orchestrator")
@@ -73,8 +73,6 @@ async def run_sequence() -> None:
 
     # Start a span for this sequence execution
     with tracer.start_as_current_span("repeated_calls.run_sequence") as span:
-        call_event = get_event()
-
         state = State.from_call_event(call_event)
         logger.debug(f"### INCOMING CALL ###\n{state.call_event}")
         # Add attributes to the span
@@ -154,8 +152,10 @@ async def main() -> None:
     if args.loglevel:
         logger.setLevel(args.loglevel.upper())
 
+    call_event = get_event()
+
     logger.info("Application started.")
-    await run_sequence()
+    await run_sequence(call_event)
     logger.info("Application finished.")
 
 
