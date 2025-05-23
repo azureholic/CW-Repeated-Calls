@@ -26,3 +26,30 @@ Note that the CSV files must be named after the tables they will populate. For e
 ## MCP Data Service
 
 For details on the MCP Data Service (API, Dockerization, deployment, etc.), see the [Basic MCP Server README](repeated_calls/basic_mcp_server/README.md) .
+
+
+## Prerequisits for MCP Servers
+
+1.  Update the env file in the project root with the PostgeSQL information and the MCP Endpoints:
+
+    ```
+    # PostgreSQL
+    PGHOST=<postgres-host>
+    PGUSER=<postgres-user>
+    PGPASSWORD=<postgres-password>
+    PGDATABASE=<postgres-db>
+    PGPORT= 5432 
+
+    # MCP server endpoints 
+    CUSTOMER_MCP_URL= "https://customer-mcp.<region>azurecontainerapps.io/sse"
+    OPERATIONS_MCP_URL= "https://operations-mcp.<region>.azurecontainerapps.io/sse" 
+    ```
+
+Note: If you dont have the MCP Servers deployed you can run them localy and modify the urls accordingly. If you are using ACA you will need to deploy the mcp servers before setting up the urls. For instructions on how to do that see the ##MCP Data Service Section above.
+
+## 5  Running the orchestrator
+
+```bash
+poetry install
+poetry run python -m repeated_calls.orchestrator.main --loglevel INFO
+```

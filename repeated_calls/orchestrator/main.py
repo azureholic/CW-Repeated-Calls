@@ -12,31 +12,21 @@ from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
 from semantic_kernel.processes import ProcessBuilder
 from semantic_kernel.processes.local_runtime.local_event import KernelProcessEvent
 from semantic_kernel.processes.local_runtime.local_kernel_process import start
-from steps.determine_cause import DetermineCauseStep
-from steps.determine_repeated_call import DetermineRepeatedCallStep
-from steps.exit_step import ExitStep
+from repeated_calls.orchestrator.steps.determine_cause import DetermineCauseStep
+from repeated_calls.orchestrator.steps.determine_repeated_call import DetermineRepeatedCallStep
+from repeated_calls.orchestrator.steps.exit_step import ExitStep
 
 from repeated_calls.database.schemas import CallEvent
 from repeated_calls.orchestrator.entities.state import State
-from repeated_calls.orchestrator.plugins.csv.customer import CustomerDataPlugin
-from repeated_calls.orchestrator.plugins.csv.operations import OperationsDataPlugin
-from repeated_calls.orchestrator.settings import AzureOpenAISettings, AppInsightsSettings
+from repeated_calls.orchestrator.plugins import (
+    customer_plugin,
+    operations_plugin,
+)
+from repeated_calls.orchestrator.settings import AzureOpenAISettings
 from repeated_calls.orchestrator.steps.determine_recommendation import DetermineRecommendationStep
 from repeated_calls.utils.loggers import Logger
 
-  # Initialize telemetry
-from repeated_calls.utils.loggers import Logger
-from repeated_calls.utils.otel import configure_telemetry
-
-# Get connection string from environment or settings
-appinsights_settings = AppInsightsSettings()
-configure_telemetry(appinsights_settings.connection_string, "repeated-calls-service")
-
-from repeated_calls.utils.loggers import get_application_logger
-
-# Create a logger with your module name
-logger = get_application_logger(__name__)
-logger.info("Telemetry configured for Azure Monitor")
+logger = Logger()
 
 
 def get_event() -> CallEvent:
@@ -58,39 +48,28 @@ def get_event() -> CallEvent:
 
 async def run_sequence() -> None:
     """Run the sequence of steps for the Repeated Calls process."""
-    # Get OpenTelemetry tracer
-    from opentelemetry import trace
-    tracer = trace.get_tracer("repeated_calls.orchestrator")
+    try:
+        settings = AzureOpenAISettings()
 
-    
-
-    # Start a span for this sequence execution
-    with tracer.start_as_current_span("repeated_calls.run_sequence") as span:
-        call_event = get_event()
-
-        state = State.from_call_event(call_event)
-        logger.debug(f"### INCOMING CALL ###\n{state.call_event}")
-
-
-        # Add attributes to the span
-        span.set_attribute("call_event.id", str(call_event.id))
-        span.set_attribute("call_event.customer_id", str(call_event.customer_id))
-
-        try:
-            settings = AzureOpenAISettings()
-
-            kernel = Kernel()
-            kernel.add_service(
-                AzureChatCompletion(
-                    endpoint=settings.endpoint,
-                    api_key=settings.api_key.get_secret_value() if settings.api_key else None,
-                    deployment_name=settings.deployment,
-                )
+        kernel = Kernel()
+        kernel.add_service(
+            AzureChatCompletion(
+                endpoint=settings.endpoint,
+                api_key=settings.api_key.get_secret_value() if settings.api_key else None,
+                deployment_name=settings.deployment,
             )
-            kernel.add_plugin(CustomerDataPlugin(data_path="data"), "CustomerDataPlugin")
-            kernel.add_plugin(OperationsDataPlugin(data_path="data"), "OperationsDataPlugin")
+        )
 
-            
+        # Keep MCP plugins alive for the whole run
+        async with customer_plugin() as cust, operations_plugin() as ops:
+            kernel.add_plugin(cust, cust.name)   # → "CustomerDataPlugin"
+            kernel.add_plugin(ops,  ops.name)    # → "OperationsDataPlugin"
+
+            call_event = get_event()
+
+            state = State.from_call_event(call_event)
+            logger.debug(f"### INCOMING CALL ###\n{state.call_event}")
+
             process_builder = ProcessBuilder("RepeatedCalls")
 
             # Add steps
@@ -119,14 +98,18 @@ async def run_sequence() -> None:
             # Compile/build
             process = process_builder.build()
 
+            logger.info("Starting process execution...")
             await start(
                 process=process,
                 kernel=kernel,
                 initial_event=KernelProcessEvent(id="Start", data=state),
             )
-        except Exception as exc:
-            logger.error("An error occurred during the sequence execution: %s", str(exc), exc_info=True)
-            raise
+
+            logger.info("Process execution completed successfully.")
+
+    except Exception as exc:
+        logger.error("An error occurred during the sequence execution: %s", str(exc), exc_info=True)
+        raise
 
 
 async def main() -> None:
