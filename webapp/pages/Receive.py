@@ -1,9 +1,6 @@
-import json
-
 import streamlit as st
 import utils as su
 
-from repeated_calls.database.schemas import CallEvent
 from repeated_calls.streaming.settings import StreamingSettings
 from repeated_calls.utils.loggers import Logger
 
@@ -19,5 +16,5 @@ client = su.get_sb_client(config.connection_string)
 
 # TODO: process message queue messages
 # Convert to Pydantic model using event = CallEvent(**json.loads(mesage))
-# Call orchestrator
+# Call orchestrator using await run_sequence(event)
 # Display results
