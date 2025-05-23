@@ -50,3 +50,23 @@ class AzureAIFoundrySettings(BaseSettings):
     )
     
 
+class AppInsightsSettings(BaseSettings):
+    """Settings for Azure Application Insights.
+
+    Pydantic will determine the values of all fields in the following order of precedence
+    (descending order of priority):
+    1. Arguments passed to the class constructor
+    2. Environment variables (prefixed with `APPLICATIONINSIGHTS_`)
+    3. Variables in a .env file if present (prefixed with `APPLICATIONINSIGHTS_`)
+
+    Attributes:
+        connection_string (str): The connection string for Azure Application Insights.
+
+    """
+
+    connection_string: str
+
+    model_config = SettingsConfigDict(
+        env_nested_delimiter="__", env_file=".env", env_prefix="APPLICATIONINSIGHTS_", extra="ignore"
+    )
+    

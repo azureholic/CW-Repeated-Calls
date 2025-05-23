@@ -36,3 +36,29 @@ class Logger:
             cls._loggers[name] = logging.getLogger(name)
 
         return cls._loggers[name]
+
+
+def get_application_logger(
+    name: str, service_name: str = "repeated-calls-service"
+) -> logging.Logger:
+    """Create and return an application-specific logger that works with the telemetry setup.
+
+    This function creates a logger that will be captured by OpenTelemetry and sent to
+    Azure Monitor when the telemetry is configured.
+
+    Args:
+        name: The name for your logger, typically the module name
+        service_name: The service name prefix to use (should match telemetry setup)
+
+    Returns:
+        A logger instance configured to work with the telemetry setup
+    """
+    # Create a logger with appropriate naming hierarchy
+    logger_name = f"{service_name}.{name}" if name != service_name else service_name
+    logger = logging.getLogger(logger_name)
+
+    # Ensure it has at least INFO level set
+    if logger.level == logging.NOTSET:
+        logger.setLevel(logging.INFO)
+
+    return logger

@@ -20,11 +20,23 @@ from repeated_calls.database.schemas import CallEvent
 from repeated_calls.orchestrator.entities.state import State
 from repeated_calls.orchestrator.plugins.csv.customer import CustomerDataPlugin
 from repeated_calls.orchestrator.plugins.csv.operations import OperationsDataPlugin
-from repeated_calls.orchestrator.settings import AzureOpenAISettings
+from repeated_calls.orchestrator.settings import AzureOpenAISettings, AppInsightsSettings
 from repeated_calls.orchestrator.steps.determine_recommendation import DetermineRecommendationStep
 from repeated_calls.utils.loggers import Logger
 
-logger = Logger()
+  # Initialize telemetry
+from repeated_calls.utils.loggers import Logger
+from repeated_calls.utils.otel import configure_telemetry
+
+# Get connection string from environment or settings
+appinsights_settings = AppInsightsSettings()
+configure_telemetry(appinsights_settings.connection_string, "repeated-calls-service")
+
+from repeated_calls.utils.loggers import get_application_logger
+
+# Create a logger with your module name
+logger = get_application_logger(__name__)
+logger.info("Telemetry configured for Azure Monitor")
 
 
 def get_event() -> CallEvent:
@@ -46,61 +58,75 @@ def get_event() -> CallEvent:
 
 async def run_sequence() -> None:
     """Run the sequence of steps for the Repeated Calls process."""
-    try:
-        settings = AzureOpenAISettings()
+    # Get OpenTelemetry tracer
+    from opentelemetry import trace
+    tracer = trace.get_tracer("repeated_calls.orchestrator")
 
-        kernel = Kernel()
-        kernel.add_service(
-            AzureChatCompletion(
-                endpoint=settings.endpoint,
-                api_key=settings.api_key.get_secret_value() if settings.api_key else None,
-                deployment_name=settings.deployment,
-            )
-        )
-        kernel.add_plugin(CustomerDataPlugin(data_path="data"), "CustomerDataPlugin")
-        kernel.add_plugin(OperationsDataPlugin(data_path="data"), "OperationsDataPlugin")
+    
 
+    # Start a span for this sequence execution
+    with tracer.start_as_current_span("repeated_calls.run_sequence") as span:
         call_event = get_event()
 
         state = State.from_call_event(call_event)
         logger.debug(f"### INCOMING CALL ###\n{state.call_event}")
 
-        process_builder = ProcessBuilder("RepeatedCalls")
 
-        # Add steps
-        determine_repeated_call = process_builder.add_step(DetermineRepeatedCallStep)
-        determine_cause = process_builder.add_step(DetermineCauseStep)
-        determine_recommendation = process_builder.add_step(DetermineRecommendationStep)
-        exit_step = process_builder.add_step(ExitStep)
+        # Add attributes to the span
+        span.set_attribute("call_event.id", str(call_event.id))
+        span.set_attribute("call_event.customer_id", str(call_event.customer_id))
 
-        # Orchestrate steps
-        process_builder.on_input_event("Start").send_event_to(
-            determine_repeated_call, function_name="repeated_call", parameter_name="state"
-        )
+        try:
+            settings = AzureOpenAISettings()
 
-        determine_repeated_call.on_event("IsRepeatedCall").send_event_to(
-            determine_cause, function_name="cause", parameter_name="state"
-        )
-        determine_repeated_call.on_event("IsNotRepeatedCall").send_event_to(exit_step)
+            kernel = Kernel()
+            kernel.add_service(
+                AzureChatCompletion(
+                    endpoint=settings.endpoint,
+                    api_key=settings.api_key.get_secret_value() if settings.api_key else None,
+                    deployment_name=settings.deployment,
+                )
+            )
+            kernel.add_plugin(CustomerDataPlugin(data_path="data"), "CustomerDataPlugin")
+            kernel.add_plugin(OperationsDataPlugin(data_path="data"), "OperationsDataPlugin")
 
-        determine_cause.on_event("IsRelevant").send_event_to(
-            determine_recommendation, function_name="recommend", parameter_name="state"
-        )
-        determine_cause.on_event("IsNotRelevant").send_event_to(exit_step)
+            
+            process_builder = ProcessBuilder("RepeatedCalls")
 
-        determine_recommendation.on_event("Exit").send_event_to(exit_step)
+            # Add steps
+            determine_repeated_call = process_builder.add_step(DetermineRepeatedCallStep)
+            determine_cause = process_builder.add_step(DetermineCauseStep)
+            determine_recommendation = process_builder.add_step(DetermineRecommendationStep)
+            exit_step = process_builder.add_step(ExitStep)
 
-        # Compile/build
-        process = process_builder.build()
+            # Orchestrate steps
+            process_builder.on_input_event("Start").send_event_to(
+                determine_repeated_call, function_name="repeated_call", parameter_name="state"
+            )
 
-        await start(
-            process=process,
-            kernel=kernel,
-            initial_event=KernelProcessEvent(id="Start", data=state),
-        )
-    except Exception as exc:
-        logger.error("An error occurred during the sequence execution: %s", str(exc), exc_info=True)
-        raise
+            determine_repeated_call.on_event("IsRepeatedCall").send_event_to(
+                determine_cause, function_name="cause", parameter_name="state"
+            )
+            determine_repeated_call.on_event("IsNotRepeatedCall").send_event_to(exit_step)
+
+            determine_cause.on_event("IsRelevant").send_event_to(
+                determine_recommendation, function_name="recommend", parameter_name="state"
+            )
+            determine_cause.on_event("IsNotRelevant").send_event_to(exit_step)
+
+            determine_recommendation.on_event("Exit").send_event_to(exit_step)
+
+            # Compile/build
+            process = process_builder.build()
+
+            await start(
+                process=process,
+                kernel=kernel,
+                initial_event=KernelProcessEvent(id="Start", data=state),
+            )
+        except Exception as exc:
+            logger.error("An error occurred during the sequence execution: %s", str(exc), exc_info=True)
+            raise
 
 
 async def main() -> None:
