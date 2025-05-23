@@ -29,6 +29,8 @@ class DetermineCauseStep(KernelProcessStep):
         kernel: Kernel,
     ) -> None:
         """Process function to determine the cause of a product issue."""
+        
+        
         prompts = CausePrompt(state)
 
         agent = get_agent(kernel=kernel, instructions=prompts.get_system_prompt())

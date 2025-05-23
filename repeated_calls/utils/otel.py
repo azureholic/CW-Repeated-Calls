@@ -13,6 +13,10 @@ from opentelemetry.sdk.trace.export import BatchSpanProcessor
 from opentelemetry.sdk._logs import LoggerProvider, LoggingHandler
 from opentelemetry.sdk._logs.export import BatchLogRecordProcessor
 
+# for OpenAI
+from opentelemetry.instrumentation.openai_v2 import OpenAIInstrumentor
+
+
 # Importing from local utils
 from repeated_calls.utils.loggers import get_application_logger
 
@@ -31,6 +35,7 @@ class TelemetrySetup:
         self.service_name = service_name
         self.resource = Resource.create({"service.name": service_name})
         self._setup_completed = False
+        OpenAIInstrumentor().instrument()
         
     def setup(self):
         """Configure and initialize all telemetry components."""
@@ -49,6 +54,7 @@ class TelemetrySetup:
         """Configure trace export to Azure Monitor."""
         tracer_provider = TracerProvider(resource=self.resource)
         trace.set_tracer_provider(tracer_provider)
+        
         
         # Create Azure Monitor span exporter
         azure_exporter = AzureMonitorTraceExporter(connection_string=self.connection_string)
