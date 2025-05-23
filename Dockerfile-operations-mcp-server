@@ -38,4 +38,4 @@ USER appuser
 
 EXPOSE 8000
 
-CMD ["python", "-m", "repeated_calls.basic_mcp_server.operations.operations_mcp_server"]
+CMD ["uvicorn", "repeated_calls.basic_mcp_server.operations.operations_mcp_server:app", "--host", "0.0.0.0", "--port", "8000"]

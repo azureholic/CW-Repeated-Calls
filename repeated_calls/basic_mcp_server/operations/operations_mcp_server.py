@@ -56,6 +56,7 @@ async def lifespan(app) -> AsyncIterator[AppContext]:
 
 # ────────────────────────────── FastMCP init ────────────────────────
 mcp = FastMCP("Repeated Calls Operations Data Service", lifespan=lifespan)
+app = mcp.sse_app
 
 # ────────────────────────────── Tools  ──────────────────────────────
 @mcp.tool(description="List software updates, optionally filtered by product")

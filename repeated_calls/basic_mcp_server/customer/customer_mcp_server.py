@@ -66,6 +66,7 @@ async def lifespan(app) -> AsyncIterator[AppContext]:
 
 # ────────────────────────────── FastMCP init ────────────────────────
 mcp = FastMCP("Repeated Calls Customer Data Service", lifespan=lifespan)
+app = mcp.sse_app
 
 # ────────────────────────────── Tools  ──────────────────────────────
 @mcp.tool(description="Return the latest call event for a customer")
