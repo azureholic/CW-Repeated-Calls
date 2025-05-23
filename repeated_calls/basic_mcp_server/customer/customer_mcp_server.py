@@ -1,5 +1,5 @@
 """
-Repeated Contact Handling – MCP data service
+Repeated Contact Handling – Customer MCP data service
 """
 
 # ────────────────────────────── std-lib ──────────────────────────────
@@ -18,25 +18,23 @@ from dotenv import load_dotenv
 from mcp.server.fastmcp import FastMCP, Context
 
 # ────────────────────────────── project ─────────────────────────────
-from repeated_calls.basic_mcp_server.db import create_pool
-from repeated_calls.basic_mcp_server.models import (
+from repeated_calls.basic_mcp_server.customer.dao import call_event as call_event_dao
+from repeated_calls.basic_mcp_server.common.db import create_pool
+from repeated_calls.basic_mcp_server.customer.models import (
     # domain + response models
     CallEvent, CallEventResponse,
     HistoricCallEvent, HistoricCallEventResponse,
     Customer, CustomerResponse,
     Subscription, SubscriptionResponse,
     Product, ProductResponse,
-    SoftwareUpdate, SoftwareUpdateResponse,
-    Discount, DiscountResponse,
+    Discount, DiscountResponse
 )
-from repeated_calls.basic_mcp_server.dao import (
-    call_event as call_event_dao,
+from repeated_calls.basic_mcp_server.customer.dao import (
     historic_call_event as hce_dao,
     customer as customer_dao,
     subscription as subscription_dao,
     product as product_dao,
-    software_update as su_dao,
-    discount as discount_dao,
+    discount as discount_dao
 )
 
 # ────────────────────────────── runtime set-up ──────────────────────
@@ -49,8 +47,8 @@ logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s  %(levelname)-8s %(name)s | %(message)s",
 )
-logger = logging.getLogger("repeated_calls_mcp")
-logger.info("Starting Repeated Calls MCP server")
+logger = logging.getLogger("repeated_calls_customer_mcp")
+logger.info("Starting Repeated Calls Customer MCP server")
 
 # ────────────────────────────── FastMCP lifespan ────────────────────
 @dataclass
@@ -67,7 +65,7 @@ async def lifespan(app) -> AsyncIterator[AppContext]:
         await pool.close()
 
 # ────────────────────────────── FastMCP init ────────────────────────
-mcp = FastMCP("Repeated Calls Data Service", lifespan=lifespan)
+mcp = FastMCP("Repeated Calls Customer Data Service", lifespan=lifespan)
 
 # ────────────────────────────── Tools  ──────────────────────────────
 @mcp.tool(description="Return the latest call event for a customer")
@@ -196,31 +194,6 @@ async def get_products(
             error=str(exc),
         )
 
-
-@mcp.tool(description="List software updates, optionally filtered by product")
-async def get_software_updates(
-    product_id: Annotated[Optional[int], "Optional product id filter"] = None,
-    ctx: Context = None,
-) -> SoftwareUpdateResponse:
-    """Query public.software_update with optional product filter."""
-    start = time.time()
-    pool = ctx.request_context.lifespan_context.pool
-    try:
-        updates = await su_dao.find(pool, product_id)
-        return SoftwareUpdateResponse(
-            updates=updates,
-            count=len(updates),
-            query_time_ms=round((time.time() - start) * 1000, 2),
-        )
-    except Exception as exc:
-        logger.error("get_software_updates failed", exc_info=True)
-        return SoftwareUpdateResponse(
-            updates=[], count=0,
-            query_time_ms=round((time.time() - start) * 1000, 2),
-            error=str(exc),
-        )
-
-
 @mcp.tool(description="Return active discount rules, optionally filtered by product")
 async def get_discounts(
     product_id: Annotated[Optional[int], "Optional product id filter"] = None,
@@ -248,14 +221,14 @@ async def get_discounts(
 if __name__ == "__main__":
     import argparse
 
-    parser = argparse.ArgumentParser("Repeated Calls MCP Server")
+    parser = argparse.ArgumentParser("Repeated Calls Customer MCP Server")
     parser.add_argument("--host", default="0.0.0.0")
     parser.add_argument("--port", type=int, default=3000)
     parser.add_argument("--transport", choices=["sse", "stdio"], default="sse")
     parser.add_argument("--log-level", default="INFO")
     args = parser.parse_args()
 
-    logging.getLogger("repeated_calls_mcp").setLevel(args.log_level.upper())
+    logging.getLogger("repeated_calls_customer_mcp").setLevel(args.log_level.upper())
 
-    logger.info("Starting MCP server")
+    logger.info("Starting Customer MCP server")
     mcp.run(transport=args.transport)

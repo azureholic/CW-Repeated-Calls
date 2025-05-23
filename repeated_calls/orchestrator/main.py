@@ -7,26 +7,11 @@ import os
 from datetime import datetime
 from importlib.resources import files
 
-from azure.ai.projects import AIProjectClient, enable_telemetry
-from azure.ai.inference.tracing import AIInferenceInstrumentor 
-from azure.identity import DefaultAzureCredential
-from azure.monitor.opentelemetry import configure_azure_monitor
-from opentelemetry.instrumentation.openai_v2 import OpenAIInstrumentor
-
-from opentelemetry.sdk.resources import Resource
-from opentelemetry.semconv.resource import ResourceAttributes
-from opentelemetry import trace
-
-from repeated_calls.orchestrator.observability import setup_observability
-
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
 from semantic_kernel.processes import ProcessBuilder
 from semantic_kernel.processes.local_runtime.local_event import KernelProcessEvent
 from semantic_kernel.processes.local_runtime.local_kernel_process import start
-from semantic_kernel.connectors.ai.azure_ai_inference import AzureAIInferenceChatCompletion
-from azure.ai.inference.aio import ChatCompletionsClient
-from azure.ai.inference.tracing import AIInferenceInstrumentor 
 from steps.determine_cause import DetermineCauseStep
 from steps.determine_repeated_call import DetermineRepeatedCallStep
 from steps.exit_step import ExitStep
@@ -35,28 +20,12 @@ from repeated_calls.database.schemas import CallEvent
 from repeated_calls.orchestrator.entities.state import State
 from repeated_calls.orchestrator.plugins.csv.customer import CustomerDataPlugin
 from repeated_calls.orchestrator.plugins.csv.operations import OperationsDataPlugin
-from repeated_calls.orchestrator.settings import AzureOpenAISettings, AzureAIFoundrySettings
-
+from repeated_calls.orchestrator.settings import AzureOpenAISettings
 from repeated_calls.orchestrator.steps.determine_recommendation import DetermineRecommendationStep
 from repeated_calls.utils.loggers import Logger
 
-
-ai_foundry_settings = AzureAIFoundrySettings()
-
-project_client = AIProjectClient(
-    endpoint=ai_foundry_settings.endpoint,
-    credential=DefaultAzureCredential()
-)
-
-resource = Resource.create({ResourceAttributes.SERVICE_NAME: "repeated_calls"})
-application_insights_connection_string = project_client.telemetry.get_connection_string()        
-
 logger = Logger()
 
-setup_observability(
-    connection_string=application_insights_connection_string,
-    resource=resource
-)
 
 def get_event() -> CallEvent:
     """Create a sample CallEvent object."""
@@ -78,13 +47,9 @@ def get_event() -> CallEvent:
 async def run_sequence() -> None:
     """Run the sequence of steps for the Repeated Calls process."""
     try:
-        logger.debug("Initializing Azure OpenAI settings...")
         settings = AzureOpenAISettings()
-        
-        logger.debug("Creating Semantic Kernel instance...")
-        kernel = Kernel()
 
-        logger.debug("Adding AzureChatCompletion service to kernel...")
+        kernel = Kernel()
         kernel.add_service(
             AzureChatCompletion(
                 endpoint=settings.endpoint,
@@ -92,23 +57,13 @@ async def run_sequence() -> None:
                 deployment_name=settings.deployment,
             )
         )
-
-        # kernel.add_service(AzureAIInferenceChatCompletion(
-        #     ai_model_id=settings.deployment,
-        #     client=ChatCompletionsClient(
-        #         endpoint=f"{str(settings.endpoint).strip('/')}/openai/deployments/{settings.deployment}",
-        #         credential=DefaultAzureCredential(),
-        #         credential_scopes=["https://cognitiveservices.azure.com/.default"],
-        #     ),
-        # ))
         kernel.add_plugin(CustomerDataPlugin(data_path="data"), "CustomerDataPlugin")
         kernel.add_plugin(OperationsDataPlugin(data_path="data"), "OperationsDataPlugin")
 
-        logger.debug("Initialising state...")
         call_event = get_event()
 
         state = State.from_call_event(call_event)
-        logger.debug("State initialized: %s", state)
+        logger.debug(f"### INCOMING CALL ###\n{state.call_event}")
 
         process_builder = ProcessBuilder("RepeatedCalls")
 
@@ -138,19 +93,11 @@ async def run_sequence() -> None:
         # Compile/build
         process = process_builder.build()
 
-        scenario = os.path.basename("repeated_call_flow")
-        tracer = trace.get_tracer(__name__)
-       
-        with tracer.start_as_current_span(scenario):
-            logger.info("Starting process execution...")
-            await start(
-                process=process,
-                kernel=kernel,
-                initial_event=KernelProcessEvent(id="Start", data=state),
-            )
-
-            logger.info("Process execution completed successfully.")
-
+        await start(
+            process=process,
+            kernel=kernel,
+            initial_event=KernelProcessEvent(id="Start", data=state),
+        )
     except Exception as exc:
         logger.error("An error occurred during the sequence execution: %s", str(exc), exc_info=True)
         raise

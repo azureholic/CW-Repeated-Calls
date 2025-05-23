@@ -7,11 +7,19 @@ formatters:
   verbose:
     format: "[%(asctime)s.%(msecs)03d] %(levelname)-8s - %(filename)s:%(funcName)s:%(lineno)d - %(message)s"
     datefmt: '%Y-%m-%d %H:%M:%S'
+  minimal:
+    format: "%(message)s"
 handlers:
   console:
     class: logging.StreamHandler
     formatter: simple
     stream: ext://sys.stdout
+  demo:
+    class: logging.StreamHandler
+    formatter: minimal
+    stream: ext://sys.stdout
+    '.':
+      terminator: "\n\n===========================\n\n"
 loggers:
   root:
     level: WARNING
