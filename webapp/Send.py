@@ -7,7 +7,7 @@ from repeated_calls.utils.loggers import Logger
 logger = Logger()
 config = StreamingSettings()
 
-st.set_page_config(page_title="Customer Calls", page_icon=":material/call:", layout="wide")
+st.set_page_config(page_title="Simulate Customer Calls", page_icon=":material/call:", layout="wide")
 
 # Load (cached) ServiceBusClient and scenario data
 client = su.get_sb_client(config.connection_string)

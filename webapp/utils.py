@@ -52,6 +52,8 @@ def send_msg(id: int, client: ServiceBusClient, queue: str, engine: Engine) -> N
             msg = ServiceBusMessage(body=json.dumps(event.model_dump(mode="json")))
             sender.send_messages(msg)
 
-            logger.info(f"Message sent to queue {queue} with CallEvent ID {event.id}")
+    log = f"Message sent to queue {queue} with CallEvent ID {event.id}"
+    logger.info(log)
+    st.toast(log)
     
     
