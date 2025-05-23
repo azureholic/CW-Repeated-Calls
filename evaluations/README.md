@@ -54,7 +54,7 @@ AZURE_FOUNDRY_PROJECT_NAME=
 
 ## Usage
 
-Run the sample evaluator script (demonstrates various evaluators with simple examples):
+Run the sample evaluator script (demonstrates various evaluators with example inputs):
 
 ```bash
 uv run scripts/0_evaluator-samples.py
@@ -63,14 +63,14 @@ uv run scripts/0_evaluator-samples.py
 Run the local evaluation script (evaluates dataset responses using different models and makes the results available in the Foundry UI):
 
 ```bash
-uv run scripts/1_local_evaluation.py
+uv run scripts/1_local_evaluation.py --dataset datasets/conversations_RepeatedCallDetector.jsonl
 ```
 
 ## Findings
 
 ### General information: evaluator types
 
-There multiple categories of ready-made evaluators. The AI-assisted quality metrics appear most promising for the repeated calls project. See the [API reference](https://learn.microsoft.com/en-us/python/api/azure-ai-evaluation/azure.ai.evaluation?view=azure-python) for a detailed description for each evaluator.
+There are multiple categories of ready-made evaluators. The AI-assisted quality metrics appear most promising for the repeated calls project. See the [API reference](https://learn.microsoft.com/en-us/python/api/azure-ai-evaluation/azure.ai.evaluation?view=azure-python) for a detailed description for each evaluator.
 
 1. **AI-Assisted Quality Metrics:**
    - Groundedness
@@ -132,7 +132,7 @@ This format is designed for evaluating multi-turn dialogues.
 
   - `role`: indicates the speaker (e.g., `system`, `user`, `assistant`).
   - `content`: the text of the message.
-  - `context` (optional, typically for `assistant` messages): provides grounding information for the assistant's response.
+  - `context` (necessary for the Groundedness evaluator for `assistant` messages)
 
 - **Example:** (here in `json` format for readability)
 
@@ -168,7 +168,7 @@ Assuming the goal is to compare the quality of responses between different model
 
   - **Continuously evaluate production:** involves tracing, automatic evaluations, and A/B testing. This approach can be expensive (although sampling can be used to reduce costs).
     - A guide on how to set this up is provided [here](https://learn.microsoft.com/en-us/azure/ai-foundry/how-to/continuous-evaluation-agents). I made an honest attempt at following the guide to make this work but I was not successful due to the quality of the documentation (or I missed something).
-  - **Periodically evaluate production:** save queries and responses/conversations to a database, then perform data preparation and feed them to an evaluation script. This adds storage overhead.
+  - **Evaluate production:** save queries and responses/conversations to a database, then perform data preparation and feed them to an evaluation script. This adds storage overhead.
     - I think this is the most practical approach for the repeated calls project.
   - **Evaluate test scenarios:** run predefined test scenarios with different models. The risk is that these scenarios might not accurately represent production conversations.
 
@@ -185,7 +185,7 @@ Assuming the goal is to compare the quality of responses between different model
     - **Challenge:** Identifying where to make improvements if the full loop response is insufficient.
     - **Note on groundedness:** The groundedness evaluator only requires `context` and `response`; so `ground_truth` is not always a necessity for evaluations.
 
-- **Most interesting evaluators (for code-based evaluation):**
+- **Most interesting evaluators for the repeated calls project:**
 
   - Relevance and Groundedness
     - For these, I recommend generating conversational datasets since these evaluators don't require a ground truth. (I don't yet know whether conversational datasets support ground truth)
