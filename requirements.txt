@@ -94,3 +94,17 @@ werkzeug==3.1.1 ; python_version >= "3.11" and python_version < "4.0"
 wrapt==1.17.2 ; python_version >= "3.11" and python_version < "4.0"
 yarl==1.20.0 ; python_version >= "3.11" and python_version < "4.0"
 zipp==3.21.0 ; python_version >= "3.11" and python_version < "4.0"
+# Web Application Dependencies
+streamlit>=1.28.0
+pandas>=2.0.0
+polars>=0.20.0
+
+# Azure Service Bus
+azure-servicebus>=7.11.0
+
+# Environment Management
+python-dotenv>=1.0.0
+
+# Additional utilities for the webapp
+plotly>=5.17.0  # For potential visualizations
+requests>=2.31.0  # For HTTP requests if needed
