@@ -47,7 +47,16 @@ For details on the MCP Data Service (API, Dockerization, deployment, etc.), see 
 
 Note: If you dont have the MCP Servers deployed you can run them localy and modify the urls accordingly. If you are using ACA you will need to deploy the mcp servers before setting up the urls. For instructions on how to do that see the ##MCP Data Service Section above.
 
-## 5  Running the orchestrator
+## Azure Monitor / Traces
+Add an Application Insights instance to your AI Foundry project.
+
+Add this to your .env file
+
+```
+APPLICATIONINSIGHTS_CONNECTION_STRING="<your connection string>"
+```
+
+## Running the orchestrator
 
 ```bash
 poetry install
