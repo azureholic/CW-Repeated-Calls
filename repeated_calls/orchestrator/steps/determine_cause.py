@@ -3,9 +3,6 @@
 import json
 
 from semantic_kernel import Kernel
-from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
-from semantic_kernel.connectors.ai.open_ai import AzureChatPromptExecutionSettings
-from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.functions import kernel_function
 from semantic_kernel.processes.kernel_process import KernelProcessStep, KernelProcessStepContext
 
@@ -39,28 +36,15 @@ class DetermineCauseStep(KernelProcessStep):
         response = await agent.get_response(
             messages=prompts.get_user_prompt(),
         )
-        logger.debug(f"Cause determination response: {response}")
 
-        # Classify whether the call is a repeated call with an LLM
-        chat_service = kernel.get_service(type=ChatCompletionClientBase)
-        chat_settings = AzureChatPromptExecutionSettings(response_format=CauseResult, temperature=0.0)
-
-        # Prepare the chat interaction
-        chat_history = ChatHistory()
-        chat_history.add_system_message(prompts.get_system_prompt())
-        chat_history.add_user_message(prompts.get_user_prompt())
-        chat_history.add_user_message(str(response))
-
-        res = await chat_service.get_chat_message_content(
-            chat_history=chat_history,
-            settings=chat_settings,
+        # Parse the response and update the state
+        res = CauseResult(**json.loads(response.content.content))
+        logger.debug(
+            f">> CAUSE AGENT - Product ID: {res.product_id}. Analysis: {res.analysis}. Conclusion: {res.conclusion}"
         )
-        chat_history.add_assistant_message(res.content)
-        logger.debug(f"Cause determination response: {res.content}")
+        state.update(res)
 
-        state.update(CauseResult(**json.loads(res.content)))
-
-        if json.loads(res.content)["is_relevant"]:
+        if res.is_relevant:
             # Send event to next step
             await context.emit_event(
                 "IsRelevant",

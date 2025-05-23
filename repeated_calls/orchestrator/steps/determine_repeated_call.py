@@ -125,14 +125,15 @@ class DetermineRepeatedCallStep(KernelProcessStep):
         chat_history.add_system_message(prompts.get_system_prompt())
         chat_history.add_user_message(prompts.get_user_prompt())
 
-        res = await chat_service.get_chat_message_content(
+        response = await chat_service.get_chat_message_content(
             chat_history=chat_history,
             settings=chat_settings,
         )
-        chat_history.add_assistant_message(res.content)
-        logger.debug(f"Repeated call response: {res.content}")
+        chat_history.add_assistant_message(response.content)
 
-        state.update(RepeatedCallResult(**json.loads(res.content)))
+        res = RepeatedCallResult(**json.loads(response.content))
+        logger.debug(f">> REPEATED CALL AGENT - Analysis: {res.analysis} Conclusion: {res.conclusion}")
+        state.update(res)
 
         # Log the decision and reasoning
         logger.debug("=== REPEATED CALL DECISION ===")
@@ -144,7 +145,7 @@ class DetermineRepeatedCallStep(KernelProcessStep):
         logger.debug(f"Emitting event: {'IsRepeatedCall' if state.repeated_call_result.is_repeated_call else 'IsNotRepeatedCall'}")
 
         # Emit event to continue process flow
-        if state.repeated_call_result.is_repeated_call:
+        if res.is_repeated_call:
             await context.emit_event("IsRepeatedCall", data=state)
         else:
             await context.emit_event("IsNotRepeatedCall", data=state)
