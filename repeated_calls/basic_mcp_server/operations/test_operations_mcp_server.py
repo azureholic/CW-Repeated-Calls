@@ -14,7 +14,7 @@ async def invoke_tool(session, name: str, params: dict) -> dict:
     print(f"\n─── {name} {params} ───")
     mcp_api_key = settings.mcpapikey.get_secret_value()
     params = dict(params)
-    params["api_key"] = mcp_api_key
+    params["mcp_api_key"] = mcp_api_key
     try:
         resp = await session.call_tool(name, params)
         print(f"  {name} response: {resp}")
