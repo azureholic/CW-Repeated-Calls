@@ -21,7 +21,7 @@ from repeated_calls.orchestrator.entities.state import State
 from repeated_calls.orchestrator.plugins import (
     customer_plugin,
     operations_plugin,
-    McpKeyPlugin,
+    McpApiKeyPlugin,
 )
 from repeated_calls.orchestrator.settings import (
     AzureOpenAISettings,
@@ -96,7 +96,7 @@ async def run_sequence(call_event: CallEvent) -> None:
             async with customer_plugin() as cust, operations_plugin() as ops:
                 kernel.add_plugin(cust, cust.name)   # → "CustomerDataPlugin"
                 kernel.add_plugin(ops,  ops.name)    # → "OperationsDataPlugin"
-                kernel.add_plugin(McpKeyPlugin(), "McpKeyPlugin")
+                kernel.add_plugin(McpApiKeyPlugin(), "McpApiKeyPlugin")
 
                 process_builder = ProcessBuilder("RepeatedCalls")
 

@@ -18,7 +18,7 @@ from repeated_calls.utils.loggers import Logger
 from repeated_calls.orchestrator.plugins import (
     customer_plugin,
     operations_plugin,
-    McpKeyPlugin,
+    McpApiKeyPlugin,
 )
 from repeated_calls.orchestrator.settings import McpApiKeySettings
 
@@ -45,8 +45,8 @@ class DetermineRepeatedCallStep(KernelProcessStep):
         # The function get_call_event on step GetCustomerDataStep has more than one parameter, so a
         # parameter name must be provided.
 
-        # Retreive the MCP API key by invoking get_mcp_api_key method of McpKeyPlugin
-        func = kernel.get_function("McpKeyPlugin", "get_mcp_api_key")
+        # Retreive the MCP API key by invoking get_mcp_api_key method of McpApiKeyPlugin
+        func = kernel.get_function("McpApiKeyPlugin", "get_mcp_api_key")
         mcp_api_key_res = await func.invoke(
             kernel, KernelArguments()
         )

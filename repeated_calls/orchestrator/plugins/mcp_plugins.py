@@ -40,7 +40,7 @@ async def operations_plugin():
         yield plug
 
 
-class McpKeyPlugin:
+class McpApiKeyPlugin:
     """Plugin to provide the MCP API key."""
 
     @kernel_function
