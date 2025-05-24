@@ -61,6 +61,13 @@ class DetermineRepeatedCallStep(KernelProcessStep):
         # --- 1⃣ history ---------------------------------------------------
         he_raw = historic_events_response.value
 
+        # Check if MCP API key is invalid or missing
+        if (isinstance(he_raw, list) and he_raw and isinstance(he_raw[0], TextContent)
+            and "Invalid or missing MCP API Key" in he_raw[0].text):
+            logger.error(f"Historic events error: {he_raw[0].text}")
+            await context.emit_event("Exit", data={"error": he_raw[0].text})
+            return
+
         # unwrap TextContent / JSON-string once
         if isinstance(he_raw, TextContent):
             he_raw = he_raw.text
@@ -98,6 +105,13 @@ class DetermineRepeatedCallStep(KernelProcessStep):
             kernel, KernelArguments(customer_id=state.call_event.customer_id, mcp_api_key=mcp_api_key)
         )
         cust_raw = cust_resp.value
+
+        # Check if MCP API key is invalid or missing
+        if (isinstance(cust_raw, list) and cust_raw and isinstance(cust_raw[0], TextContent)
+            and "Invalid or missing MCP API Key" in cust_raw[0].text):
+            logger.error(f"Customer data error: {cust_raw[0].text}")
+            await context.emit_event("Exit", data={"error": cust_raw[0].text})
+            return
 
         if isinstance(cust_raw, TextContent):
             cust_raw = cust_raw.text
