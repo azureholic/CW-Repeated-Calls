@@ -15,7 +15,7 @@ def get_agent(kernel: Kernel, instructions: str) -> ChatCompletionAgent:
     settings = AzureChatPromptExecutionSettings(
         function_choice_behavior=FunctionChoiceBehavior.Auto(
             auto_invoke=True,
-            filters={"included_plugins": ["CustomerDataPlugin", "OperationsDataPlugin"]},
+            filters={"included_plugins": ["CustomerDataPlugin", "OperationsDataPlugin", "McpKeyPlugin"]},
         ),
         temperature=0.0,
         seed=1337,

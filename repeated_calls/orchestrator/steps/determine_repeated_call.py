@@ -18,7 +18,10 @@ from repeated_calls.utils.loggers import Logger
 from repeated_calls.orchestrator.plugins import (
     customer_plugin,
     operations_plugin,
+    McpKeyPlugin,
 )
+from repeated_calls.orchestrator.settings import McpApiKeySettings
+
 
 logger = Logger()
 
@@ -42,10 +45,17 @@ class DetermineRepeatedCallStep(KernelProcessStep):
         # The function get_call_event on step GetCustomerDataStep has more than one parameter, so a
         # parameter name must be provided.
 
+        # Retreive the MCP API key by invoking get_mcp_api_key method of McpKeyPlugin
+        func = kernel.get_function("McpKeyPlugin", "get_mcp_api_key")
+        mcp_api_key_res = await func.invoke(
+            kernel, KernelArguments()
+        )
+        mcp_api_key = mcp_api_key_res.value
+
         # Get customer data and historic calls manually
         func = kernel.get_function("CustomerDataPlugin", "get_historic_call_events")
         historic_events_response = await func.invoke(
-            kernel, KernelArguments(customer_id=state.call_event.customer_id)
+            kernel, KernelArguments(customer_id=state.call_event.customer_id, mcp_api_key=mcp_api_key)
         )
 
         # --- 1⃣ history ---------------------------------------------------
@@ -85,7 +95,7 @@ class DetermineRepeatedCallStep(KernelProcessStep):
         # --- 2⃣ customer ---------------------------------------------------
         func = kernel.get_function("CustomerDataPlugin", "get_customer_by_id")
         cust_resp = await func.invoke(
-            kernel, KernelArguments(customer_id=state.call_event.customer_id)
+            kernel, KernelArguments(customer_id=state.call_event.customer_id, mcp_api_key=mcp_api_key)
         )
         cust_raw = cust_resp.value
 

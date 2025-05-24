@@ -2,6 +2,10 @@ from dotenv import load_dotenv
 import os
 from contextlib import asynccontextmanager
 from semantic_kernel.connectors.mcp import MCPSsePlugin
+from semantic_kernel.functions import kernel_function
+from typing import Annotated
+from repeated_calls.orchestrator.settings import McpApiKeySettings
+
 
 load_dotenv()                             
 
@@ -34,3 +38,16 @@ async def operations_plugin():
         url=OPERATIONS_MCP_URL,
     ) as plug:
         yield plug
+
+
+class McpKeyPlugin:
+    """Plugin to provide the MCP API key."""
+
+    @kernel_function
+    def get_mcp_api_key(self) -> Annotated[str, "Returns the MCP API key for authenticating with the MCP server."]:
+        """Retrieve the MCP API key from environment variables."""
+        mcp_api_key = McpApiKeySettings().mcpapikey.get_secret_value()
+        if not mcp_api_key:
+            return "MCP API key not found in environment."
+        return mcp_api_key
+

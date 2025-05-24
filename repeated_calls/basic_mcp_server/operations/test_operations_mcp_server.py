@@ -12,8 +12,15 @@ from repeated_calls.basic_mcp_server.common.settings import settings
 async def invoke_tool(session, name: str, params: dict) -> dict:
     """Generic wrapper to call an MCP tool and pretty-print the result."""
     print(f"\n─── {name} {params} ───")
+    mcp_api_key = settings.mcpapikey.get_secret_value()
+    params = dict(params)
+    params["api_key"] = mcp_api_key
     try:
         resp = await session.call_tool(name, params)
+        print(f"  {name} response: {resp}")
+        if resp.isError and "Invalid or missing MCP API Key" in resp.content[0].text:
+            print(f"  {name} failed: {resp.content[0].text}")
+            sys.exit(1)
         if not resp.content or resp.content[0].type != "text":
             raise RuntimeError("Unexpected response payload (no text content)")
 
@@ -30,14 +37,14 @@ async def invoke_tool(session, name: str, params: dict) -> dict:
 
 async def create_pool() -> AsyncConnectionPool:
     """Create a PostgreSQL connection-pool with retry policy."""
-    log.info("Opening PostgreSQL connection-pool")
+    print("Opening PostgreSQL connection-pool")
 
     conninfo = (
         f"host={settings.pghost} "    
         f"port={settings.pgport} "
         f"dbname={settings.pgdatabase} "
         f"user={settings.pguser} "
-        f"password={settings.pgpassword}"
+        f"password={settings.pgpassword.get_secret_value()}"
     )
 
     return AsyncConnectionPool(

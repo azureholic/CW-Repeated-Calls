@@ -29,7 +29,7 @@ def get_agent(kernel: Kernel, draft_instructions: str, reviewer_instructions: st
             settings=AzureChatPromptExecutionSettings(
                 function_choice_behavior=FunctionChoiceBehavior.Auto(
                     auto_invoke=True,
-                    filters={"included_plugins": ["CustomerDataPlugin"]},
+                    filters={"included_plugins": ["CustomerDataPlugin", "McpKeyPlugin"]},
                 ),
                 temperature=0.0,
                 seed=1337,
@@ -45,7 +45,7 @@ def get_agent(kernel: Kernel, draft_instructions: str, reviewer_instructions: st
             settings=AzureChatPromptExecutionSettings(
                 function_choice_behavior=FunctionChoiceBehavior.Auto(
                     auto_invoke=True,
-                    filters={"included_plugins": ["CustomerDataPlugin"]},
+                    filters={"included_plugins": ["CustomerDataPlugin", "McpKeyPlugin"]},
                 ),
                 temperature=0.0,
                 seed=1337,

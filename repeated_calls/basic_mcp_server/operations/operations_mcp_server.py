@@ -19,6 +19,7 @@ from mcp.server.fastmcp import FastMCP, Context
 
 # ────────────────────────────── project ─────────────────────────────
 from repeated_calls.basic_mcp_server.common.db import create_pool
+from repeated_calls.basic_mcp_server.common.auth import check_api_key
 from repeated_calls.basic_mcp_server.operations.models import (
     # domain + response models
     SoftwareUpdate, SoftwareUpdateResponse
@@ -61,10 +62,12 @@ app = mcp.sse_app
 # ────────────────────────────── Tools  ──────────────────────────────
 @mcp.tool(description="List software updates, optionally filtered by product")
 async def get_software_updates(
+    mcp_api_key: Annotated[str, "MCP API Key for authentication"],
     product_id: Annotated[Optional[int], "Optional product id filter"] = None,
     ctx: Context = None,
 ) -> SoftwareUpdateResponse:
     """Query public.software_update with optional product filter."""
+    check_api_key(mcp_api_key)
     start = time.time()
     pool = ctx.request_context.lifespan_context.pool
     try:
