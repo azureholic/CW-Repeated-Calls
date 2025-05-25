@@ -2,6 +2,20 @@
 
 A sample project demonstrating the usage of Azure AI Evaluation SDK to evaluate AI model responses. This README contains findings from my experimentation with the SDK.
 
+## Table of contents
+
+- [Requirements](#requirements)
+- [Installation](#installation)  
+- [Configuration](#configuration)
+- [Usage](#usage)  
+- [Findings](#findings)  
+  - [General information: evaluator types](#general-information-evaluator-types)  
+  - [Dataset requirements](#dataset-requirements)  
+  - [Evaluation approaches and considerations](#evaluation-approaches-and-considerations)  
+  - [Key takeaways for the repeated calls project](#key-takeaways-for-the-repeated-calls-project)
+- [Additional opportunities to explore](#additional-opportunities-to-explore)  
+- [Documentation](#documentation)
+
 ## Requirements
 
 - Python 3.12+
@@ -201,7 +215,7 @@ Assuming the goal is to compare the quality of responses between different model
       - I tried increasing rate limits of models to the maximum, but to no avail
       - This is a [known product-related issue](https://learn.microsoft.com/en-us/answers/questions/2237624/getting-rate-limit-exceeded-when-testing-ai-agent) and the recommended action is to wait...
     - Even if we would be able to get this to consistently work, I am not sure how the evaluation is truly "continuous", when for each time that you create an evaluation you have to provide a thread_id and run_id...
-      - There is an option to sample the continuous evaluations to limit costs [here](https://learn.microsoft.com/en-us/azure/ai-foundry/how-to/continuous-evaluation-agents#customize-your-sampling-configuration) (if you can figure how to actually make the evaluations continuous)
+      - There is an option to sample the continuous evaluations to limit costs [here](https://learn.microsoft.com/en-us/azure/ai-foundry/how-to/continuous-evaluation-agents#customize-your-sampling-configuration) (if you can figure out how to actually make the evaluations continuous)
     - I could internally reach out to the person responsible for this documentation for further information, if desired.
 
   - **Evaluate production:** save queries and responses/conversations to a database, then perform data preparation and feed them to an evaluation script. This adds storage overhead.
