@@ -1,11 +1,11 @@
-# Azure AI Evaluation Tryout
+# Azure AI Evaluations
 
-A sample project demonstrating the usage of Azure AI Evaluation SDK to evaluate AI model responses.
+A sample project demonstrating the usage of Azure AI Evaluation SDK to evaluate AI model responses. This README contains findings from my experimentation with the SDK.
 
 ## Requirements
 
 - Python 3.12+
-- Azure AI Foundry project (<https://ai.azure.com>)
+- Azure AI Foundry project (<https://ai.azure.com>). It can be either a Hub project or a Foundry project depending on what you would like to try.
 
 ## Installation
 
@@ -39,17 +39,32 @@ A sample project demonstrating the usage of Azure AI Evaluation SDK to evaluate 
 
 ## Configuration
 
-Create a `.env` file in the root directory with the following variables (these can all be found in the Azure AI Foundry project you should create here: <https://ai.azure.com>):
+Create a `.env` file in the root directory (`evaluations/`) with the following variables (these can all be found in the Azure AI Foundry project you should create here: <https://ai.azure.com>):
 
 ```bash
+# Hub
 AZURE_OPENAI_DEPLOYMENT=
 AZURE_OPENAI_ENDPOINT=
 AZURE_OPENAI_API_KEY=
 AZURE_OPENAI_API_VERSION=
-
 AZURE_FOUNDRY_SUBSCRIPTION_ID=
 AZURE_FOUNDRY_RESOURCE_GROUP_NAME=
 AZURE_FOUNDRY_PROJECT_NAME=
+AZURE_FOUNDRY_PROJECT_CONNECTION_STRING=
+AZURE_FOUNDRY_ENDPOINT=
+
+# Foundry
+AI_FOUNDRY_PROJECT_ENDPOINT=
+AI_FOUNDRY_AGENT_ID=
+AI_FOUNDRY_MODEL_DEPLOYMENT_NAME=
+AI_FOUNDRY_API_KEY=
+AI_FOUNDRY_SUBSCRIPTION_ID=
+AI_FOUNDRY_RESOURCE_GROUP_NAME=
+AI_FOUNDRY_PROJECT_NAME=
+AI_FOUNDRY_API_VERSION=
+
+# Tracing
+AZURE_TRACING_GEN_AI_CONTENT_RECORDING_ENABLED=true
 ```
 
 ## Usage
@@ -60,10 +75,22 @@ Run the sample evaluator script (demonstrates various evaluators with example in
 uv run scripts/0_evaluator-samples.py
 ```
 
-Run the local evaluation script (evaluates dataset responses using different models and makes the results available in the Foundry UI):
+Run the local evaluation script within a Hub project (evaluates dataset responses using different models and makes the results available in the Foundry UI):
 
 ```bash
-uv run scripts/1_local_evaluation.py --dataset datasets/conversations_RepeatedCallDetector.jsonl
+uv run scripts/1_local_evaluation_hub.py --dataset datasets/conversations_RepeatedCallDetector.jsonl
+```
+
+Run the local evaluation script within a Foundry project (evaluates dataset responses using different models and makes the results available in the Foundry UI):
+
+```bash
+uv run scripts/1_local_evaluation_foundry.py --dataset datasets/conversations_RepeatedCallDetector.jsonl
+```
+
+Run the continuous evaluation script within a Foundry project (usually gives a rate limit error, but occasionally works; see more details in the "Evaluation approaches and considerations" section):
+
+```bash
+uv run scripts/2_continuous_evaluations.py
 ```
 
 ## Findings
@@ -166,11 +193,21 @@ Assuming the goal is to compare the quality of responses between different model
 
 - **Evaluation strategies:**
 
-  - **Continuously evaluate production:** involves tracing, automatic evaluations, and A/B testing. This approach can be expensive (although sampling can be used to reduce costs).
-    - A guide on how to set this up is provided [here](https://learn.microsoft.com/en-us/azure/ai-foundry/how-to/continuous-evaluation-agents). I made an honest attempt at following the guide to make this work but I was not successful due to the quality of the documentation (or I missed something).
+  - **Continuously evaluate production:** involves utilising capabilities like tracing, automatic evaluations, and A/B testing. This approach can be expensive (although sampling can be used to reduce costs). A guide on how to set this up is provided [here](https://learn.microsoft.com/en-us/azure/ai-foundry/how-to/continuous-evaluation-agents). I made an honest attempt at following the guide to make this work but I was not successful:
+
+    - At first, I struggled due to trying to use a Hub project, while the guide is for Foundry projects. After this, I created a Foundry project and made another attempt.
+    - The guide uses an old version of the SDK, so I had to rewrite the example code to use the latest version. The most recent documentation on handling AI Foundry agents I managed to find is [here](https://github.com/Azure/azure-sdk-for-python/tree/azure-ai-projects_1.0.0b11/sdk/ai/azure-ai-agents/samples), but it contains no information on evaluations.
+    - I kept hitting rate limits when I did a simple `AgentEvaluationRequest`. A model redeploy or simply waiting some minutes sometimes (not always!) results in a successful evaluation (or it just randomly works, I can't say for sure).
+      - I tried increasing rate limits of models to the maximum, but to no avail
+      - This is a [known product-related issue](https://learn.microsoft.com/en-us/answers/questions/2237624/getting-rate-limit-exceeded-when-testing-ai-agent) and the recommended action is to wait...
+    - Even if we would be able to get this to consistently work, I am not sure how the evaluation is truly "continuous", when for each time that you create an evaluation you have to provide a thread_id and run_id...
+      - There is an option to sample the continuous evaluations to limit costs [here](https://learn.microsoft.com/en-us/azure/ai-foundry/how-to/continuous-evaluation-agents#customize-your-sampling-configuration) (if you can figure how to actually make the evaluations continuous)
+    - I could internally reach out to the person responsible for this documentation for further information, if desired.
+
   - **Evaluate production:** save queries and responses/conversations to a database, then perform data preparation and feed them to an evaluation script. This adds storage overhead.
-    - I think this is the most practical approach for the repeated calls project.
+    - I think this is currently the most practical approach for doing evaluations, along with evaluating test scenarios.
   - **Evaluate test scenarios:** run predefined test scenarios with different models. The risk is that these scenarios might not accurately represent production conversations.
+    - I managed to implement this in the repeated calls project by capturing the conversations for each agent turn, then converting them to the expected `.jsonl` format, copy/pasting the dataset into the `evaluations/datasets` folder, and running the `1_local_evaluation_hub.py` script, using a Hub project. In this way, I could evaluate the quality of the responses of the different models.
 
 - **Evaluation granularity (individual agent responses vs. whole loop output):**
 
@@ -200,15 +237,15 @@ Assuming the goal is to compare the quality of responses between different model
 
 - **Limitations encountered:**
 
-  - **Reasoning models (e.g., DeepSeek-R1, o4-mini) seem unsupported** for evaluation via the tested script, yielding an error:
+  - **Reasoning models (e.g., DeepSeek-R1, o4-mini) seem unsupported** for acting as a judge in evaluations (like in `1_local_evaluation_hub.py`), yielding an error:
 
     ```bash
     openai.BadRequestError: Error code: 400 - {'error': {'message': "Unsupported parameter: 'max_tokens' is not supported with this model. Use 'max_completion_tokens' instead.", 'type': 'invalid_request_error', 'param': 'max_tokens', 'code': 'unsupported_parameter'}}
     ```
 
-#### B. Azure AI Foundry Evaluations (UI)
+#### B. Azure AI Foundry (Hub project!) Evaluations (UI)
 
-The Azure AI Foundry provides a user interface for conducting evaluations.
+Hub projects within AI Foundry provide a user interface for conducting evaluations:
 
 - **Automatic Evaluations:**
 
@@ -228,16 +265,26 @@ The Azure AI Foundry provides a user interface for conducting evaluations.
   - Allows you to manually give thumbs up or down for query/response datasets.
   - Not very useful beyond basic feedback collection. Could potentially serve as input for fine-tuning models.
 
-- **SDK Issue:**
+- **Note:**
   - The evaluation SDK is relatively new. I encountered an installation error: [GitHub Issue #40992](https://github.com/Azure/azure-sdk-for-python/issues/40992) (`azure-ai-evaluations` installation).
+
+#### C. Azure AI Foundry (Foundry project!) Evaluations (UI)
+
+- Creating evaluations with manually generated datasets did not work (I kept receiving a `500 Internal Server Error`, even with very simple datasets that did work in a Hub project)
+- Even creating evaluations with simulated questions did not work, getting the error `ArgumentInvalid: Evaluation data is required is invalid`
 
 ### Key takeaways for the repeated calls project
 
-- AI-assisted quality metrics like groundedness, relevance, and similarity are highly useful for evaluating the quality of responses.
-- Dataset formats for single-turn chats and conversations are both applicable, depending on whether individual agent turns or the whole loop is to be evaluated.
-- Programmatic evaluation (via code/SDK) offers flexibility for integration but requires setting up data preparation pipelines.
-- The Azure AI Foundry UI provides a user-friendly alternative, especially the "Dataset" feature for both single-turn and conversation evaluations and the "Model and prompt" feature for agent-specific tests.
-- Be aware of potential model compatibility issues (e.g., with reasoning models in certain evaluation setups) and the maturity of the SDK, which is still evolving.
+- The most practical approaches for evaluating the repeated calls project involve using the SDK scripts to either evaluate stored production data or run predefined test scenarios.
+- For visual analysis and comparing models on datasets, the Azure AI Foundry (Hub project) UI, especially its "Dataset" evaluation feature, offers a viable and more stable alternative to the Foundry project UI.
+- It will be crucial to develop a script that can convert existing chat logs into the required .jsonl format, supporting either "Single-Turn Chats" or "Conversations" structures.
+- The choice of dataset format should be strategic: use the "Conversations" format for individual agent turn evaluations and for AI-assisted metrics like Relevance and Groundedness, while the "Single-Turn Chats" format is better for whole loop outputs or evaluators like Similarity that need a ground_truth field.
+- For the specific needs of the repeated calls project, the AI-assisted evaluators "Relevance," "Groundedness," and "Similarity" appear to be the most promising.
+- To address more specific requirements, such as directly assessing the correctness of the repeat call determination at each step, developing custom evaluators could be beneficial.
+- The "continuous evaluation" approach using Foundry agents (as in `2_continuous_evaluations.py`) is currently unreliable due to persistent rate limiting issues, the SDK's maturity, and unclear steps for achieving true continuity, so it should not be prioritised.
+- The user interface for evaluations within Foundry projects seems to have significant bugs, including `500` errors and problems with dataset loading, making Hub projects or code-based methods preferable for now.
+- It is important to be aware that certain models, particularly some reasoning models like DeepSeek-R1, might not be directly compatible with the evaluation scripts due internal errors.
+- Given that the `azure-ai-evaluation` SDK is relatively new, one should anticipate potential installation challenges and an API that may evolve over time, with risks of breaking changes.
 
 ## Additional opportunities to explore
 

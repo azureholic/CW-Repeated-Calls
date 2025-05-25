@@ -63,7 +63,7 @@ with tracer.start_as_current_span(scenario):
         thread_id=thread.id,
         run_id=run.id,
         evaluators=evaluators,
-        app_insights_connection_string=os.getenv("AI_FOUNDRY_APP_INSIGHTS_CONN_STRING"),
+        app_insights_connection_string=project.telemetry.get_connection_string(),
     )
 
     print("DEBUG: Got here 2")
