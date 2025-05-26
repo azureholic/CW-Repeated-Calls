@@ -73,4 +73,6 @@ async def get_agent_response(instructions: str, userprompt:str, thread: AzureAIA
             thread=thread
         )
 
+        client.agents.delete_agent(agent_definition.id)
+
     return response.content
