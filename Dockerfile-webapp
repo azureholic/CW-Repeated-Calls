@@ -30,6 +30,7 @@ ENV PYTHONUNBUFFERED=1
 COPY --from=builder /usr/src/app/.venv ./.venv
 RUN /bin/bash -c "source .venv/bin/activate"
 COPY webapp/ ./webapp
+COPY data/scenarios/ ./data/scenarios
 
 RUN groupadd --gid 1001 appgroup && \
     useradd --uid 1001 --gid appgroup --create-home appuser && \
