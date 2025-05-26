@@ -9,7 +9,7 @@ from semantic_kernel.contents import TextContent
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.functions import KernelArguments, kernel_function
 from semantic_kernel.processes.kernel_process import KernelProcessStep, KernelProcessStepContext
-
+from repeated_calls.orchestrator.agents.repeated_call_agent import get_agent
 from repeated_calls.database.schemas import Customer, HistoricCallEvent, CallEvent
 from repeated_calls.orchestrator.entities.state import State
 from repeated_calls.orchestrator.entities.structured_output import RepeatedCallResult
@@ -135,27 +135,16 @@ class DetermineRepeatedCallStep(KernelProcessStep):
         # Update state
         state.update(customer_obj, historic_events)
 
-        # Classify whether the call is a repeated call with an LLM
-        chat_service = kernel.get_service(type=ChatCompletionClientBase)
-        chat_settings = AzureChatPromptExecutionSettings(response_format=RepeatedCallResult, temperature=0.0)
-
-        # Prepare the chat interaction
-        chat_history = ChatHistory()
         prompts = RepeatCallerPrompt(state)
 
-        # logger.debug(f"System prompt:\n{prompts.get_system_prompt()}")
-        # logger.debug(f"User prompt:\n{prompts.get_user_prompt()}")
+        agent = get_agent(kernel=kernel, instructions=prompts.get_system_prompt())
 
-        chat_history.add_system_message(prompts.get_system_prompt())
-        chat_history.add_user_message(prompts.get_user_prompt())
-
-        response = await chat_service.get_chat_message_content(
-            chat_history=chat_history,
-            settings=chat_settings,
+        response = await agent.get_response(
+            messages=prompts.get_user_prompt(),
         )
-        chat_history.add_assistant_message(response.content)
 
-        res = RepeatedCallResult(**json.loads(response.content))
+        # Parse the response and update the state
+        res = RepeatedCallResult(**json.loads(response.content.content))
         logger.debug(f">> REPEATED CALL AGENT - Analysis: {res.analysis} Conclusion: {res.conclusion}")
         state.update(res)
 
