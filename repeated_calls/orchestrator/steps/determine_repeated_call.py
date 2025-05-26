@@ -178,8 +178,7 @@ class DetermineRepeatedCallStep(KernelProcessStep):
         logger.debug(
             f"Emitting event: {'IsRepeatedCall' if state.repeated_call_result.is_repeated_call else 'IsNotRepeatedCall'}"
         )
-        chat_history.add_assistant_message(res.content)
-        logger.debug(f"Repeated call response: {res.content}")
+        logger.debug(f"Repeated call response: {response.content}")
 
         # Save conversation to all required locations
         agent_name = "RepeatedCallDetector"

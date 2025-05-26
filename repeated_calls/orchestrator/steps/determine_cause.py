@@ -3,6 +3,9 @@
 import json
 
 from semantic_kernel import Kernel
+from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
+from semantic_kernel.connectors.ai.open_ai import AzureChatPromptExecutionSettings
+from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.functions import kernel_function
 from semantic_kernel.processes.kernel_process import KernelProcessStep, KernelProcessStepContext
 
@@ -62,12 +65,12 @@ class DetermineCauseStep(KernelProcessStep):
         chat_history.add_user_message(prompts.get_user_prompt())
         chat_history.add_user_message(str(response))
 
-        res = await chat_service.get_chat_message_content(
+        chat_response = await chat_service.get_chat_message_content(
             chat_history=chat_history,
             settings=chat_settings,
         )
-        chat_history.add_assistant_message(res.content)
-        logger.debug(f"Cause determination response: {res.content}")
+        chat_history.add_assistant_message(chat_response.content)
+        logger.debug(f"Cause determination response: {chat_response.content}")
 
         # Save conversation to all required locations
         agent_name = "CauseDeterminer"
@@ -81,7 +84,7 @@ class DetermineCauseStep(KernelProcessStep):
         logger.info(f"Appended to conversations file: {save_results['conversations_file']}")
         logger.info(f"Appended to run log: {save_results['run_log_file']}")
 
-        state.update(CauseResult(**json.loads(res.content)))
+        state.update(CauseResult(**json.loads(chat_response.content)))
 
         if res.is_relevant:
             # Send event to next step
