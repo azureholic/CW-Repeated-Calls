@@ -1,0 +1,42 @@
+# BUILD STAGE
+FROM python:3.11.12 AS builder
+
+ENV POETRY_VERSION=2.1.3
+ENV POETRY_VENV=/opt/poetry-venv
+
+RUN python3 -m venv "$POETRY_VENV" \
+&& "$POETRY_VENV/bin/pip" install -U pip setuptools \
+&& "$POETRY_VENV/bin/pip" install poetry=="${POETRY_VERSION}"
+ENV PATH="$PATH:$POETRY_VENV/bin"
+
+WORKDIR /usr/src/app
+
+RUN poetry config virtualenvs.in-project true
+
+COPY pyproject.toml poetry.lock README.md ./
+RUN poetry install --only main --no-root
+
+COPY repeated_calls/ ./repeated_calls
+RUN poetry install --only main
+
+
+# RUNTIME STAGE
+FROM python:3.11.12-slim AS runtime
+
+WORKDIR /usr/src/app
+
+ENV PYTHONUNBUFFERED=1
+
+COPY --from=builder /usr/src/app/.venv ./.venv
+RUN /bin/bash -c "source .venv/bin/activate"
+COPY webapp/ ./webapp
+
+RUN groupadd --gid 1001 appgroup && \
+    useradd --uid 1001 --gid appgroup --create-home appuser && \
+    chown -R appuser:appgroup /usr/src/app
+USER appuser
+
+HEALTHCHECK CMD ["curl", "--fail", "http://localhost:80/_stcore/health"]
+
+EXPOSE 80
+ENTRYPOINT ["streamlit", "run", "webapp/Send.py", "--server.port=80"]
