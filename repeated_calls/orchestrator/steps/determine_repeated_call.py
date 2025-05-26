@@ -9,19 +9,22 @@ from semantic_kernel.contents import TextContent
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.functions import KernelArguments, kernel_function
 from semantic_kernel.processes.kernel_process import KernelProcessStep, KernelProcessStepContext
-from repeated_calls.orchestrator.agents.repeated_call_agent import get_agent
+from repeated_calls.orchestrator.agents.repeated_call_agent import get_agent_response
 from repeated_calls.database.schemas import Customer, HistoricCallEvent, CallEvent
 from repeated_calls.orchestrator.entities.state import State
 from repeated_calls.orchestrator.entities.structured_output import RepeatedCallResult
+from repeated_calls.orchestrator.plugins.csv.customer import CustomerDataPlugin
 from repeated_calls.prompt_engineering.prompts import RepeatCallerPrompt
 from repeated_calls.utils.loggers import Logger
+from semantic_kernel.connectors.ai import FunctionChoiceBehavior
 from repeated_calls.orchestrator.plugins import (
     customer_plugin,
     operations_plugin,
     McpApiKeyPlugin,
 )
 from repeated_calls.orchestrator.settings import McpApiKeySettings
-
+from semantic_kernel.agents import AzureAIAgent,AzureAIAgentSettings,AzureAIAgentThread
+from azure.identity.aio import DefaultAzureCredential
 
 logger = Logger()
 
@@ -38,6 +41,7 @@ class DetermineRepeatedCallStep(KernelProcessStep):
         state: State,
         context: KernelProcessStepContext,
         kernel: Kernel,
+        thread: AzureAIAgentThread | None = None,       
     ) -> None:
         """Process function to retrieve customer data and call events using the enhanced database objects."""
         # Check if incoming_message is already the correct type
@@ -132,19 +136,16 @@ class DetermineRepeatedCallStep(KernelProcessStep):
             )
         )
 
-        # Update state
+
         state.update(customer_obj, historic_events)
-
         prompts = RepeatCallerPrompt(state)
+        
+        agent_response = await get_agent_response(prompts.get_system_prompt(), prompts.get_user_prompt(), thread)
 
-        agent = get_agent(kernel=kernel, instructions=prompts.get_system_prompt())
+        logger.debug(f"# {agent_response.name}: {agent_response.content}")
 
-        response = await agent.get_response(
-            messages=prompts.get_user_prompt(),
-        )
-
-        # Parse the response and update the state
-        res = RepeatedCallResult(**json.loads(response.content.content))
+        # # Parse the response and update the state
+        res = RepeatedCallResult(**json.loads(agent_response.content))
         logger.debug(f">> REPEATED CALL AGENT - Analysis: {res.analysis} Conclusion: {res.conclusion}")
         state.update(res)
 

@@ -6,7 +6,7 @@ import csv
 import os
 from datetime import datetime
 from importlib.resources import files
-
+from azure.identity.aio import DefaultAzureCredential
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
 from semantic_kernel.processes import ProcessBuilder
@@ -15,6 +15,8 @@ from semantic_kernel.processes.local_runtime.local_kernel_process import start
 from repeated_calls.orchestrator.steps.determine_cause import DetermineCauseStep
 from repeated_calls.orchestrator.steps.determine_repeated_call import DetermineRepeatedCallStep
 from repeated_calls.orchestrator.steps.exit_step import ExitStep
+
+from semantic_kernel.agents import AzureAIAgent,AzureAIAgentSettings, AzureAIAgentThread
 
 from repeated_calls.database.schemas import CallEvent
 from repeated_calls.orchestrator.entities.state import State
@@ -70,7 +72,8 @@ async def run_sequence(call_event: CallEvent) -> None:
     # Get OpenTelemetry tracer
     tracer = trace.get_tracer("repeated_calls.orchestrator")
 
-    
+    logger.debug("Starting sequence execution for call event: %s", call_event)
+    logger.debug("Call Event ID: %s, Customer ID: %s", call_event.id, call_event.customer_id)
 
     # Start a span for this sequence execution
     with tracer.start_as_current_span("repeated_calls.run_sequence") as span:
@@ -81,16 +84,13 @@ async def run_sequence(call_event: CallEvent) -> None:
         span.set_attribute("call_event.customer_id", str(call_event.customer_id))
 
         try:
-            settings = AzureOpenAISettings()
-
             kernel = Kernel()
-            kernel.add_service(
-                AzureChatCompletion(
-                    endpoint=settings.endpoint,
-                    api_key=settings.api_key.get_secret_value() if settings.api_key else None,
-                    deployment_name=settings.deployment,
-                )
-            )
+            ai_agent_settings = AzureAIAgentSettings()
+            
+            client= AzureAIAgent.create_client(credential=DefaultAzureCredential(), 
+                                       conn_str=ai_agent_settings.endpoint, 
+                                       deployment_name=ai_agent_settings.model_deployment_name)
+            thread = AzureAIAgentThread(client=client)
 
             # Keep MCP plugins alive for the whole run
             async with customer_plugin() as cust, operations_plugin() as ops:

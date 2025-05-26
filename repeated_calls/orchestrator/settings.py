@@ -43,7 +43,7 @@ class AzureAIFoundrySettings(BaseSettings):
     """
 
     endpoint: str
-    
+    model_deployment_name: str
    
     model_config = SettingsConfigDict(
         env_nested_delimiter="__", env_file=".env", env_prefix="AZURE_AI_FOUNDRY_", extra="ignore"

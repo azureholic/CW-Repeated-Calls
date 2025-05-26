@@ -7,12 +7,13 @@ from repeated_calls.database.schemas import CallEvent, Customer, HistoricCallEve
 from repeated_calls.orchestrator.entities.structured_output import CauseResult, OfferResult, RepeatedCallResult
 from repeated_calls.utils.loggers import Logger
 
+
 logger = Logger()
 
 
 class State(BaseModel):
     """State class for the flow."""
-
+   
     call_event: CallEvent
     customer: Customer | None = Field(default=None)
     call_history: list[HistoricCallEvent] = Field(default_factory=list)
