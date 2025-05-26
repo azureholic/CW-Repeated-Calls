@@ -138,6 +138,8 @@ export PGPASSWORD="[REPLACE_WITH_POSTGRESQL_ADMIN_PASSWORD]"
 export PGDATABASE="default"
 export PGPORT="5432"
 export USER_ASSIGNED_IDENTITY="[REPLACE_WITH_USER_ASSIGNED_MANAGED_IDENTITY]"
+export MCPAPIKEY="[REPLACE_WITH_MCP_API_KEY]"
+export KEYVAULT_NAME="[REPLACE_WITH_KEYVAULT_NAME]"
 ```
 
 > **Note:**
@@ -153,7 +155,19 @@ az login
 az acr login --name ${ACR_NAME}
 ```
 
-### 3. Deploy Customer MCP Server to Azure Container App
+### 3. Add secrets to KeyVault
+```bash
+az keyvault secret set --vault-name ${KEYVAULT_NAME} --name PGPASSWORD --value "<your-password>"
+az keyvault secret set --vault-name ${KEYVAULT_NAME} --name MCP-CUSTOMERS-API-KEY --value "<your-api-key>"
+az keyvault secret set --vault-name ${KEYVAULT_NAME} --name MCP-OPERATIONS-API-KEY --value "<your-api-key>"
+```
+
+### 4. Grant access to the managed identity
+```bash
+az keyvault set-policy --name ${KEYVAULT_NAME} --object-id <USER_ASSIGNED_IDENTITY_OBJECT_ID> --secret-permissions get
+```
+
+### 5. Deploy Customer MCP Server to Azure Container App
 
 ```bash
 # Set variables specific to the Customer MCP App
@@ -169,10 +183,11 @@ az containerapp create \
   --cpu 1 --memory 2.0Gi \
   --ingress external --target-port 8000 \
   --registry-server ${ACR_LOGIN_SERVER} \
-  --env-vars PGHOST="${PGHOST}" PGUSER="${PGUSER}" PGPASSWORD="${PGPASSWORD}" PGDATABASE="${PGDATABASE}" PGPORT="${PGPORT}" \
+  --secrets pg-admin-password=keyvaultref:<KEYVAULT-PGPASSWORD-SECRET-URL>,identityref:<USERASSIGNED-MANAGED-DENTITY-URL> mcp-api-key=keyvaultref:<KEYVAULT-MCP-CUSTOMERS-API-KEY-SECRET-URL>,identityref:<USERASSIGNED-MANAGED-DENTITY-URL> \
+  --env-vars PGHOST="${PGHOST}" PGUSER="${PGUSER}" PGPASSWORD=secretref:pg-admin-password PGDATABASE="${PGDATABASE}" PGPORT="${PGPORT}" MCPAPIKEY=secretref:mcp-api-key \
   --user-assigned ${USER_ASSIGNED_IDENTITY}
 ```
-### 4. Deploy Operations MCP Server to Azure Container App
+### 6. Deploy Operations MCP Server to Azure Container App
 
 ```bash
 # Set variables specific to the Operations MCP App
@@ -188,7 +203,8 @@ az containerapp create \
   --cpu 1 --memory 2.0Gi \
   --ingress external --target-port 8000 \
   --registry-server ${ACR_LOGIN_SERVER} \
-  --env-vars PGHOST="${PGHOST}" PGUSER="${PGUSER}" PGPASSWORD="${PGPASSWORD}" PGDATABASE="${PGDATABASE}" PGPORT="${PGPORT}" \
+  --secrets pg-admin-password=keyvaultref:<KEYVAULT-PGPASSWORD-SECRET-URL>,identityref:<USERASSIGNED-MANAGED-DENTITY-URL> mcp-api-key=keyvaultref:<KEYVAULT-MCP-CUSTOMERS-API-KEY-SECRET-URL>,identityref:<USERASSIGNED-MANAGED-DENTITY-URL> \
+  --env-vars PGHOST="${PGHOST}" PGUSER="${PGUSER}" PGPASSWORD=secretref:pg-admin-password PGDATABASE="${PGDATABASE}" PGPORT="${PGPORT}" MCPAPIKEY=secretref:mcp-api-key \
   --user-assigned ${USER_ASSIGNED_IDENTITY}
 ```
 

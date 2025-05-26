@@ -18,7 +18,10 @@ from repeated_calls.utils.loggers import Logger
 from repeated_calls.orchestrator.plugins import (
     customer_plugin,
     operations_plugin,
+    McpApiKeyPlugin,
 )
+from repeated_calls.orchestrator.settings import McpApiKeySettings
+
 
 logger = Logger()
 
@@ -42,14 +45,28 @@ class DetermineRepeatedCallStep(KernelProcessStep):
         # The function get_call_event on step GetCustomerDataStep has more than one parameter, so a
         # parameter name must be provided.
 
+        # Retreive the MCP API key by invoking get_mcp_api_key method of McpApiKeyPlugin
+        func = kernel.get_function("McpApiKeyPlugin", "get_mcp_api_key")
+        mcp_api_key_res = await func.invoke(
+            kernel, KernelArguments()
+        )
+        mcp_api_key = mcp_api_key_res.value
+
         # Get customer data and historic calls manually
         func = kernel.get_function("CustomerDataPlugin", "get_historic_call_events")
         historic_events_response = await func.invoke(
-            kernel, KernelArguments(customer_id=state.call_event.customer_id)
+            kernel, KernelArguments(customer_id=state.call_event.customer_id, mcp_api_key=mcp_api_key)
         )
 
         # --- 1⃣ history ---------------------------------------------------
         he_raw = historic_events_response.value
+
+        # Check if MCP API key is invalid or missing
+        if (isinstance(he_raw, list) and he_raw and isinstance(he_raw[0], TextContent)
+            and "Invalid or missing MCP API Key" in he_raw[0].text):
+            logger.error(f"Historic events error: {he_raw[0].text}")
+            await context.emit_event("Exit", data={"error": he_raw[0].text})
+            return
 
         # unwrap TextContent / JSON-string once
         if isinstance(he_raw, TextContent):
@@ -85,9 +102,16 @@ class DetermineRepeatedCallStep(KernelProcessStep):
         # --- 2⃣ customer ---------------------------------------------------
         func = kernel.get_function("CustomerDataPlugin", "get_customer_by_id")
         cust_resp = await func.invoke(
-            kernel, KernelArguments(customer_id=state.call_event.customer_id)
+            kernel, KernelArguments(customer_id=state.call_event.customer_id, mcp_api_key=mcp_api_key)
         )
         cust_raw = cust_resp.value
+
+        # Check if MCP API key is invalid or missing
+        if (isinstance(cust_raw, list) and cust_raw and isinstance(cust_raw[0], TextContent)
+            and "Invalid or missing MCP API Key" in cust_raw[0].text):
+            logger.error(f"Customer data error: {cust_raw[0].text}")
+            await context.emit_event("Exit", data={"error": cust_raw[0].text})
+            return
 
         if isinstance(cust_raw, TextContent):
             cust_raw = cust_raw.text

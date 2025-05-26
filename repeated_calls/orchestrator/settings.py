@@ -70,3 +70,22 @@ class AppInsightsSettings(BaseSettings):
         env_nested_delimiter="__", env_file=".env", env_prefix="APPLICATIONINSIGHTS_", extra="ignore"
     )
     
+
+class McpApiKeySettings(BaseSettings):
+    """Settings for the MCP API Key.
+
+    Pydantic will determine the value of all fields in the following order of precedence
+    (descending order of priority):
+    1. Arguments passed to the class constructor
+    2. Environment variables (no prefix by default)
+    3. Variables in a .env file if present (no prefix by default)
+
+    Attributes:
+        mcpapikey (SecretStr): The MCP API key used to authenticate with the MCP server.
+    """
+
+    mcpapikey: SecretStr = SecretStr("")
+
+    model_config = SettingsConfigDict(
+        env_nested_delimiter="__", env_file=".env", extra="ignore"
+    )
