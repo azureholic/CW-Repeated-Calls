@@ -31,16 +31,14 @@ For details on the MCP Data Service (API, Dockerization, deployment, etc.), see 
 ## Prerequisits for MCP Servers
 
 1.  Update the env file in the project root with the PostgeSQL information and the MCP Endpoints:
-
     ```
     # PostgreSQL
-    PGHOST=<postgres-host>
-    PGUSER=<postgres-user>
-    PGPASSWORD=<postgres-password>
-    PGDATABASE=<postgres-db>
-    PGPORT= 5432 
-
-    # MCP server endpoints 
+    POSTGRES_HOST=<postgres-host>
+    POSTGRES_USER=<postgres-user>
+    POSTGRES_PASSWORD=<postgres-password>
+    POSTGRES_DATABASE=<postgres-db>
+    POSTGRES_PORT=5432
+    # MCP server endpoints
     CUSTOMER_MCP_URL= "https://customer-mcp.<region>azurecontainerapps.io/sse"
     OPERATIONS_MCP_URL= "https://operations-mcp.<region>.azurecontainerapps.io/sse" 
     ```
