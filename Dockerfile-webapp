@@ -27,8 +27,11 @@ WORKDIR /usr/src/app
 
 ENV PYTHONUNBUFFERED=1
 
-COPY --from=builder /usr/src/app/.venv ./.venv
-RUN /bin/bash -c "source .venv/bin/activate"
+ENV VIRTUAL_ENV=/usr/src/app/.venv
+ENV PATH="$VIRTUAL_ENV/bin:$PATH"
+COPY --from=builder ${VIRTUAL_ENV} ${VIRTUAL_ENV}
+
+COPY repeated_calls/ ./repeated_calls
 COPY webapp/ ./webapp
 COPY data/scenarios/ ./data/scenarios
 
