@@ -5,21 +5,21 @@ import asyncio                                          # For asynchronous execu
 from azure.servicebus.aio import ServiceBusClient       # This class is used to interact with queues asynchronously
 from azure.servicebus import ServiceBusMessage          # This class ensures that a single message can be sent to the queue
 import time
+from repeated_calls.streaming.settings import StreamingSettings
 
+
+config = StreamingSettings(queue = 'agent_output_messages')
+print(config.connection_string)
+print(type(config.connection_string))
 
 def streamlit_receivepage():
-
-    name_of_queue = 'agent_output_messages'
-    load_dotenv(dotenv_path = "webapp/secrets.env")
-    connection_str = os.getenv("connection_str_azure_servicebus")
-
 
     st.title("Receiving output of the agent")
     st.write("")
     received_messages = []
 
 
-    # Header
+    # Receive data button
     if st.button("Receive data output from the model"):
         with st.spinner('Pending...'):
             start_time = time.time()
@@ -27,9 +27,9 @@ def streamlit_receivepage():
                 async def run():
                     # Creating a ServiceBusClient class
                     async with ServiceBusClient.from_connection_string(
-                        conn_str = connection_str,
+                        conn_str = config.connection_string,
                         logging_enable = True) as servicebus_client:                                        # Defining the servicebusclient class
-                        receiver = servicebus_client.get_queue_receiver(queue_name = name_of_queue)  # Defining the receiver (linking it to the queue)
+                        receiver = servicebus_client.get_queue_receiver(queue_name = config.queue)  # Defining the receiver (linking it to the queue)
                         async with receiver:                                                            
                             received_messages = await receiver.receive_messages(max_wait_time = 5, max_message_count = 100)     # Storing all the received messages in this variable
                             for msg in received_messages:       	                                    # printing all the messages in the queue        

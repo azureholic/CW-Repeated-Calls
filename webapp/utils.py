@@ -11,7 +11,7 @@ from repeated_calls.database.schemas import CallEvent
 
 logger = Logger()
 
-@st.cache_resource
+@st.cache_resource                   
 def get_sb_client(connection_string: str) -> ServiceBusClient:
     client = ServiceBusClient.from_connection_string(connection_string)
     logger.info(f"ServiceBusClient created with endpoint: sb://{client.fully_qualified_namespace}")
@@ -37,14 +37,17 @@ def load_scenarios(path: str) -> list[dict]:
 def send_msg(id: int, client: ServiceBusClient, queue: str, engine: Engine) -> None:
     # Retrieve scenario from database
     q = select(CallEventRow).where(CallEventRow.id == id)
+    print('get data from sql')
     with Session(engine) as session:
         res = session.execute(q).scalar()
+        print('Session is setup')
 
     if res is None:
         raise ValueError(f"CallEvent with ID {id} not found in the database.")
     else:
         # Validate the data using Pydantic
         event = CallEvent(**res.__dict__)
+        print('CallEvent setup')
 
     # Send the message to the queue
     with client:

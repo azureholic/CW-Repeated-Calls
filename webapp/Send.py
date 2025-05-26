@@ -29,7 +29,6 @@ option = st.selectbox(
 )
 scenario = data[option]
 
-
 # Header
 col_a, col_b = st.columns([10, 1])
 col_a.write(
@@ -94,3 +93,5 @@ with st.expander("**Scenario details**"):
 
         for j, response in enumerate(scenario["scenario_details"]["recommended_system_response"]):
             st.write(f"{j+1}: {response}")
+
+

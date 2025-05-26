@@ -5,7 +5,7 @@ from receive_page import streamlit_receivepage
 st.set_page_config(page_title="Repeated customer contact", page_icon='📞', layout="wide")
 
 
-page = st.selectbox("Choose a page",["Choose Scenario", "Recieve model's output"])
+page = st.sidebar.radio("Choose a page",["Choose Scenario", "Recieve model's output"])
 
 if page == "Choose Scenario":
     streamlit_sendpage()
