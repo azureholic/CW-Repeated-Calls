@@ -5,15 +5,15 @@ A sample project demonstrating the usage of Azure AI Evaluation SDK to evaluate 
 ## Table of contents
 
 - [Requirements](#requirements)
-- [Installation](#installation)  
+- [Installation](#installation)
 - [Configuration](#configuration)
-- [Usage](#usage)  
-- [Findings](#findings)  
-  - [General information: evaluator types](#general-information-evaluator-types)  
-  - [Dataset requirements](#dataset-requirements)  
-  - [Evaluation approaches and considerations](#evaluation-approaches-and-considerations)  
+- [Usage](#usage)
+- [Findings](#findings)
+  - [General information: evaluator types](#general-information-evaluator-types)
+  - [Dataset requirements](#dataset-requirements)
+  - [Evaluation approaches and considerations](#evaluation-approaches-and-considerations)
   - [Key takeaways for the repeated calls project](#key-takeaways-for-the-repeated-calls-project)
-- [Additional opportunities to explore](#additional-opportunities-to-explore)  
+- [Additional opportunities to explore](#additional-opportunities-to-explore)
 - [Documentation](#documentation)
 
 ## Requirements
@@ -99,7 +99,7 @@ Run the local evaluation script within a Foundry project (evaluates dataset resp
 uv run scripts/1_local_evaluation_foundry.py --dataset datasets/conversations_RepeatedCallDetector.jsonl
 ```
 
-Run the continuous evaluation script within a Foundry project (usually gives a rate limit error, but occasionally works; see more details in the "Evaluation approaches and considerations" section):
+Run the continuous evaluation script within a Foundry project (usually gives a rate limit error, but occasionally works; see more details in the [Evaluation approaches and considerations](#evaluation-approaches-and-considerations) section):
 
 ```bash
 uv run scripts/2_continuous_evaluations.py
