@@ -98,8 +98,8 @@ if __name__ == "__main__":
     parser.add_argument(
         "--dataset",
         type=str,
-        default="datasets/conversations_repeated_call.jsonl",
-        help="Path to the dataset file (default: datasets/conversations_repeated_call.jsonl)",
+        default="4o_conversations_RepeatedCallDetector.jsonl",
+        help="Path to the dataset file (default: 4o_conversations_RepeatedCallDetector.jsonl)",
     )
     args = parser.parse_args()
 

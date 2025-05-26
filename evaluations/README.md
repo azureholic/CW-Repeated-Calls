@@ -19,7 +19,7 @@ A sample project demonstrating the usage of Azure AI Evaluation SDK to evaluate 
 ## Requirements
 
 - Python 3.12+
-- Azure AI Foundry project (<https://ai.azure.com>). It can be either a Hub project or a Foundry project depending on what you would like to try.
+- Azure AI Foundry project (<https://ai.azure.com>). It can be either a Hub project or a Foundry project depending on what you would like to try. Hub projects are currently more stable.
 
 ## Installation
 
@@ -53,7 +53,7 @@ A sample project demonstrating the usage of Azure AI Evaluation SDK to evaluate 
 
 ## Configuration
 
-Create a `.env` file in the root directory (`evaluations/`) with the following variables (these can all be found in the Azure AI Foundry project you should create here: <https://ai.azure.com>):
+Create a `.env` file in the root directory (`evaluations/`) with the following variables (these can all be found in the Azure AI Foundry project(s) you should create here: <https://ai.azure.com>):
 
 ```bash
 # Hub
@@ -81,29 +81,45 @@ AZURE_TRACING_GEN_AI_CONTENT_RECORDING_ENABLED=true
 
 ## Usage
 
-Run the sample evaluator script (demonstrates various evaluators with example inputs):
+I have created various **standalone** scripts that serve as a guide for how to use the Azure AI Evaluation SDK:
 
-```bash
-uv run scripts/0_evaluator-samples.py
-```
+- Run the sample evaluator script (demonstrates various evaluators with example inputs):
 
-Run the local evaluation script within a Hub project (evaluates dataset responses using different models and makes the results available in the Foundry UI):
+  ```bash
+  uv run scripts/0_evaluator-samples.py
+  ```
 
-```bash
-uv run scripts/1_local_evaluation_hub.py --dataset datasets/conversations_RepeatedCallDetector.jsonl
-```
+- Run the local evaluation script within a **Hub project** (evaluates dataset responses and makes the results available in the Azure AI Foundry UI):
 
-Run the local evaluation script within a Foundry project (evaluates dataset responses using different models and makes the results available in the Foundry UI):
+  0. (The instructions below allow you to generate a dataset of conversations through the orchestrator, but it is not necessary to do it as you can utilise the already provided datasets in the `evaluations/datasets` folder, such as `4o_conversations_RepeatedCallDetector.jsonl` and `4o-mini_conversations_RepeatedCallDetector.jsonl`)
 
-```bash
-uv run scripts/1_local_evaluation_foundry.py --dataset datasets/conversations_RepeatedCallDetector.jsonl
-```
+  1. First, run the orchestrator in the repeated_calls project to generate a dataset of conversations. The following command executes 3 different call events (`row_id`s) and saves the conversations to the `repeated_calls/conversation_logs` folder.
 
-Run the continuous evaluation script within a Foundry project (usually gives a rate limit error, but occasionally works; see more details in the [Evaluation approaches and considerations](#evaluation-approaches-and-considerations) section):
+     ```bash
+     rm -r repeated_calls/conversation_logs && for i in {1..3}; do poetry run python repeated_calls/orchestrator/main.py --loglevel DEBUG --row_id $i; done
+     ```
 
-```bash
-uv run scripts/2_continuous_evaluations.py
-```
+  2. By running the orchestrator for multiple call events, the script generates a dataset of conversations that can be used as evaluation datasets for the evaluation script. The datasets are automatically saved to the `repeated_calls/conversation_logs/<AgentName>/all_conversations` folder. Once generated, copy the contents of the folder to the `evaluations/datasets` folder, and then run the following command to evaluate the dataset:
+
+     ```bash
+     uv run scripts/1_local_evaluation_hub.py --dataset datasets/4o_conversations_RepeatedCallDetector.jsonl
+     ```
+
+  3. The results are saved to the `evaluations/results` folder, as well as the Azure AI Foundry UI, which offers a visual representation of the results as well as a way to compare the results between different models (requires you to run the orchestrator multiple times with different models). The following image shows how the results look in the UI:
+
+     ![ai-foundry-conversation-eval-comparison](images/ai-foundry-conversation-eval-comparison.png)
+
+- (Broken) Run the local evaluation script within a **Foundry project** (attempts the same as the Hub project script, but with a Foundry project; unfortunately, it consistently gives a `500 Internal Server Error`):
+
+  ```bash
+  uv run scripts/1_local_evaluation_foundry.py --dataset datasets/conversations_RepeatedCallDetector.jsonl
+  ```
+
+- Run the continuous evaluation script within a Foundry project (usually gives a rate limit error, but occasionally works; see more details in the [Evaluation approaches and considerations](#evaluation-approaches-and-considerations) section):
+
+  ```bash
+  uv run scripts/2_continuous_evaluations.py
+  ```
 
 ## Findings
 
@@ -156,11 +172,16 @@ This format is suitable for evaluating individual query-response interactions.
   - `response`: The response generated by the AI model to the query.
   - `context`: The source information on which the generated response is based (grounding information).
 
-- **Example** (single-turn chat `.jsonl` format, one JSON object per line):
+- **Example** (single-turn chat `.jsonl` format, one object per line, with the first object being actual `jsonl` and the second object being `json` for better readability):
 
   ```json
   {"query":"Customer reports that her RoboTrim X keeps stalling mid-session.","ground_truth":"Yes, this is a repeated call.","response":"The customer has previously reported that the RoboTrim X stalls during operation. The current call is about the same malfunction, with the product referenced by name and identical symptoms. This matches the prior issue and falls within a few days of the last call.","context":"Previous call (3 days ago): 'RoboTrim X keeps pausing randomly.' Summary: Diagnosed intermittent motor issue, pending technician visit."}
-  {"query":"Caller says her garden mower won’t start this morning.","ground_truth":"No, this is not a repeated call.","response":"Although this call is about a garden mower, the last call was regarding a billing dispute for a fertilizer subscription. There is no overlap in the product or issue being discussed. Therefore, this is not a repeated call.","context":"Previous call (5 days ago): 'I was charged twice for the premium fertilizer plan.' Summary: Resolved overbilling complaint."}
+  {
+    "query":"Caller says her garden mower won’t start this morning.",
+    "ground_truth":"No, this is not a repeated call.",
+    "response":"Although this call is about a garden mower, the last call was regarding a billing dispute for a fertilizer subscription. There is no overlap in the product or issue being discussed. Therefore, this is not a repeated call.",
+    "context":"Previous call (5 days ago): 'I was charged twice for the premium fertilizer plan.' Summary: Resolved overbilling complaint."
+  }
   ```
 
 #### B. Conversations
@@ -249,7 +270,7 @@ Assuming the goal is to compare the quality of responses between different model
 
 - **Limitations encountered:**
 
-  - **Reasoning models (e.g., DeepSeek-R1, o4-mini) seem unsupported** for acting as a judge in evaluations (like in `1_local_evaluation_hub.py`), yielding an error:
+  - Reasoning models (e.g., DeepSeek-R1, o4-mini) seem unsupported for acting as a judge in evaluations (like in `1_local_evaluation_hub.py`), yielding an error:
 
     ```bash
     openai.BadRequestError: Error code: 400 - {'error': {'message': "Unsupported parameter: 'max_tokens' is not supported with this model. Use 'max_completion_tokens' instead.", 'type': 'invalid_request_error', 'param': 'max_tokens', 'code': 'unsupported_parameter'}}
@@ -261,15 +282,15 @@ Hub projects within AI Foundry provide a user interface for conducting evaluatio
 
 - **Automatic Evaluations:**
 
-  - **"Model and prompt":**
-    - Well-suited for testing individual agents. Allows defining a system prompt and then providing an evaluation dataset.
+  - **"Evaluate a model":**
+    - Well-suited for testing model performance on very specific tasks. Unfortunately does not allow you to choose an existing Foundry agent to evaluate with (you provide a system prompt for that specific evaluation).
     - Contains a feature to generate sample question/answer pairs using a GPT model, but this is limited to simple one-sentence questions and not ideal for large data inputs. I recommended to generate such data independently.
-  - **"Dataset":**
+    - I encountered an "evalception" scenario, where my evaluation failed because my dataset contained a scenario with harmful content, which led Azure to block the evaluation.
+  - **"Evaluate an existing query-response dataset":**
     - Highly useful for analyzing a response dataset. The "query" can represent all data the decision is based on.
     - Image: ![ai-foundry-evaluation](images/ai-foundry-evaluation.png)
     - It is also possible to compare evaluation results between different models. This can be used to compare different models as judges for the same dataset or to compare the response quality of different models.
     - Image: ![ai-foundry-evaluation-comparison](images/ai-foundry-evaluation-comparison.png)
-  - **"Prompt flow":** Appears to be an evaluator designed for low-code AI flows.
   - **Note:** The Phi-4 model was not available in the Foundry UI at the time of testing, though it was accessible when running evaluation scripts locally.
 
 - **Manual Evaluations:**
