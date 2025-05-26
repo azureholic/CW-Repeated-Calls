@@ -8,6 +8,7 @@ import time
 from repeated_calls.streaming.settings import StreamingSettings
 import frontend.utils as us 
 import uuid
+import subprocess
 
 
 config = StreamingSettings(queue = 'agent_output_messages')
@@ -23,6 +24,7 @@ def streamlit_receivepage():
     # Receive data button
     if st.button("Receive data output from the model", key='receive_model_output_btn'):
         with st.spinner('Pending...'):
+            subprocess.Popen(["python","/home/burgh512/Python_files/Agentic-AI/CW-Repeated-Calls/repeated_calls/orchestrator/main.py"])
             found_messages = False
             start_time = time.time()
             while time.time() - start_time < 14:
