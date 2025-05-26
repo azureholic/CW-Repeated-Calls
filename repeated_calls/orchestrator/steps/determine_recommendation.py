@@ -8,9 +8,14 @@ from repeated_calls.orchestrator.agents.offer_agent import get_agent
 from repeated_calls.orchestrator.entities.state import State
 from repeated_calls.prompt_engineering.prompts import RecommendationPrompt
 from repeated_calls.utils.loggers import Logger
+import frontend.utils as us
+from repeated_calls.streaming.settings import StreamingSettings
+
 
 logger = Logger()
 
+config = StreamingSettings(queue = 'agent_output_messages')
+client = us.get_sb_client(config.connection_string)
 
 class DetermineRecommendationStep(KernelProcessStep):
     """Step for determining a recommendation for the CS employee using a multi-agent system."""
@@ -38,7 +43,17 @@ class DetermineRecommendationStep(KernelProcessStep):
             message=prompts.get_user_prompt(),
         )
 
+        messages = []
+
+
         async for content in chat.invoke():
+            msg = f">> {content.name.upper()}: {content.content}"
+            us.send_servicebus_msg(msg, client, config.queue)
+            messages.append(msg)
             logger.debug(f">> {content.name.upper()}: {content.content}")
 
+        # Sending messages to the servicebus
+        total_message = us.create_one_message(messages)
+
         await context.emit_event("Exit", data=state)
+

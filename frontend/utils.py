@@ -5,7 +5,11 @@ import asyncio
 import time
 from dotenv import load_dotenv
 from repeated_calls.streaming.settings import StreamingSettings
+from repeated_calls.utils.loggers import Logger
 
+
+
+logger = Logger()
 
 
 
@@ -17,20 +21,35 @@ def get_sb_client(connection_string: str):
 
     return client
 
-
-def send_servicebus_msg(message: str, client: ServiceBusClient, queue: str) -> None:
-    # Defining the service bus message
-    servicebus_msg = ServiceBusMessage(message)
-
-    # Sending the message to the queue
-    async def run():    
+async def _send_async(message: str, client: ServiceBusClient, queue: str):
+    try:
+        sb_message = ServiceBusMessage(message)
         sender = client.get_queue_sender(queue_name=queue)
         async with sender:
-            await sender.send_messages(servicebus_msg)
-        print('\n \
-                ---MESSAGE SENT---')  
+            await sender.send_messages(sb_message)
+        logger.debug("Message sent to the servicebus")
+    except Exception as e:
+        logger.error(f"Failed to send message: {e}")
 
-    asyncio.run(run())
+
+def send_servicebus_msg(message: str, client: ServiceBusClient, queue: str):
+    """Send a service bus message from sync or async code (guaranteed delivery)."""
+
+    try:
+        loop = asyncio.get_running_loop()
+        # Inside an existing event loop → schedule the task safely
+        asyncio.create_task(_send_async(message, client, queue))
+    except RuntimeError:
+        # Not inside an event loop → safe to run synchronously
+        asyncio.run(_send_async(message, client, queue))
+    except Exception as e:
+        # Fallback for rare edge cases (like nested loops in notebooks)
+        def run_in_thread():
+            asyncio.run(_send_async(message, client, queue))
+
+        # thread = threading.Thread(target=run_in_thread)
+        # thread.start()
+        # thread.join()
 
 
 def receive_servicebus_msg(client: ServiceBusClient, queue: str):
@@ -40,17 +59,27 @@ def receive_servicebus_msg(client: ServiceBusClient, queue: str):
         
         async with receiver:
             received_messages = await receiver.receive_messages(max_message_count=100, max_wait_time=5)
+            
+            i = 0
             for msg in received_messages:
-                print(f"\n\n---MODELS OUTPUT--- \
-                    \n {str(msg)}\
-                    ") 
-                await receiver.complete_message(msg)                                    # This removes the message from the queue
-            if not received_messages:
-                print('No messages in queue') 
+                print(msg)
+                await receiver.complete_message(msg)
+                i += 1                                    # This removes the message from the queue
+            
+            if i ==0:
+                logger.debug("No messages in queue")
+            else:
+                logger.debug(f"received {i} messages from the servicebus") 
+        
+        return received_messages
 
-    asyncio.run(run())
+    received_messages = asyncio.run(run())
+    
+    return received_messages
 
 
+def create_one_message(messages: list[str]) -> str:
+    return "\n".join(messages)
 
 
 

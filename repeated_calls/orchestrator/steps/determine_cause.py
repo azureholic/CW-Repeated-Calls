@@ -11,9 +11,13 @@ from repeated_calls.orchestrator.entities.state import State
 from repeated_calls.orchestrator.entities.structured_output import CauseResult
 from repeated_calls.prompt_engineering.prompts import CausePrompt
 from repeated_calls.utils.loggers import Logger
+import frontend.utils as us
+from repeated_calls.streaming.settings import StreamingSettings
+
 
 logger = Logger()
 
+config = StreamingSettings(queue = 'agent_output_messages')
 
 class DetermineCauseStep(KernelProcessStep):
     """Step for determining the cause of a product issue.
@@ -41,10 +45,17 @@ class DetermineCauseStep(KernelProcessStep):
 
         # Parse the response and update the state
         res = CauseResult(**json.loads(response.content.content))
-        logger.debug(
-            f">> CAUSE AGENT - Product ID: {res.product_id}. Analysis: {res.analysis}. Conclusion: {res.conclusion}"
-        )
+        msg_1 = f">> CAUSE AGENT - Product ID: {res.product_id}. Analysis: {res.analysis}. Conclusion: {res.conclusion}"
+        logger.debug(msg_1)
+
         state.update(res)
+
+        # Sending messages to the servicebus
+        messages = [msg_1]
+        total_message = us.create_one_message(messages)
+        client = us.get_sb_client(config.connection_string)
+        us.send_servicebus_msg(total_message, client, config.queue)
+
 
         if res.is_relevant:
             # Send event to next step

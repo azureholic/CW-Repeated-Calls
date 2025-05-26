@@ -6,11 +6,13 @@ from azure.servicebus.aio import ServiceBusClient       # This class is used to 
 from azure.servicebus import ServiceBusMessage          # This class ensures that a single message can be sent to the queue
 import time
 from repeated_calls.streaming.settings import StreamingSettings
+import frontend.utils as us 
+import uuid
 
 
 config = StreamingSettings(queue = 'agent_output_messages')
-print(config.connection_string)
-print(type(config.connection_string))
+
+client = us.get_sb_client(config.connection_string)
 
 def streamlit_receivepage():
 
@@ -18,34 +20,74 @@ def streamlit_receivepage():
     st.write("")
     received_messages = []
 
-
     # Receive data button
-    if st.button("Receive data output from the model"):
+    if st.button("Receive data output from the model", key='receive_model_output_btn'):
         with st.spinner('Pending...'):
+            found_messages = False
             start_time = time.time()
-            while not received_messages:
-                async def run():
-                    # Creating a ServiceBusClient class
-                    async with ServiceBusClient.from_connection_string(
-                        conn_str = config.connection_string,
-                        logging_enable = True) as servicebus_client:                                        # Defining the servicebusclient class
-                        receiver = servicebus_client.get_queue_receiver(queue_name = config.queue)  # Defining the receiver (linking it to the queue)
-                        async with receiver:                                                            
-                            received_messages = await receiver.receive_messages(max_wait_time = 5, max_message_count = 100)     # Storing all the received messages in this variable
-                            for msg in received_messages:       	                                    # printing all the messages in the queue        
-                                await receiver.complete_message(msg)                                    # This removes the message from the queue
-                    return received_messages
-                
-                received_messages = asyncio.run(run()) 
+            while time.time() - start_time < 14:
+                time.sleep(3)
+                new_messages = us.receive_servicebus_msg(client, config.queue)
+                if new_messages:
+                    found_messages = True
+                    for i, msg in enumerate(new_messages):
+                        # Convert generator to bytes if needed
+                        body = msg.body
+                        if hasattr(body, "__iter__") and not isinstance(body, (str, bytes)):
+                            # Convert generator to bytes, then decode
+                            body = b"".join(body)
+                        if isinstance(body, bytes):
+                            body = body.decode("utf-8")
+                        else:
+                            body = str(body)
+                        num_lines = body.count('\n') + 1
+                        unique_key = f"receive_model_data_text_area_{i}_{uuid.uuid4()}"
+                        height = min(max(45 * num_lines, 150), 500)
+                        st.text_area('', value=body, height=height, key=unique_key)            
+                                
+            if not found_messages:
+                st.info('No data retrieved from the model')
 
-                if time.time() - start_time > 5:
-                    break
+
+
+
+
+
+
+
+
+
+
+
+
+
+    # # Receive data button
+    # if st.button("Receive data output from the model"):
+    #     with st.spinner('Pending...'):
+    #         start_time = time.time()
+    #         while not received_messages:
+    #             async def run():
+    #                 # Creating a ServiceBusClient class
+    #                 async with ServiceBusClient.from_connection_string(
+    #                     conn_str = config.connection_string,
+    #                     logging_enable = True) as servicebus_client:                                        # Defining the servicebusclient class
+    #                     receiver = servicebus_client.get_queue_receiver(queue_name = config.queue)  # Defining the receiver (linking it to the queue)
+    #                     async with receiver:                                                            
+    #                         received_messages = await receiver.receive_messages(max_wait_time = 5, max_message_count = 100)     # Storing all the received messages in this variable
+    #                         for msg in received_messages:       	                                    # printing all the messages in the queue        
+    #                             await receiver.complete_message(msg)                                    # This removes the message from the queue
+    #                 return received_messages
+                
+    #             received_messages = asyncio.run(run()) 
+
+    #             if time.time() - start_time > 5:
+    #                 break
         
-        if received_messages:
-            for i, models_output in enumerate(received_messages):
-                st.write(models_output)
-        else:
-            st.info('No data retrieved from the model')
+    #     if received_messages:
+    #         for i, models_output in enumerate(received_messages):
+    #             st.write(models_output)
+    #     else:
+    #         st.info('No data retrieved from the model')
 
 
 

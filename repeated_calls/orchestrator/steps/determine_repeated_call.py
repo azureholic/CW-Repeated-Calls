@@ -21,9 +21,15 @@ from repeated_calls.orchestrator.plugins import (
     McpApiKeyPlugin,
 )
 from repeated_calls.orchestrator.settings import McpApiKeySettings
+from repeated_calls.streaming.settings import StreamingSettings
+from frontend import utils as us
 
+
+config = StreamingSettings(queue = 'agent_output_messages')
 
 logger = Logger()
+
+client = us.get_sb_client(config.connection_string)
 
 
 class DetermineRepeatedCallStep(KernelProcessStep):
@@ -156,17 +162,30 @@ class DetermineRepeatedCallStep(KernelProcessStep):
         chat_history.add_assistant_message(response.content)
 
         res = RepeatedCallResult(**json.loads(response.content))
-        logger.debug(f">> REPEATED CALL AGENT - Analysis: {res.analysis} Conclusion: {res.conclusion}")
+        msg_1 = f">> REPEATED CALL AGENT - \n Analysis: {res.analysis} Conclusion: {res.conclusion}"
+        us.send_servicebus_msg(msg_1, client, config.queue)
+        logger.debug(msg_1)
+        
         state.update(res)
 
         # Log the decision and reasoning
-        logger.debug("=== REPEATED CALL DECISION ===")
-        logger.debug(f"Is repeated call: {state.repeated_call_result.is_repeated_call}")
-        logger.debug(f"Analysis: {state.repeated_call_result.analysis}")
-        logger.debug(f"Conclusion: {state.repeated_call_result.conclusion}")
+        msg_2 = "=== REPEATED CALL DECISION ==="
+        msg_3 = f"Is repeated call: {state.repeated_call_result.is_repeated_call}"
+        msg_4 = f"Analysis: {state.repeated_call_result.analysis}"
+        msg_5 = f"Conclusion: {state.repeated_call_result.conclusion}"
+        logger.debug(msg_2)
+        logger.debug(msg_3)
+        logger.debug(msg_4)
+        logger.debug(msg_5)
 
         # Before emitting event
-        logger.debug(f"Emitting event: {'IsRepeatedCall' if state.repeated_call_result.is_repeated_call else 'IsNotRepeatedCall'}")
+        msg_6 = f"Emitting event: {'IsRepeatedCall' if state.repeated_call_result.is_repeated_call else 'IsNotRepeatedCall'}"
+        logger.debug(msg_6)
+
+        # Sending message to the servicebus
+        messages = [msg_2, msg_3, msg_4, msg_5, msg_6]
+        total_message = us.create_one_message(messages)
+        us.send_servicebus_msg(total_message, client, config.queue)
 
         # Emit event to continue process flow
         if res.is_repeated_call:
