@@ -9,21 +9,19 @@ import asyncio                                          # For asynchronous execu
 from azure.servicebus.aio import ServiceBusClient       # This class is used to interact with queues asynchronously
 from azure.servicebus import ServiceBusMessage          # This class ensures that a single message can be sent to the queue
 from dotenv import load_dotenv
+from repeated_calls.database.schemas import CallEvent
+from frontend import utils as us
+from repeated_calls.streaming.settings import StreamingSettings
+from datetime import datetime
 
+
+config = StreamingSettings(queue = 'customercalls')
+client = us.get_sb_client(config.connection_string)
 
 def streamlit_sendpage():
-    # Importing the path2data and setting up the pages
-    path_2_data = "/data/"
-
     # Importing the json file
     with open('data/scenarios/scenario_specifications.json', 'r') as file:
         pay_load = json.load(file)
-
-    # Connection string to the azure servicebus
-    name_of_queue = 'customercalls'
-    load_dotenv(dotenv_path = "webapp/secrets.env")
-    connection_str = os.getenv("connection_str_azure_servicebus")
-
 
     ## Different scenarios
     st.title("Sending calls to servicebus")
@@ -38,36 +36,27 @@ def streamlit_sendpage():
     for i in range(len(pay_load)):
         if option == f'Scenario {i+1}':
 
-            ## Sending a message to the servicebus
-            # Defining the function to send a message
-            async def send_single_message(sender):                          # Asynchronous function that takes a sender (Instance of the ServiceBusSender class --> from the servicebus.aio SDK) as input
-                message = ServiceBusMessage(f"ID: {pay_load[i]['call_event_id']}     \
-                                            \n Customer ID: {pay_load[i]['customer']['customer_id']} \
-                                            \n Timestamp: {pay_load[i]['dates']['primary_call_date']} \
-                                            \n Call reason: {pay_load[i]['scenario_details']['call_reason']}")        # This creates a ServiceBusMessage 
-                                            
-                await sender.send_messages(message)                         # Sends the message asynchronous using the send_message method
-                print('message sent')                                       # Await ensures that in the sending time Python can handle other tasks, e.g. sending/receiving messages, web requests, etc).
-                                                                            # Async in front of the function allows you to use await inside the function
-
-            # Sending the actual message
-            async def run():
-                # Create a service bus client using the connection string
-                async with ServiceBusClient.from_connection_string(                               # This line creates a new ServiceBusClient called 'servicebus_client' 
-                    conn_str= connection_str,                                                      # Defines the string for which it has to create the ServiceBusClient object
-                    logging_enable=True) as servicebus_client:                                    # the with part means that the connection will automatically close when you're done    
-                    sender = servicebus_client.get_queue_sender(queue_name = name_of_queue)    # Creates an object from the ServiceBusClient that can send messages to the defined queue       
-                    async with sender:
-                        # Send one single message
-                        await send_single_message(sender)
-
+            message_dict = {
+                "id": pay_load[i]['call_event_id'],
+                "customer_id": pay_load[i]['customer']['customer_id'],
+                "sdc": pay_load[i]['scenario_details']['call_reason'],
+                "timestamp": pay_load[i]['dates']['primary_call_date'],
+                # add other fields as needed
+            }
+            message_json = json.dumps(message_dict)
+            
+            # ## Sending a message to the servicebus
+            # message = CallEvent(id = pay_load[i]['call_event_id'], 
+            #     customer_id = pay_load[i]['customer']['customer_id'],
+            #     sdc = pay_load[i]['scenario_details']['call_reason'],
+            #     timestamp =  datetime.fromisoformat(pay_load[i]['dates']['primary_call_date']),)
 
             # Header
             col_a, col_b = st.columns([10,1])
             col_a.write(f"***Description of the scenario:*** \
                 \n {pay_load[i]['title']}")
-            if col_b.button("Run this Scenario"):
-                asyncio.run(run())
+            if col_b.button("Send scenario to servicebus"):
+                us.send_servicebus_msg(message_json, client, config.queue)
 
 
             # Customer PII

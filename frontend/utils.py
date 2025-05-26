@@ -6,7 +6,7 @@ import time
 from dotenv import load_dotenv
 from repeated_calls.streaming.settings import StreamingSettings
 from repeated_calls.utils.loggers import Logger
-
+import json
 
 
 logger = Logger()
@@ -47,10 +47,6 @@ def send_servicebus_msg(message: str, client: ServiceBusClient, queue: str):
         def run_in_thread():
             asyncio.run(_send_async(message, client, queue))
 
-        # thread = threading.Thread(target=run_in_thread)
-        # thread.start()
-        # thread.join()
-
 
 def receive_servicebus_msg(client: ServiceBusClient, queue: str):
 
@@ -62,7 +58,6 @@ def receive_servicebus_msg(client: ServiceBusClient, queue: str):
             
             i = 0
             for msg in received_messages:
-                print(msg)
                 await receiver.complete_message(msg)
                 i += 1                                    # This removes the message from the queue
             
@@ -82,7 +77,29 @@ def create_one_message(messages: list[str]) -> str:
     return "\n".join(messages)
 
 
+def transform_servicebus_msg_2_dict(received_msg: ServiceBusMessage):
+    if isinstance(received_msg, list):
+        if not received_msg:
+            raise ValueError("Received message list is empty.")
+        received_msg = received_msg[0]
 
+    logger.debug(f"Received_msg comes in as type {type(received_msg)}")
 
+    body = received_msg.body
+    if hasattr(body, "__iter__") and not isinstance(body, (str, bytes)):
+        body = b"".join(body)
+    if isinstance(body, bytes):
+        body = body.decode("utf-8")
+    elif not isinstance(body, str):
+        body = str(body)
+
+    body = body.strip()
+    try:
+        message = json.loads(body)
+        logger.debug(f"Received_msg goes out as type {type(received_msg)}")
+        return message
+    except json.JSONDecodeError:
+        logger.debug(f"Non-JSON message received: {body}")
+        return {"raw_message": body}
 
 

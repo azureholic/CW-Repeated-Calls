@@ -6,24 +6,34 @@ import os
 from azure.servicebus.aio import ServiceBusClient
 from repeated_calls.streaming.settings import StreamingSettings
 import frontend.utils as us
+from repeated_calls.database.schemas import CallEvent
+from datetime import datetime
+
 
 config = StreamingSettings(queue = 'agent_output_messages')
 client = us.get_sb_client(config.connection_string)
-us.receive_servicebus_msg(client, config.queue)
+received_msg = us.receive_servicebus_msg(client, config.queue)
 
-# foo = 'a'
-# bar = 'b'
+print(type(received_msg))
+print(type(received_msg[0]))
+print(received_msg)
 
-# list_var = []
 
-# list_var.append(foo)
+# # Extract the body as a string (handle bytes/generator if needed)
+# body = received_msg.body
+# if hasattr(body, "__iter__") and not isinstance(body, (str, bytes)):
+#     body = b"".join(body)
+# if isinstance(body, bytes):
+#     body = body.decode("utf-8")
+# else:
+#     body = str(body)
 
-# print(list_var)
+# # Convert JSON string to dictionary
+# message = json.loads(body)
 
-# list_var.append(bar)
+# ## Sending a message to the servicebus
+# message = CallEvent(id = message['id'], 
+#     customer_id = message['customer_id'],
+#     sdc = message['sdc'],
+#     timestamp =  datetime.fromisoformat(message['timestamp']))
 
-# print(list_var)
-
-# foo = [f"bar_{i}" for i in range(0,5)]
-
-# print(foo)

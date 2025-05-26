@@ -9,7 +9,10 @@ from repeated_calls.streaming.settings import StreamingSettings
 import frontend.utils as us 
 import uuid
 import subprocess
+from repeated_calls.utils.loggers import Logger
+import json
 
+logger = Logger()
 
 config = StreamingSettings(queue = 'agent_output_messages')
 
@@ -24,11 +27,11 @@ def streamlit_receivepage():
     # Receive data button
     if st.button("Receive data output from the model", key='receive_model_output_btn'):
         with st.spinner('Pending...'):
-            subprocess.Popen(["python","/home/burgh512/Python_files/Agentic-AI/CW-Repeated-Calls/repeated_calls/orchestrator/main.py"])
+            subprocess.run(["python","/home/burgh512/Python_files/Agentic-AI/CW-Repeated-Calls/repeated_calls/orchestrator/main.py"])
             found_messages = False
             start_time = time.time()
-            while time.time() - start_time < 14:
-                time.sleep(3)
+            while time.time() - start_time < 30:
+                time.sleep(0.5)
                 new_messages = us.receive_servicebus_msg(client, config.queue)
                 if new_messages:
                     found_messages = True
@@ -42,6 +45,7 @@ def streamlit_receivepage():
                             body = body.decode("utf-8")
                         else:
                             body = str(body)
+
                         num_lines = body.count('\n') + 1
                         unique_key = f"receive_model_data_text_area_{i}_{uuid.uuid4()}"
                         height = min(max(45 * num_lines, 150), 500)
