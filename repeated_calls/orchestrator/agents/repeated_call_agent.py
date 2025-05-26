@@ -37,7 +37,7 @@ from azure.ai.agents.models import (
 #     )
 
 #     return agent
-async def get_agent_response(instructions: str, userprompt:str, thread: AzureAIAgentThread) -> str:
+async def get_agent_response(instructions: str, userprompt:str, thread_id:str) -> str:
     """Agent for determining if the call is repeated or not."""
     # Define temperature and which functions the agent can use
     ai_agent_settings = AzureAIAgentSettings()
@@ -68,11 +68,13 @@ async def get_agent_response(instructions: str, userprompt:str, thread: AzureAIA
             definition=agent_definition,
         )
 
+        # Create a thread for the agent
+        thread = AzureAIAgentThread(client=client, thread_id=thread_id)
         response = await agent.get_response(
             messages=userprompt,
             thread=thread
         )
 
-        client.agents.delete_agent(agent.id)
+        await client.agents.delete_agent(agent.id)
 
     return response.content

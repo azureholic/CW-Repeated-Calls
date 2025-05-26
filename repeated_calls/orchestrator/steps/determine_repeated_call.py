@@ -40,8 +40,7 @@ class DetermineRepeatedCallStep(KernelProcessStep):
         self,
         state: State,
         context: KernelProcessStepContext,
-        kernel: Kernel,
-        thread: AzureAIAgentThread | None = None,       
+        kernel: Kernel       
     ) -> None:
         """Process function to retrieve customer data and call events using the enhanced database objects."""
         # Check if incoming_message is already the correct type
@@ -139,8 +138,9 @@ class DetermineRepeatedCallStep(KernelProcessStep):
 
         state.update(customer_obj, historic_events)
         prompts = RepeatCallerPrompt(state)
-        
-        agent_response = await get_agent_response(prompts.get_system_prompt(), prompts.get_user_prompt(), thread)
+
+        print(f"Thread ID: {state.thread_id}")
+        agent_response = await get_agent_response(prompts.get_system_prompt(), prompts.get_user_prompt(), thread_id=state.thread_id)
 
         logger.debug(f"# {agent_response.name}: {agent_response.content}")
 

@@ -5,8 +5,8 @@ import json
 from semantic_kernel import Kernel
 from semantic_kernel.functions import kernel_function
 from semantic_kernel.processes.kernel_process import KernelProcessStep, KernelProcessStepContext
-
-from repeated_calls.orchestrator.agents.cause_agent import get_agent
+from semantic_kernel.agents import AzureAIAgentThread
+from repeated_calls.orchestrator.agents.cause_agent import get_agent_response
 from repeated_calls.orchestrator.entities.state import State
 from repeated_calls.orchestrator.entities.structured_output import CauseResult
 from repeated_calls.prompt_engineering.prompts import CausePrompt
@@ -25,22 +25,17 @@ class DetermineCauseStep(KernelProcessStep):
     async def cause(
         self,
         state: State,
-        context: KernelProcessStepContext,
-        kernel: Kernel,
+        context: KernelProcessStepContext        
     ) -> None:
         """Process function to determine the cause of a product issue."""
         
         
         prompts = CausePrompt(state)
 
-        agent = get_agent(kernel=kernel, instructions=prompts.get_system_prompt())
-
-        response = await agent.get_response(
-            messages=prompts.get_user_prompt(),
-        )
+        agent_response = await get_agent_response(prompts.get_system_prompt(), prompts.get_user_prompt(), thread_id=state.thread_id)
 
         # Parse the response and update the state
-        res = CauseResult(**json.loads(response.content.content))
+        res = CauseResult(**json.loads(agent_response.content))
         logger.debug(
             f">> CAUSE AGENT - Product ID: {res.product_id}. Analysis: {res.analysis}. Conclusion: {res.conclusion}"
         )

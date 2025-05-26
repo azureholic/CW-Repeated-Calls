@@ -13,14 +13,13 @@ logger = Logger()
 
 class State(BaseModel):
     """State class for the flow."""
-   
     call_event: CallEvent
     customer: Customer | None = Field(default=None)
     call_history: list[HistoricCallEvent] = Field(default_factory=list)
     repeated_call_result: RepeatedCallResult | None = Field(default=None)
     cause_result: CauseResult | None = Field(default=None)
     offer_result: OfferResult | None = Field(default=None)
-
+    thread_id: str | None = Field(default=None, description="ID of the thread in which the state is being processed.")
     model_config = ConfigDict(extra="ignore", json_encoders={datetime: lambda v: v.strftime("%Y-%m-%d %H:%M:%S")})
 
     @classmethod

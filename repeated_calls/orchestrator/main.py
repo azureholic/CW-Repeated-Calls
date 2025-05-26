@@ -91,6 +91,7 @@ async def run_sequence(call_event: CallEvent) -> None:
                                        conn_str=ai_agent_settings.endpoint, 
                                        deployment_name=ai_agent_settings.model_deployment_name)
             thread = AzureAIAgentThread(client=client)
+            await thread.create()
 
             # Keep MCP plugins alive for the whole run
             async with customer_plugin() as cust, operations_plugin() as ops:
@@ -105,6 +106,9 @@ async def run_sequence(call_event: CallEvent) -> None:
                 determine_cause = process_builder.add_step(DetermineCauseStep)
                 determine_recommendation = process_builder.add_step(DetermineRecommendationStep)
                 exit_step = process_builder.add_step(ExitStep)
+
+                print(f"Thread ID: {thread.id}")
+                state.thread_id = thread.id
 
                 # Orchestrate steps
                 process_builder.on_input_event("Start").send_event_to(

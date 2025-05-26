@@ -4,11 +4,12 @@ from semantic_kernel import Kernel
 from semantic_kernel.functions import kernel_function
 from semantic_kernel.processes.kernel_process import KernelProcessStep, KernelProcessStepContext
 
-from repeated_calls.orchestrator.agents.offer_agent import get_agent
+from repeated_calls.orchestrator.agents.offer_agent import get_agent_response
 from repeated_calls.orchestrator.entities.state import State
+from repeated_calls.orchestrator.entities.structured_output import OfferResult
 from repeated_calls.prompt_engineering.prompts import RecommendationPrompt
 from repeated_calls.utils.loggers import Logger
-
+from semantic_kernel.agents import AzureAIAgent,AzureAIAgentSettings,AzureAIAgentThread
 logger = Logger()
 
 
@@ -19,8 +20,7 @@ class DetermineRecommendationStep(KernelProcessStep):
     async def recommend(
         self,
         state: State,
-        context: KernelProcessStepContext,
-        kernel: Kernel,
+        context: KernelProcessStepContext       
     ) -> None:
         """Process function to determine the cause of a product issue."""
         prompts = RecommendationPrompt(state)
@@ -28,15 +28,15 @@ class DetermineRecommendationStep(KernelProcessStep):
         # Hacky way to split the system prompt into two parts
         system_prompts = prompts.get_system_prompt().split("===")
 
-        chat = get_agent(
-            kernel=kernel,
+        agent_response = get_agent_response(
             draft_instructions=system_prompts[0],
             reviewer_instructions=system_prompts[1],
+            user_prompt=prompts.get_user_prompt(),
+            thread_id=state.thread_id
         )
 
-        await chat.add_chat_message(
-            message=prompts.get_user_prompt(),
-        )
+        res = OfferResult(**json.loads(agent_response.content))
+
 
         async for content in chat.invoke():
             logger.debug(f">> {content.name.upper()}: {content.content}")
