@@ -5,9 +5,10 @@ import asyncio
 import time
 from dotenv import load_dotenv
 from repeated_calls.streaming.settings import StreamingSettings
+from frontend import utils as us
 
-name_of_queue = 'agent_output_messages'
-config = StreamingSettings(queue = name_of_queue)
+
+config = StreamingSettings(queue = 'agent_output_messages')
 
 
 output_dict = {'REPEATED_CALL_AGENT': "Analysis: The current call is about a 'self-driving mower' that isn't working since this morning. The previous call, just one day prior, was about the customer's 'AutoMow 3000' (which is a self-driving mower) that had stopped working. The previous call summary indicates the issue was not resolved immediately and a ticket was opened with a resolution promised by today. The timing is very close (about 1 day apart), and both calls are about the same product and a similar issue (the mower not working). It is highly likely the current call is a follow-up or continuation of the unresolved issue from the previous call. Conclusion: This is a repeated call about the same issue.",
@@ -22,29 +23,7 @@ output_dict = {'REPEATED_CALL_AGENT': "Analysis: The current call is about a 'se
                                                     }
 
 
-
-for i, models_output in enumerate(output_dict):
-    
-    # time.sleep(5)
-
-    async def send_single_message(sender):                          # Asynchronous function that takes a sender (Instance of the ServiceBusSender class --> from the servicebus.aio SDK) as input
-        message = ServiceBusMessage(str(models_output) + ": " + output_dict[models_output])                  # This creates a ServiceBusMessage                             
-        await sender.send_messages(message)                         # Sends the message asynchronous using the send_message method
-        print('\n \
-              ---MESSAGE SENT---')                                       # Await ensures that in the sending time Python can handle other tasks, e.g. sending/receiving messages, web requests, etc).
-                                                                    # Async in front of the function allows you to use await inside the function
-
-
-    # Sending the actual message
-    async def run():
-        # Create a service bus client using the connection string
-        async with ServiceBusClient.from_connection_string(                               # This line creates a new ServiceBusClient called 'servicebus_client' 
-            conn_str = config.connection_string,                                                    # Defines the string for which it has to create the ServiceBusClient object
-            logging_enable=True) as servicebus_client:                                    # the with part means that the connection will automatically close when you're done    
-            sender = servicebus_client.get_queue_sender(queue_name = config.queue)    # Creates an object from the ServiceBusClient that can send messages to the defined queue       
-            async with sender:
-                # Send one single message
-                await send_single_message(sender)
-
-    asyncio.run(run())
+# print(output_dict['REPEATED_CALL_AGENT'])
+client = us.get_sb_client(config.connection_string)
+us.send_servicebus_msg(output_dict['CAUSE_AGENT'], client, config.queue)
 
