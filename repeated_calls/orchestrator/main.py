@@ -4,6 +4,7 @@ import argparse
 import asyncio
 import csv
 import os
+import sys
 from datetime import datetime
 from importlib.resources import files
 
@@ -150,17 +151,38 @@ async def main() -> None:
         choices=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
         help="Override the default log level (e.g., DEBUG, INFO, WARNING)",
     )
+    parser.add_argument(
+        "--mode",
+        type=str,
+        choices=["once", "listener"],
+        default="once",
+        help="Run mode: 'once' for single execution or 'listener' for continuous service bus processing",
+    )    
+
     args = parser.parse_args()
 
     if args.loglevel:
         logger.setLevel(args.loglevel.upper())
 
-    call_event = get_event()
-
     logger.info("Application started.")
-    _ = await run_sequence(call_event)
+    
+    if args.mode == "listener":
+        # Import here to avoid circular imports
+        from repeated_calls.orchestrator.servicebus_listener import run_listener
+        logger.info("Starting in listener mode. Processing Service Bus messages continuously.")
+        await run_listener()
+    else:
+        # Default mode: run once with sample data from CSV
+        call_event = get_event()
+        logger.info("Using sample call event from CSV.")
+            
+        _ = await run_sequence(call_event)
+        
     logger.info("Application finished.")
 
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    try:
+        asyncio.run(main())
+    except KeyboardInterrupt:
+        logger.info("Application stopped by keyboard interrupt")
