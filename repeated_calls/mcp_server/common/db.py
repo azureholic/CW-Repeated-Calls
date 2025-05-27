@@ -1,22 +1,22 @@
-import logging
+from repeated_calls.utils.loggers import Logger
 from typing import Any, Iterable, List, Dict
 
 import psycopg_pool
-from repeated_calls.basic_mcp_server.common.settings import settings
+from repeated_calls.database.settings import DatabaseSettings
 
-log = logging.getLogger(__name__)
-
+logger = Logger()
+settings = DatabaseSettings()
 
 async def create_pool() -> psycopg_pool.AsyncConnectionPool:
     """Create a global async connection-pool with retry policy."""
-    log.info("Opening PostgreSQL connection-pool")
+    logger.info("Opening PostgreSQL connection-pool")
     pool = psycopg_pool.AsyncConnectionPool(
         conninfo=(
-            f"host={settings.pghost} "
-            f"port={settings.pgport} "
-            f"dbname={settings.pgdatabase} "
-            f"user={settings.pguser} "
-            f"password={settings.pgpassword.get_secret_value()}"
+            f"host={settings.host} "
+            f"port={settings.port} "
+            f"dbname={settings.database} "
+            f"user={settings.user} "
+            f"password={settings.password.get_secret_value()}"
         ),
         min_size=5,
         max_size=20,

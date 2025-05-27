@@ -2434,21 +2434,6 @@ rich = ["rich (>=13.9.4)"]
 ws = ["websockets (>=15.0.1)"]
 
 [[package]]
-name = "mcp-client"
-version = "0.2.0"
-description = "Python client for Unity MCP server"
-optional = false
-python-versions = ">=3.7"
-groups = ["main"]
-files = [
-    {file = "mcp_client-0.2.0-py3-none-any.whl", hash = "sha256:fb3339682799c665bcf251e301688067d28fca87bf8197373c9cd78447432156"},
-    {file = "mcp_client-0.2.0.tar.gz", hash = "sha256:334b1da6fcc520fd9437d8b9395b9f2cdf510d624d8fb76f6b43fa4fe7752c37"},
-]
-
-[package.dependencies]
-requests = "*"
-
-[[package]]
 name = "mistune"
 version = "3.1.3"
 description = "A sane and fast Markdown parser with useful plugins and renderers"
@@ -6028,4 +6013,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.11"
-content-hash = "d24dad55a1dbab5394d9f431ca39e27e152963a3620c131d6d522b87fbcf6dac"
+content-hash = "cd39294ca338e153d2dde6e2ec6ac58335113a1a918a585da51e383400052e2b"

@@ -11,7 +11,7 @@ RUN python3 -m venv "$POETRY_VENV" \
 	&& "$POETRY_VENV/bin/pip" install -U pip setuptools \
 	&& "$POETRY_VENV/bin/pip" install poetry=="${POETRY_VERSION}"
 
-COPY pyproject.toml poetry.lock repeated_calls/basic_mcp_server/README.md  ./
+COPY pyproject.toml poetry.lock repeated_calls/mcp_server/README.md  ./
 COPY repeated_calls/ repeated_calls
 
 RUN poetry config virtualenvs.in-project true && \
@@ -38,4 +38,4 @@ USER appuser
 
 EXPOSE 8000
 
-CMD ["uvicorn", "repeated_calls.basic_mcp_server.customer.customer_mcp_server:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "repeated_calls.mcp_server.customer.customer_mcp_server:app", "--host", "0.0.0.0", "--port", "8000"]

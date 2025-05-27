@@ -1,6 +1,6 @@
 from typing import List, Optional
-from repeated_calls.basic_mcp_server.common.db import fetch_dicts
-from ..models import SoftwareUpdate
+from repeated_calls.mcp_server.common.db import fetch_dicts
+from repeated_calls.mcp_server.operations.models import SoftwareUpdate
 
 
 async def find(pool, product_id: Optional[int] = None) -> List[SoftwareUpdate]:

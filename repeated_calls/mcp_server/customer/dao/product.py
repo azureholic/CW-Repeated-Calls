@@ -1,7 +1,7 @@
 from functools import lru_cache
 from typing import List, Optional
-from repeated_calls.basic_mcp_server.common.db import fetch_dicts
-from ..models import Product
+from repeated_calls.mcp_server.common.db import fetch_dicts
+from repeated_calls.mcp_server.customer.models import Product
 
 
 @lru_cache(maxsize=1)           # catalogue rarely changes

@@ -1,10 +1,15 @@
 """Entity classes for representing message and state objects."""
+
 from datetime import datetime
 
 from pydantic import BaseModel, ConfigDict, Field
 
 from repeated_calls.database.schemas import CallEvent, Customer, HistoricCallEvent
-from repeated_calls.orchestrator.entities.structured_output import CauseResult, OfferResult, RepeatedCallResult
+from repeated_calls.orchestrator.entities.structured_output import (
+    CauseResult,
+    OfferResult,
+    RepeatedCallResult,
+)
 from repeated_calls.utils.loggers import Logger
 
 logger = Logger()
@@ -19,8 +24,12 @@ class State(BaseModel):
     repeated_call_result: RepeatedCallResult | None = Field(default=None)
     cause_result: CauseResult | None = Field(default=None)
     offer_result: OfferResult | None = Field(default=None)
+    run_timestamp: str | None = Field(default=None)
+    row_id: str | None = Field(default=None)
 
-    model_config = ConfigDict(extra="ignore", json_encoders={datetime: lambda v: v.strftime("%Y-%m-%d %H:%M:%S")})
+    model_config = ConfigDict(
+        extra="ignore", json_encoders={datetime: lambda v: v.strftime("%Y-%m-%d %H:%M:%S")}
+    )
 
     @classmethod
     def from_call_event(cls, call_event: CallEvent) -> "State":
@@ -42,6 +51,8 @@ class State(BaseModel):
                 self.cause_result = arg
             elif isinstance(arg, OfferResult):
                 self.offer_result = arg
+            elif isinstance(arg, str) and not hasattr(self, "run_timestamp"):
+                self.run_timestamp = arg
             else:
                 logger.error(f"Invalid argument '{arg}' type: {type(arg)}")
                 raise ValueError(f"Invalid argument type {type(arg)}.")
