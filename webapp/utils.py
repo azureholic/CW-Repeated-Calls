@@ -55,5 +55,28 @@ def send_msg(id: int, client: ServiceBusClient, queue: str, engine: Engine) -> N
     log = f"Message sent to queue {queue} with CallEvent ID {event.id}"
     logger.info(log)
     st.toast(log)
-    
-    
+
+def receive_msg(client: ServiceBusClient, queue: str) -> CallEvent | None:
+    with client:
+        with client.get_queue_receiver(queue) as receiver:
+            # Only receive one message, wait max 2 seconds to prevent infinite loop
+            res = receiver.receive_messages(max_message_count=1, max_wait_time=2)
+
+            # Check amount of messages received
+            if not res:
+                return None
+            elif l := len(res) > 1:
+                logger.warning(f"Received {l} messages, expected only 1. Processing the first one.")
+            
+            msg = res[0]
+            try:
+                event = CallEvent(**json.loads(str(msg)))
+            except Exception as e:
+                logger.error("Failed to parse message into CallEvent:", exc_info=e)
+                event = None
+            else:
+                logger.info(f"Received CallEvent with ID {event.id} from queue {queue}")
+                receiver.complete_message(msg)
+            finally:
+                return event
+
