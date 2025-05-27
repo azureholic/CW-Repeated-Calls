@@ -25,7 +25,7 @@ Note that the CSV files must be named after the tables they will populate. For e
 
 ## MCP Data Service
 
-For details on the MCP Data Service (API, Dockerization, deployment, etc.), see the [Basic MCP Server README](repeated_calls/basic_mcp_server/README.md) .
+For details on the MCP Data Service (API, Dockerization, deployment, etc.), see the [MCP Server README](repeated_calls/mcp_server/README.md) .
 
 
 ## Prerequisits for MCP Servers
