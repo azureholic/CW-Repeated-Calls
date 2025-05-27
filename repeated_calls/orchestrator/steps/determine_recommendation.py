@@ -25,17 +25,14 @@ class DetermineRecommendationStep(KernelProcessStep):
         """Process function to determine the cause of a product issue."""
         prompts = RecommendationPrompt(state)
 
-        # Hacky way to split the system prompt into two parts
-        system_prompts = prompts.get_system_prompt().split("===")
-
         chat = get_agent(
             kernel=kernel,
-            draft_instructions=system_prompts[0],
-            reviewer_instructions=system_prompts[1],
+            draft_instructions=prompts.get_prompt("system_recommendation"),
+            reviewer_instructions=prompts.get_prompt("system_reviewer"),
         )
 
         await chat.add_chat_message(
-            message=prompts.get_user_prompt(),
+            message=prompts.get_prompt("user"),
         )
 
         async for content in chat.invoke():

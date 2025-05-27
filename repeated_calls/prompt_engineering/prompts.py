@@ -54,52 +54,50 @@ class _PromptTemplate:
         return self.render()
 
 
-class _PromptTemplatePair(ABC):
-    """Abstract base class for prompts that require both system and user prompts."""
+class _PromptTemplateCollection(ABC):
+    """Abstract base class for handling multiple named prompt templates."""
 
-    def __init__(self, user_template_name: str, system_template_name: str, template_dir: str | None = None) -> None:
-        """Initialize system and user prompts with respective templates."""
+    def __init__(self, template_dir: str | None = None, **prompt_templates: str) -> None:
+        """
+        Initialize multiple named prompts using keyword arguments.
+
+        Args:
+            template_dir (str | None): Optional path to the directory containing templates.
+            **prompt_templates: Arbitrary keyword arguments where the key is the prompt name
+                                (e.g. 'user', 'system', 'reviewer_system') and the value is the template filename.
+        """
         if template_dir is None:
             template_dir = str(next(iter(files("repeated_calls.prompt_engineering.templates")._paths)))
-        self.user_prompt = _PromptTemplate(template_dir, user_template_name)
-        self.system_prompt = _PromptTemplate(template_dir, system_template_name)
 
-    def set_user_variable(self, key: str, value: Any) -> None:
-        """Set a variable for the user prompt."""
-        self.user_prompt.set_variable(key, value)
+        self.prompts = {
+            name: _PromptTemplate(template_dir, template_file) for name, template_file in prompt_templates.items()
+        }
 
-    def set_system_variable(self, key: str, value: Any) -> None:
-        """Set a variable for the system prompt."""
-        self.system_prompt.set_variable(key, value)
+    def set_variable(self, prompt_name: str, key: str, value: Any) -> None:
+        """Set a single variable for a specific named prompt."""
+        self.prompts[prompt_name].set_variable(key, value)
 
-    def update_user_variables(self, **kwargs) -> None:
-        """Update multiple variables for the user prompt."""
-        self.user_prompt.update_variables(kwargs)
+    def update_variables(self, prompt_name: str, **kwargs) -> None:
+        """Update multiple variables for a specific named prompt."""
+        self.prompts[prompt_name].update_variables(kwargs)
 
-    def update_system_variables(self, **kwargs) -> None:
-        """Update multiple variables for the system prompt."""
-        self.system_prompt.update_variables(kwargs)
-
-    def get_user_prompt(self) -> str:
-        """Render and return the user prompt."""
-        return self.user_prompt.render()
-
-    def get_system_prompt(self) -> str:
-        """Render and return the system prompt."""
-        return self.system_prompt.render()
+    def get_prompt(self, prompt_name: str) -> str:
+        """Render and return the specified named prompt."""
+        return self.prompts[prompt_name].render()
 
 
-class RepeatCallerPrompt(_PromptTemplatePair):
+class RepeatCallerPrompt(_PromptTemplateCollection):
     """Prompt class for determining repeated calls, managing both system and user prompts."""
 
     def __init__(self, state: State) -> None:
         """Initialise the RepeatCallerPrompt with specific templates."""
-        super().__init__(user_template_name="repeat_caller_user.j2", system_template_name="repeat_caller_system.j2")
+        super().__init__(user="repeat_caller_user.j2", system="repeat_caller_system.j2")
 
         for call in state.call_history:
             call.compute_time_since(state.call_event.timestamp)
 
-        self.update_user_variables(
+        self.update_variables(
+            prompt_name="user",
             customer=state.customer,
             call_event=state.call_event,
             call_timestamp=state.call_event.timestamp.strftime("%Y-%m-%d %H:%M:%S"),
@@ -107,26 +105,32 @@ class RepeatCallerPrompt(_PromptTemplatePair):
         )
 
 
-class CausePrompt(_PromptTemplatePair):
+class CausePrompt(_PromptTemplateCollection):
     """Prompt class for determining the cause of a product issue, managing both system and user prompts."""
 
     def __init__(self, state: State) -> None:
         """Initialise the CausePrompt with specific templates."""
-        super().__init__(user_template_name="cause_user.j2", system_template_name="cause_system.j2")
+        super().__init__(user="cause_user.j2", system="cause_system.j2")
 
-        self.update_user_variables(
+        self.update_variables(
+            prompt_name="user",
             call_event=state.call_event,
         )
 
 
-class RecommendationPrompt(_PromptTemplatePair):
+class RecommendationPrompt(_PromptTemplateCollection):
     """Prompt class for generating personalized discount recommendations, managing both system and user prompts."""
 
     def __init__(self, state: State) -> None:
         """Initialise the RecommendationPrompt with specific templates."""
-        super().__init__(user_template_name="recommendation_user.j2", system_template_name="recommendation_system.j2")
+        super().__init__(
+            user="recommendation_user.j2",
+            system_recommendation="recommendation_system.j2",
+            system_reviewer="reviewer_system.j2",
+        )
 
-        self.update_user_variables(
+        self.update_variables(
+            prompt_name="user",
             call_event=state.call_event,
             cause_result=state.cause_result,
         )
