@@ -16,6 +16,14 @@ from repeated_calls.orchestrator.entities.state import State
 from repeated_calls.orchestrator.entities.structured_output import RepeatedCallResult
 from repeated_calls.prompt_engineering.prompts import RepeatCallerPrompt
 from repeated_calls.utils.loggers import Logger
+from repeated_calls.orchestrator.plugins import (
+    customer_plugin,
+    operations_plugin,
+    McpApiKeyPlugin,
+)
+from repeated_calls.orchestrator.settings import McpApiKeySettings
+
+from repeated_calls.utils.conversation_saver import save_conversation
 
 logger = Logger()
 
@@ -47,7 +55,8 @@ class DetermineRepeatedCallStep(KernelProcessStep):
         # Get customer data and historic calls manually
         func = kernel.get_function("CustomerDataPlugin", "get_historic_call_events")
         historic_events_response = await func.invoke(
-            kernel, KernelArguments(customer_id=state.call_event.customer_id, mcp_api_key=mcp_api_key)
+            kernel,
+            KernelArguments(customer_id=state.call_event.customer_id, mcp_api_key=mcp_api_key),
         )
 
         # --- 1⃣ history ---------------------------------------------------
@@ -96,7 +105,8 @@ class DetermineRepeatedCallStep(KernelProcessStep):
         # --- 2⃣ customer ---------------------------------------------------
         func = kernel.get_function("CustomerDataPlugin", "get_customer_by_id")
         cust_resp = await func.invoke(
-            kernel, KernelArguments(customer_id=state.call_event.customer_id, mcp_api_key=mcp_api_key)
+            kernel,
+            KernelArguments(customer_id=state.call_event.customer_id, mcp_api_key=mcp_api_key),
         )
         cust_raw = cust_resp.value
 
@@ -134,7 +144,9 @@ class DetermineRepeatedCallStep(KernelProcessStep):
 
         # Classify whether the call is a repeated call with an LLM
         chat_service = kernel.get_service(type=ChatCompletionClientBase)
-        chat_settings = AzureChatPromptExecutionSettings(response_format=RepeatedCallResult, temperature=0.0)
+        chat_settings = AzureChatPromptExecutionSettings(
+            response_format=RepeatedCallResult, temperature=0.0
+        )
 
         # Prepare the chat interaction
         chat_history = ChatHistory()
@@ -153,8 +165,36 @@ class DetermineRepeatedCallStep(KernelProcessStep):
         chat_history.add_assistant_message(response.content)
 
         res = RepeatedCallResult(**json.loads(response.content))
-        logger.debug(f">> REPEATED CALL AGENT - Analysis: {res.analysis} Conclusion: {res.conclusion}")
+        logger.debug(
+            f">> REPEATED CALL AGENT - Analysis: {res.analysis} Conclusion: {res.conclusion}"
+        )
         state.update(res)
+
+
+        # Log the decision and reasoning
+        logger.debug("=== REPEATED CALL DECISION ===")
+        logger.debug(f"Is repeated call: {state.repeated_call_result.is_repeated_call}")
+        logger.debug(f"Analysis: {state.repeated_call_result.analysis}")
+        logger.debug(f"Conclusion: {state.repeated_call_result.conclusion}")
+
+        # Before emitting event
+        logger.debug(
+            f"Emitting event: {'IsRepeatedCall' if state.repeated_call_result.is_repeated_call else 'IsNotRepeatedCall'}"
+        )
+        logger.debug(f"Repeated call response: {response.content}")
+
+        # Save conversation to all required locations
+        agent_name = "RepeatedCallDetector"
+        save_results = save_conversation(
+            chat_history=chat_history,
+            agent_name=agent_name,
+            row_id=state.row_id,
+            run_timestamp=state.run_timestamp,
+        )
+        logger.info(f"Saved conversation to {save_results['individual_file']}")
+        logger.info(f"Appended to conversations file: {save_results['conversations_file']}")
+        logger.info(f"Appended to run log: {save_results['run_log_file']}")
+
 
         # Emit event to continue process flow
         if res.is_repeated_call:
