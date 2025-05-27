@@ -112,10 +112,11 @@ class DetermineRepeatedCallStep(KernelProcessStep):
             logger.error(f"Customer data error: {cust_raw[0].text}")
             await context.emit_event("Exit", data={"error": cust_raw[0].text})
             return
-
-        if isinstance(cust_raw, TextContent):
-            cust_raw = cust_raw.text
-        if isinstance(cust_raw, str):
+        
+        if isinstance(cust_raw, list):
+            cust_raw = cust_raw[0].text
+            cust_raw = json.loads(cust_raw)
+        elif isinstance(cust_raw, str):
             cust_raw = json.loads(cust_raw)
 
         customer_payload = (
@@ -131,7 +132,9 @@ class DetermineRepeatedCallStep(KernelProcessStep):
                 relation_start_date=date.today(),   # exact date → passes pydantic validation
             )
         )
-
+        logger.debug(
+            f"Customer Info: ID={customer_obj.id}, Name={customer_obj.name}, CLV={customer_obj.clv}"
+        )
         # Update state
         state.update(customer_obj, historic_events)
 
