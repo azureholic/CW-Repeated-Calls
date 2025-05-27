@@ -52,7 +52,7 @@ Add an Application Insights instance to your AI Foundry project.
 
 Add this to your .env file
 
-```
+```bash
 APPLICATIONINSIGHTS_CONNECTION_STRING="<your connection string>"
 ```
 
@@ -60,5 +60,20 @@ APPLICATIONINSIGHTS_CONNECTION_STRING="<your connection string>"
 
 ```bash
 poetry install
-poetry run python -m repeated_calls.orchestrator.main --loglevel INFO
+```
+To run the orchestrator in listener mode (will process every incoming message)
+
+```bash
+poetry run python -m repeated_calls.orchestrator.main --loglevel INFO --mode listener
+```
+
+You can send a test message with this tool
+```bash
+poetry run python -m repeated_calls.tools.send_test_message
+```
+
+To run the orchestrator once (default if --mode is omitted)
+
+```bash
+poetry run python -m repeated_calls.orchestrator.main --loglevel INFO --mode once
 ```
