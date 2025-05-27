@@ -1,7 +1,8 @@
 """GetCustomerData step for the process framework."""
 
 import json
-from datetime import datetime, date                 
+from datetime import date
+
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
 from semantic_kernel.connectors.ai.open_ai import AzureChatPromptExecutionSettings
@@ -10,18 +11,11 @@ from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.functions import KernelArguments, kernel_function
 from semantic_kernel.processes.kernel_process import KernelProcessStep, KernelProcessStepContext
 
-from repeated_calls.database.schemas import Customer, HistoricCallEvent, CallEvent
+from repeated_calls.database.schemas import Customer, HistoricCallEvent
 from repeated_calls.orchestrator.entities.state import State
 from repeated_calls.orchestrator.entities.structured_output import RepeatedCallResult
 from repeated_calls.prompt_engineering.prompts import RepeatCallerPrompt
 from repeated_calls.utils.loggers import Logger
-from repeated_calls.orchestrator.plugins import (
-    customer_plugin,
-    operations_plugin,
-    McpApiKeyPlugin,
-)
-from repeated_calls.orchestrator.settings import McpApiKeySettings
-
 
 logger = Logger()
 
@@ -47,9 +41,7 @@ class DetermineRepeatedCallStep(KernelProcessStep):
 
         # Retreive the MCP API key by invoking get_mcp_api_key method of McpApiKeyPlugin
         func = kernel.get_function("McpApiKeyPlugin", "get_mcp_api_key")
-        mcp_api_key_res = await func.invoke(
-            kernel, KernelArguments()
-        )
+        mcp_api_key_res = await func.invoke(kernel, KernelArguments())
         mcp_api_key = mcp_api_key_res.value
 
         # Get customer data and historic calls manually
@@ -62,8 +54,12 @@ class DetermineRepeatedCallStep(KernelProcessStep):
         he_raw = historic_events_response.value
 
         # Check if MCP API key is invalid or missing
-        if (isinstance(he_raw, list) and he_raw and isinstance(he_raw[0], TextContent)
-            and "Invalid or missing MCP API Key" in he_raw[0].text):
+        if (
+            isinstance(he_raw, list)
+            and he_raw
+            and isinstance(he_raw[0], TextContent)
+            and "Invalid or missing MCP API Key" in he_raw[0].text
+        ):
             logger.error(f"Historic events error: {he_raw[0].text}")
             await context.emit_event("Exit", data={"error": he_raw[0].text})
             return
@@ -75,9 +71,7 @@ class DetermineRepeatedCallStep(KernelProcessStep):
             he_raw = json.loads(he_raw)
 
         # he_raw is either the list of events or the FastMCP wrapper
-        historic_events_list = (
-            he_raw if isinstance(he_raw, list) else he_raw.get("events", [])
-        )
+        historic_events_list = he_raw if isinstance(he_raw, list) else he_raw.get("events", [])
 
         normalized_events: list[dict] = []
         for evt in historic_events_list:
@@ -107,21 +101,23 @@ class DetermineRepeatedCallStep(KernelProcessStep):
         cust_raw = cust_resp.value
 
         # Check if MCP API key is invalid or missing
-        if (isinstance(cust_raw, list) and cust_raw and isinstance(cust_raw[0], TextContent)
-            and "Invalid or missing MCP API Key" in cust_raw[0].text):
+        if (
+            isinstance(cust_raw, list)
+            and cust_raw
+            and isinstance(cust_raw[0], TextContent)
+            and "Invalid or missing MCP API Key" in cust_raw[0].text
+        ):
             logger.error(f"Customer data error: {cust_raw[0].text}")
             await context.emit_event("Exit", data={"error": cust_raw[0].text})
             return
-        
+
         if isinstance(cust_raw, list):
             cust_raw = cust_raw[0].text
             cust_raw = json.loads(cust_raw)
         elif isinstance(cust_raw, str):
             cust_raw = json.loads(cust_raw)
 
-        customer_payload = (
-            cust_raw.get("customer") if isinstance(cust_raw, dict) else None
-        )
+        customer_payload = cust_raw.get("customer") if isinstance(cust_raw, dict) else None
         customer_obj = (
             Customer(**customer_payload)
             if customer_payload
@@ -129,12 +125,10 @@ class DetermineRepeatedCallStep(KernelProcessStep):
                 id=state.call_event.customer_id,
                 name="Unknown",
                 clv="Unknown",
-                relation_start_date=date.today(),   # exact date → passes pydantic validation
+                relation_start_date=date.today(),  # exact date → passes pydantic validation
             )
         )
-        logger.debug(
-            f"Customer Info: ID={customer_obj.id}, Name={customer_obj.name}, CLV={customer_obj.clv}"
-        )
+        logger.debug(f"Customer Info: ID={customer_obj.id}, Name={customer_obj.name}, CLV={customer_obj.clv}")
         # Update state
         state.update(customer_obj, historic_events)
 
@@ -149,8 +143,8 @@ class DetermineRepeatedCallStep(KernelProcessStep):
         # logger.debug(f"System prompt:\n{prompts.get_system_prompt()}")
         # logger.debug(f"User prompt:\n{prompts.get_user_prompt()}")
 
-        chat_history.add_system_message(prompts.get_system_prompt())
-        chat_history.add_user_message(prompts.get_user_prompt())
+        chat_history.add_system_message(prompts.get_prompt("system"))
+        chat_history.add_user_message(prompts.get_prompt("user"))
 
         response = await chat_service.get_chat_message_content(
             chat_history=chat_history,
@@ -169,7 +163,9 @@ class DetermineRepeatedCallStep(KernelProcessStep):
         logger.debug(f"Conclusion: {state.repeated_call_result.conclusion}")
 
         # Before emitting event
-        logger.debug(f"Emitting event: {'IsRepeatedCall' if state.repeated_call_result.is_repeated_call else 'IsNotRepeatedCall'}")
+        logger.debug(
+            f"Emitting event: {'IsRepeatedCall' if state.repeated_call_result.is_repeated_call else 'IsNotRepeatedCall'}"
+        )
 
         # Emit event to continue process flow
         if res.is_repeated_call:
