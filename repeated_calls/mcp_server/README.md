@@ -1,4 +1,4 @@
-# Basic MCP Server
+# MCP Server
 
 This folder contains the **Repeated Calls MCP Data Service**—a a FastMCP-based microservice (FastMCP is built on FastAPI) for handling customer, product, subscription, and call event data for the Repeated Calls project.
 
@@ -43,7 +43,7 @@ mcp_server/
     ```
 
 2. **Set up environment variables**
-   Define the environment variables `PGHOST`, `PGUSER`, `PGPASSWORD`, `PGDATABASE`, and optionally `PGPORT`, either as environment variables or in a `.env` file in project root.
+   Define the environment variables `POSTGRES_HOST`, `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DATABASE`, and optionally `POSTGRES_PORT`, either as environment variables or in a `.env` file in project root.
 
 3. **Run the servers:** (from project root):
     *   **Customer MCP Server** (e.g., on port 8000):
@@ -132,11 +132,11 @@ export ACR_NAME="[REPLACE_WITH_ACR_NAME]"
 export ACR_LOGIN_SERVER="${ACR_NAME}.azurecr.io"
 export IMAGE_NAME="[REPLACE_WITH_IMAGE_NAME]"
 export IMAGE_TAG="latest"
-export PGHOST="[REPLACE_WITH_POSTGRESQL_HOST_NAME]"
-export PGUSER="[REPLACE_WITH_POSTGRESQL_ADMIN_NAME]"
-export PGPASSWORD="[REPLACE_WITH_POSTGRESQL_ADMIN_PASSWORD]"
-export PGDATABASE="default"
-export PGPORT="5432"
+export POSTGRES_HOST="[REPLACE_WITH_POSTGRESQL_HOST_NAME]"
+export POSTGRES_USER="[REPLACE_WITH_POSTGRESQL_ADMIN_NAME]"
+export POSTGRES_PASSWORD="[REPLACE_WITH_POSTGRESQL_ADMIN_PASSWORD]"
+export POSTGRES_DATABASE="default"
+export POSTGRES_PORT="5432"
 export USER_ASSIGNED_IDENTITY="[REPLACE_WITH_USER_ASSIGNED_MANAGED_IDENTITY]"
 export MCPAPIKEY="[REPLACE_WITH_MCP_API_KEY]"
 export KEYVAULT_NAME="[REPLACE_WITH_KEYVAULT_NAME]"
@@ -157,7 +157,7 @@ az acr login --name ${ACR_NAME}
 
 ### 3. Add secrets to KeyVault
 ```bash
-az keyvault secret set --vault-name ${KEYVAULT_NAME} --name PGPASSWORD --value "<your-password>"
+az keyvault secret set --vault-name ${KEYVAULT_NAME} --name POSTGRES_PASSWORD --value "<your-password>"
 az keyvault secret set --vault-name ${KEYVAULT_NAME} --name MCP-CUSTOMERS-API-KEY --value "<your-api-key>"
 az keyvault secret set --vault-name ${KEYVAULT_NAME} --name MCP-OPERATIONS-API-KEY --value "<your-api-key>"
 ```
@@ -183,8 +183,8 @@ az containerapp create \
   --cpu 1 --memory 2.0Gi \
   --ingress external --target-port 8000 \
   --registry-server ${ACR_LOGIN_SERVER} \
-  --secrets pg-admin-password=keyvaultref:<KEYVAULT-PGPASSWORD-SECRET-URL>,identityref:<USERASSIGNED-MANAGED-DENTITY-URL> mcp-api-key=keyvaultref:<KEYVAULT-MCP-CUSTOMERS-API-KEY-SECRET-URL>,identityref:<USERASSIGNED-MANAGED-DENTITY-URL> \
-  --env-vars PGHOST="${PGHOST}" PGUSER="${PGUSER}" PGPASSWORD=secretref:pg-admin-password PGDATABASE="${PGDATABASE}" PGPORT="${PGPORT}" MCPAPIKEY=secretref:mcp-api-key \
+  --secrets pg-admin-password=keyvaultref:<KEYVAULT-POSTGRES_PASSWORD-SECRET-URL>,identityref:<USERASSIGNED-MANAGED-DENTITY-URL> mcp-api-key=keyvaultref:<KEYVAULT-MCP-CUSTOMERS-API-KEY-SECRET-URL>,identityref:<USERASSIGNED-MANAGED-DENTITY-URL> \
+  --env-vars POSTGRES_HOST="${POSTGRES_HOST}" POSTGRES_USER="${POSTGRES_USER}" POSTGRES_PASSWORD=secretref:pg-admin-password POSTGRES_DATABASE="${POSTGRES_DATABASE}" POSTGRES_PORT="${POSTGRES_PORT}" MCPAPIKEY=secretref:mcp-api-key \
   --user-assigned ${USER_ASSIGNED_IDENTITY}
 ```
 ### 6. Deploy Operations MCP Server to Azure Container App
@@ -203,8 +203,8 @@ az containerapp create \
   --cpu 1 --memory 2.0Gi \
   --ingress external --target-port 8000 \
   --registry-server ${ACR_LOGIN_SERVER} \
-  --secrets pg-admin-password=keyvaultref:<KEYVAULT-PGPASSWORD-SECRET-URL>,identityref:<USERASSIGNED-MANAGED-DENTITY-URL> mcp-api-key=keyvaultref:<KEYVAULT-MCP-CUSTOMERS-API-KEY-SECRET-URL>,identityref:<USERASSIGNED-MANAGED-DENTITY-URL> \
-  --env-vars PGHOST="${PGHOST}" PGUSER="${PGUSER}" PGPASSWORD=secretref:pg-admin-password PGDATABASE="${PGDATABASE}" PGPORT="${PGPORT}" MCPAPIKEY=secretref:mcp-api-key \
+  --secrets pg-admin-password=keyvaultref:<KEYVAULT-POSTGRES_PASSWORD-SECRET-URL>,identityref:<USERASSIGNED-MANAGED-DENTITY-URL> mcp-api-key=keyvaultref:<KEYVAULT-MCP-CUSTOMERS-API-KEY-SECRET-URL>,identityref:<USERASSIGNED-MANAGED-DENTITY-URL> \
+  --env-vars POSTGRES_HOST="${POSTGRES_HOST}" POSTGRES_USER="${POSTGRES_USER}" POSTGRES_PASSWORD=secretref:pg-admin-password POSTGRES_DATABASE="${POSTGRES_DATABASE}" POSTGRES_PORT="${POSTGRES_PORT}" MCPAPIKEY=secretref:mcp-api-key \
   --user-assigned ${USER_ASSIGNED_IDENTITY}
 ```
 
