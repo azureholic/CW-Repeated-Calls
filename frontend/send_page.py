@@ -54,7 +54,6 @@ def streamlit_sendpage():
             if col_b.button("Send scenario to servicebus"):
                 # Purge the ingress queue before starting with main.py
                 us.purge_servicebus_queue(client, config_ingressqueue.queue)
-
                 us.send_servicebus_msg(message_json, client, config_ingressqueue.queue)
 
 
