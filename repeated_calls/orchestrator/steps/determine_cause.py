@@ -33,16 +33,12 @@ class DetermineCauseStep(KernelProcessStep):
         kernel: Kernel,
     ) -> None:
         """Process function to determine the cause of a product issue."""
-
         prompts = CausePrompt(state)
 
-        # logger.debug(f"System prompt:\n{prompts.get_system_prompt()}")
-        # logger.debug(f"User prompt:\n{prompts.get_user_prompt()}")
-
-        agent = get_agent(kernel=kernel, instructions=prompts.get_system_prompt())
+        agent = get_agent(kernel=kernel, instructions=prompts.get_prompt("system"))
 
         response = await agent.get_response(
-            messages=prompts.get_user_prompt(),
+            messages=prompts.get_prompt("user"),
         )
 
         # Parse the response and update the state

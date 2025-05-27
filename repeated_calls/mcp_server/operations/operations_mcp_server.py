@@ -5,7 +5,6 @@ Repeated Contact Handling – Operations MCP data service
 # ────────────────────────────── std-lib ──────────────────────────────
 import sys
 import asyncio
-import logging
 import time
 from contextlib import asynccontextmanager
 from dataclasses import dataclass
@@ -18,13 +17,14 @@ from dotenv import load_dotenv
 from mcp.server.fastmcp import FastMCP, Context
 
 # ────────────────────────────── project ─────────────────────────────
-from repeated_calls.basic_mcp_server.common.db import create_pool
-from repeated_calls.basic_mcp_server.common.auth import check_api_key
-from repeated_calls.basic_mcp_server.operations.models import (
+from repeated_calls.mcp_server.common.db import create_pool
+from repeated_calls.utils.loggers import Logger
+from repeated_calls.mcp_server.common.auth import check_api_key
+from repeated_calls.mcp_server.operations.models import (
     # domain + response models
     SoftwareUpdate, SoftwareUpdateResponse
 )
-from repeated_calls.basic_mcp_server.operations.dao import (
+from repeated_calls.mcp_server.operations.dao import (
     software_update as su_dao
 )
 
@@ -34,11 +34,7 @@ if sys.platform == "win32":
 
 load_dotenv()
 
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s  %(levelname)-8s %(name)s | %(message)s",
-)
-logger = logging.getLogger("repeated_calls_operations_mcp")
+logger = Logger()
 logger.info("Starting Repeated Calls MCP server")
 
 # ────────────────────────────── FastMCP lifespan ────────────────────
@@ -93,10 +89,7 @@ if __name__ == "__main__":
     parser.add_argument("--host", default="0.0.0.0")
     parser.add_argument("--port", type=int, default=3000)
     parser.add_argument("--transport", choices=["sse", "stdio"], default="sse")
-    parser.add_argument("--log-level", default="INFO")
     args = parser.parse_args()
-
-    logging.getLogger("repeated_calls_operations_mcp").setLevel(args.log_level.upper())
 
     logger.info("Starting Operations MCP server")
     mcp.run(transport=args.transport)

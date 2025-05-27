@@ -1,6 +1,6 @@
 from typing import List
-from repeated_calls.basic_mcp_server.common.db import fetch_dicts
-from ..models import Subscription
+from repeated_calls.mcp_server.common.db import fetch_dicts
+from repeated_calls.mcp_server.customer.models import Subscription
 
 
 async def by_customer(pool, customer_id: int) -> List[Subscription]:

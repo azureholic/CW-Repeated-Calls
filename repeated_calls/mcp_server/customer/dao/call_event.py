@@ -1,6 +1,6 @@
 from typing import List
-from repeated_calls.basic_mcp_server.common.db import fetch_dicts
-from ..models import CallEvent
+from repeated_calls.mcp_server.common.db import fetch_dicts
+from repeated_calls.mcp_server.customer.models import CallEvent
 
 
 async def latest_by_customer(pool, customer_id: int) -> List[CallEvent]:

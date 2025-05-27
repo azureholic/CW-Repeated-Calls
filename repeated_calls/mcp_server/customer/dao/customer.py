@@ -1,6 +1,6 @@
 from typing import Optional
-from repeated_calls.basic_mcp_server.common.db import fetch_dicts
-from ..models import Customer
+from repeated_calls.mcp_server.common.db import fetch_dicts
+from repeated_calls.mcp_server.customer.models import Customer
 
 
 async def get_by_id(pool, customer_id: int) -> Optional[Customer]:

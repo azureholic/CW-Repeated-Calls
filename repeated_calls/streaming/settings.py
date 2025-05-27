@@ -20,7 +20,9 @@ class StreamingSettings(BaseSettings):
 
     endpoint: str
     key: SecretStr
-    queue: str = "customercalls"
+    calls_queue: str = "customercalls"
+    advice_queue: str = "advices"
+
 
     @computed_field
     @property

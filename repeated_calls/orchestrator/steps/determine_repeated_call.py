@@ -1,7 +1,8 @@
 """GetCustomerData step for the process framework."""
 
 import json
-from datetime import datetime, date
+from datetime import date
+
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
 from semantic_kernel.connectors.ai.open_ai import AzureChatPromptExecutionSettings
@@ -10,7 +11,7 @@ from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.functions import KernelArguments, kernel_function
 from semantic_kernel.processes.kernel_process import KernelProcessStep, KernelProcessStepContext
 
-from repeated_calls.database.schemas import Customer, HistoricCallEvent, CallEvent
+from repeated_calls.database.schemas import Customer, HistoricCallEvent
 from repeated_calls.orchestrator.entities.state import State
 from repeated_calls.orchestrator.entities.structured_output import RepeatedCallResult
 from repeated_calls.prompt_engineering.prompts import RepeatCallerPrompt
@@ -120,9 +121,10 @@ class DetermineRepeatedCallStep(KernelProcessStep):
             await context.emit_event("Exit", data={"error": cust_raw[0].text})
             return
 
-        if isinstance(cust_raw, TextContent):
-            cust_raw = cust_raw.text
-        if isinstance(cust_raw, str):
+        if isinstance(cust_raw, list):
+            cust_raw = cust_raw[0].text
+            cust_raw = json.loads(cust_raw)
+        elif isinstance(cust_raw, str):
             cust_raw = json.loads(cust_raw)
 
         customer_payload = cust_raw.get("customer") if isinstance(cust_raw, dict) else None
@@ -136,7 +138,7 @@ class DetermineRepeatedCallStep(KernelProcessStep):
                 relation_start_date=date.today(),  # exact date → passes pydantic validation
             )
         )
-
+        logger.debug(f"Customer Info: ID={customer_obj.id}, Name={customer_obj.name}, CLV={customer_obj.clv}")
         # Update state
         state.update(customer_obj, historic_events)
 
@@ -153,8 +155,8 @@ class DetermineRepeatedCallStep(KernelProcessStep):
         # logger.debug(f"System prompt:\n{prompts.get_system_prompt()}")
         # logger.debug(f"User prompt:\n{prompts.get_user_prompt()}")
 
-        chat_history.add_system_message(prompts.get_system_prompt())
-        chat_history.add_user_message(prompts.get_user_prompt())
+        chat_history.add_system_message(prompts.get_prompt("system"))
+        chat_history.add_user_message(prompts.get_prompt("user"))
 
         response = await chat_service.get_chat_message_content(
             chat_history=chat_history,
@@ -167,6 +169,7 @@ class DetermineRepeatedCallStep(KernelProcessStep):
             f">> REPEATED CALL AGENT - Analysis: {res.analysis} Conclusion: {res.conclusion}"
         )
         state.update(res)
+
 
         # Log the decision and reasoning
         logger.debug("=== REPEATED CALL DECISION ===")
@@ -191,6 +194,7 @@ class DetermineRepeatedCallStep(KernelProcessStep):
         logger.info(f"Saved conversation to {save_results['individual_file']}")
         logger.info(f"Appended to conversations file: {save_results['conversations_file']}")
         logger.info(f"Appended to run log: {save_results['run_log_file']}")
+
 
         # Emit event to continue process flow
         if res.is_repeated_call:

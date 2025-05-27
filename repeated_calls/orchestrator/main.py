@@ -76,8 +76,7 @@ def get_event(row_id: int | None = None) -> CallEvent:
             timestamp=datetime.fromisoformat(row.get("timestamp", "1970-01-01 00:00:00")),
         )
 
-
-async def run_sequence(row_id: int = 1) -> None:
+async def run_sequence(call_event: CallEvent) -> State:
     """Run the sequence of steps for the Repeated Calls process."""
     # Get OpenTelemetry tracer
     tracer = trace.get_tracer("repeated_calls.orchestrator")
@@ -154,6 +153,7 @@ async def run_sequence(row_id: int = 1) -> None:
                 )
 
                 logger.info("Process execution completed successfully.")
+                return state
 
         except Exception as exc:
             logger.error(
@@ -185,7 +185,7 @@ async def main() -> None:
     call_event = get_event()
 
     logger.info("Application started.")
-    await run_sequence(row_id=args.row_id)
+    _ = await run_sequence(call_event)
     logger.info("Application finished.")
 
 
