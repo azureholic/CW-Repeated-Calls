@@ -156,17 +156,6 @@ class DetermineRepeatedCallStep(KernelProcessStep):
         logger.debug(f">> REPEATED CALL AGENT - Analysis: {res.analysis} Conclusion: {res.conclusion}")
         state.update(res)
 
-        # Log the decision and reasoning
-        logger.debug("=== REPEATED CALL DECISION ===")
-        logger.debug(f"Is repeated call: {state.repeated_call_result.is_repeated_call}")
-        logger.debug(f"Analysis: {state.repeated_call_result.analysis}")
-        logger.debug(f"Conclusion: {state.repeated_call_result.conclusion}")
-
-        # Before emitting event
-        logger.debug(
-            f"Emitting event: {'IsRepeatedCall' if state.repeated_call_result.is_repeated_call else 'IsNotRepeatedCall'}"
-        )
-
         # Emit event to continue process flow
         if res.is_repeated_call:
             await context.emit_event("IsRepeatedCall", data=state)

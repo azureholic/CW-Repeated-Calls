@@ -65,7 +65,7 @@ def get_event() -> CallEvent:
             )
 
 
-async def run_sequence(call_event: CallEvent) -> None:
+async def run_sequence(call_event: CallEvent) -> State:
     """Run the sequence of steps for the Repeated Calls process."""
     # Get OpenTelemetry tracer
     tracer = trace.get_tracer("repeated_calls.orchestrator")
@@ -134,6 +134,7 @@ async def run_sequence(call_event: CallEvent) -> None:
                 )
 
                 logger.info("Process execution completed successfully.")
+                return state
 
         except Exception as exc:
             logger.error("An error occurred during the sequence execution: %s", str(exc), exc_info=True)
@@ -157,7 +158,7 @@ async def main() -> None:
     call_event = get_event()
 
     logger.info("Application started.")
-    await run_sequence(call_event)
+    _ = await run_sequence(call_event)
     logger.info("Application finished.")
 
 
