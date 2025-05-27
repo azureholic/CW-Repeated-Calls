@@ -23,18 +23,16 @@ from repeated_calls.orchestrator.plugins import (
     operations_plugin,
     McpApiKeyPlugin,
 )
-from repeated_calls.orchestrator.settings import AzureOpenAISettings, AppInsightsSettings
+from repeated_calls.orchestrator.settings import (
+    AzureOpenAISettings,
+    AppInsightsSettings
+)
 from repeated_calls.orchestrator.steps.determine_recommendation import DetermineRecommendationStep
 from repeated_calls.utils.loggers import Logger
-from repeated_calls.utils.conversation_saver import (
-    get_current_timestamp,
-    setup_logging_directories,
-    AGENT_NAMES,
-)
 
 from opentelemetry import trace
 
-# Initialize telemetry
+  # Initialize telemetry
 from repeated_calls.utils.loggers import Logger
 from repeated_calls.utils.otel import configure_telemetry
 
@@ -49,51 +47,34 @@ logger = get_application_logger(__name__)
 logger.info("Telemetry configured for Azure Monitor")
 
 
-def get_event(row_id: int | None = None) -> CallEvent:
+
+def get_event() -> CallEvent:
     """Create a sample CallEvent object."""
     data_path = os.path.join(os.path.dirname(files("repeated_calls")), "data")
     csv_path = os.path.join(data_path, "call_event.csv")
 
     with open(csv_path, "r", newline="") as csvfile:
         reader = csv.DictReader(csvfile)
-        rows = list(reader)
+        for row in reader:
+            # Convert the data to appropriate types
+            return CallEvent(
+                id=int(row.get("id", -1)),
+                customer_id=int(row.get("customer_id", -1)),
+                sdc=row.get("sdc", "No description available"),
+                timestamp=datetime.fromisoformat(row.get("timestamp", "1970-01-01 00:00:00")),
+            )
 
-        if not rows:
-            raise ValueError("CSV file is empty")
-
-        if row_id is None:
-            row = rows[0]
-        else:
-            matching_rows = [r for r in rows if int(r.get("id", -1)) == row_id]
-            if not matching_rows:
-                raise ValueError(f"No row found with ID {row_id}")
-            row = matching_rows[0]
-
-        return CallEvent(
-            id=int(row.get("id", -1)),
-            customer_id=int(row.get("customer_id", -1)),
-            sdc=row.get("sdc", "No description available"),
-            timestamp=datetime.fromisoformat(row.get("timestamp", "1970-01-01 00:00:00")),
-        )
 
 async def run_sequence(call_event: CallEvent) -> State:
     """Run the sequence of steps for the Repeated Calls process."""
     # Get OpenTelemetry tracer
     tracer = trace.get_tracer("repeated_calls.orchestrator")
 
-    # Setup logging directories
-    setup_logging_directories()
-
-    # Generate a run timestamp for this execution
-    run_timestamp = get_current_timestamp()
-    logger.info(f"Starting run with timestamp: {run_timestamp} for row_id: {row_id}")
+    
 
     # Start a span for this sequence execution
     with tracer.start_as_current_span("repeated_calls.run_sequence") as span:
-        call_event = get_event(row_id)
         state = State.from_call_event(call_event)
-        state.run_timestamp = run_timestamp
-        state.row_id = str(row_id)
         logger.debug(f"### INCOMING CALL ###\n{state.call_event}")
         # Add attributes to the span
         span.set_attribute("call_event.id", str(call_event.id))
@@ -113,8 +94,8 @@ async def run_sequence(call_event: CallEvent) -> State:
 
             # Keep MCP plugins alive for the whole run
             async with customer_plugin() as cust, operations_plugin() as ops:
-                kernel.add_plugin(cust, cust.name)  # → "CustomerDataPlugin"
-                kernel.add_plugin(ops, ops.name)  # → "OperationsDataPlugin"
+                kernel.add_plugin(cust, cust.name)   # → "CustomerDataPlugin"
+                kernel.add_plugin(ops,  ops.name)    # → "OperationsDataPlugin"
                 kernel.add_plugin(McpApiKeyPlugin(), "McpApiKeyPlugin")
 
                 process_builder = ProcessBuilder("RepeatedCalls")
@@ -156,9 +137,7 @@ async def run_sequence(call_event: CallEvent) -> State:
                 return state
 
         except Exception as exc:
-            logger.error(
-                "An error occurred during the sequence execution: %s", str(exc), exc_info=True
-            )
+            logger.error("An error occurred during the sequence execution: %s", str(exc), exc_info=True)
             raise
 
 
@@ -170,12 +149,6 @@ async def main() -> None:
         type=str,
         choices=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
         help="Override the default log level (e.g., DEBUG, INFO, WARNING)",
-    )
-    parser.add_argument(
-        "--row_id",
-        type=int,
-        default=1,
-        help="Row ID to use from the call_event.csv file (default: 1)",
     )
     args = parser.parse_args()
 
