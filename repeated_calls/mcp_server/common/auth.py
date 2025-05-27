@@ -1,6 +1,7 @@
-from repeated_calls.basic_mcp_server.common.settings import settings
+from repeated_calls.mcp_server.common.settings import MCPSettings
 
-MCP_API_KEY = settings.mcpapikey.get_secret_value()
+mcp_settings = MCPSettings()
+MCP_API_KEY = mcp_settings.mcpapikey.get_secret_value()
 
 def check_api_key(mcp_api_key: str):
     """

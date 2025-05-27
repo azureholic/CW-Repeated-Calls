@@ -17,7 +17,7 @@ This folder contains the **Repeated Calls MCP Data Service**—a a FastMCP-based
 ## Folder Structure
 
 ```
-basic_mcp_server/
+mcp_server/
 ├── customer/
 │   ├── customer_mcp_server.py      # Customer MCP server entrypoint
 │   └── test_customer_mcp_server.py # Customer MCP test client
@@ -48,12 +48,12 @@ basic_mcp_server/
 3. **Run the servers:** (from project root):
     *   **Customer MCP Server** (e.g., on port 8000):
         ```bash
-        python repeated_calls/basic_mcp_server/customer/customer_mcp_server.py --host 0.0.0.0 --port 8000
+        python repeated_calls/mcp_server/customer/customer_mcp_server.py --host 0.0.0.0 --port 8000
         ```
 
     *   **Operations MCP Server** (e.g., on port 8001):
         ```bash
-        python repeated_calls/basic_mcp_server/operations/operations_mcp_server.py --host 0.0.0.0 --port 8001
+        python repeated_calls/mcp_server/operations/operations_mcp_server.py --host 0.0.0.0 --port 8001
         ```
 
 
@@ -106,12 +106,12 @@ You can use the provided test clients to run sanity checks against your running 
 
 *   **Customer MCP Server** :
     ```bash
-    python repeated_calls/basic_mcp_server/customer/test_customer_mcp_server.py --host localhost:8000 --customer 7 --product 101
+    python repeated_calls/mcp_server/customer/test_customer_mcp_server.py --host localhost:8000 --customer 7 --product 101
     ```
 
 *   **Operations MCP Server** :
     ```bash
-    python repeated_calls/basic_mcp_server/operations/test_operations_mcp_server.py --host localhost:8001 --product 101
+    python repeated_calls/mcp_server/operations/test_operations_mcp_server.py --host localhost:8001 --product 101
     ```
 
 ---
