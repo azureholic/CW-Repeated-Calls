@@ -16,6 +16,7 @@ logger = Logger()
 
 config = StreamingSettings(queue = 'agent_output_messages')
 client = us.get_sb_client(config.connection_string)
+messages = []
 
 class DetermineRecommendationStep(KernelProcessStep):
     """Step for determining a recommendation for the CS employee using a multi-agent system."""
@@ -43,17 +44,15 @@ class DetermineRecommendationStep(KernelProcessStep):
             message=prompts.get_user_prompt(),
         )
 
-        messages = []
-
 
         async for content in chat.invoke():
             msg = f">> {content.name.upper()}: {content.content}"
-            us.send_servicebus_msg(msg, client, config.queue)
-            messages.append(msg)
+            await us._send_async(msg, client, config.queue)
+            # messages.append(msg)
             logger.debug(f">> {content.name.upper()}: {content.content}")
 
-        # Sending messages to the servicebus
-        total_message = us.create_one_message(messages)
+        # # Sending messages to the servicebus
+        # total_message = us.create_one_message(messages)
 
         await context.emit_event("Exit", data=state)
 
