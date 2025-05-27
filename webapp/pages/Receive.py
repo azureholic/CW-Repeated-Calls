@@ -1,7 +1,9 @@
 import asyncio
+import json
 
 import streamlit as st
 import utils as su
+from azure.servicebus import ServiceBusMessage
 
 from repeated_calls.orchestrator.main import run_sequence
 from repeated_calls.streaming.settings import StreamingSettings
@@ -33,6 +35,14 @@ if st.button("Process message", use_container_width=True):
     status.update(label="Processing message...", state="running")
     res = asyncio.run(run_sequence(event))
 
-    status.update(label="Message processed successfully!", state="complete")
     st.subheader("Results")
     st.write(res.model_dump(mode="json"))  # TODO: format nicely
+
+    # Publish the advice to the Service Bus queue
+    status.update(label="Publishing advice...", state="running")
+    with client:
+        with client.get_queue_sender("agent_output_messages") as sender:
+            msg = ServiceBusMessage(body=json.dumps(res.model_dump(mode="json")))
+            sender.send_messages(msg) # TODO: determine what we want to send here
+        
+    status.update(label="Advice published!", state="complete")
