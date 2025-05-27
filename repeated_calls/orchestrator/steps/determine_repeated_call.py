@@ -145,12 +145,13 @@ class DetermineRepeatedCallStep(KernelProcessStep):
 
         prompts = RepeatCallerPrompt(state)
 
-        agent = get_agent(kernel=kernel, instructions=prompts.get_system_prompt())
+        agent = get_agent(kernel=kernel, instructions=prompts.get_prompt("system"))
 
         response = await agent.get_response(
-            messages=prompts.get_user_prompt(),
+            messages=prompts.get_prompt("user"),
         )
 
+       
         # Parse the response and update the state
         res = RepeatedCallResult(**json.loads(response.content.content))
         logger.debug(f">> REPEATED CALL AGENT - Analysis: {res.analysis} Conclusion: {res.conclusion}")
@@ -169,19 +170,7 @@ class DetermineRepeatedCallStep(KernelProcessStep):
         )
         logger.debug(f"Repeated call response: {response.content}")
 
-        # Save conversation to all required locations
-        agent_name = "RepeatedCallDetector"
-        save_results = save_conversation(
-            chat_history=chat_history,
-            agent_name=agent_name,
-            row_id=state.row_id,
-            run_timestamp=state.run_timestamp,
-        )
-        logger.info(f"Saved conversation to {save_results['individual_file']}")
-        logger.info(f"Appended to conversations file: {save_results['conversations_file']}")
-        logger.info(f"Appended to run log: {save_results['run_log_file']}")
-
-
+       
         # Emit event to continue process flow
         if res.is_repeated_call:
             await context.emit_event("IsRepeatedCall", data=state)
