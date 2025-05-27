@@ -163,9 +163,8 @@ class DetermineRepeatedCallStep(KernelProcessStep):
 
         res = RepeatedCallResult(**json.loads(response.content))
         msg_1 = f">> REPEATED CALL AGENT - \n Analysis: {res.analysis} Conclusion: {res.conclusion}"
-        us.send_servicebus_msg(msg_1, client, config.queue)
+        await us._send_async(msg_1, client, config.queue)
         logger.debug(msg_1)
-        
         state.update(res)
 
         # Log the decision and reasoning
@@ -185,7 +184,7 @@ class DetermineRepeatedCallStep(KernelProcessStep):
         # Sending message to the servicebus
         messages = [msg_2, msg_3, msg_4, msg_5, msg_6]
         total_message = us.create_one_message(messages)
-        us.send_servicebus_msg(total_message, client, config.queue)
+        await us._send_async(total_message, client, config.queue)
 
         # Emit event to continue process flow
         if res.is_repeated_call:

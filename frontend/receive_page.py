@@ -14,45 +14,87 @@ import json
 
 logger = Logger()
 
-config = StreamingSettings(queue = 'agent_output_messages')
 
+config = StreamingSettings(queue='agent_output_messages')
 client = us.get_sb_client(config.connection_string)
 
 def streamlit_receivepage():
+    st.title("Output of the model")
+    max_iter_seconds = 15  # How long to poll for messages
 
-    st.title("Receiving output of the agent")
-    st.write("")
-    received_messages = []
+    start_polling = st.button("Start polling for messages")
+    placeholder = st.empty()
 
-    # Receive data button
-    if st.button("Receive data output from the model", key='receive_model_output_btn'):
-        with st.spinner('Pending...'):
-            subprocess.run(["python","/home/burgh512/Python_files/Agentic-AI/CW-Repeated-Calls/repeated_calls/orchestrator/main.py"])
-            found_messages = False
+    if start_polling:
+        with st.spinner("Pending ..."):
+            time.sleep(2)  # (shorter wait for demo)
             start_time = time.time()
-            while time.time() - start_time < 30:
-                time.sleep(0.5)
+            shown_bodies = set()
+            all_messages = []
+            while True:
+                iter_start = time.time()
                 new_messages = us.receive_servicebus_msg(client, config.queue)
-                if new_messages:
-                    found_messages = True
-                    for i, msg in enumerate(new_messages):
-                        # Convert generator to bytes if needed
-                        body = msg.body
-                        if hasattr(body, "__iter__") and not isinstance(body, (str, bytes)):
-                            # Convert generator to bytes, then decode
-                            body = b"".join(body)
-                        if isinstance(body, bytes):
-                            body = body.decode("utf-8")
-                        else:
-                            body = str(body)
+                for msg in new_messages:
+                    body = msg.body
+                    if hasattr(body, "__iter__") and not isinstance(body, (str, bytes)):
+                        body = b"".join(body)
+                    if isinstance(body, bytes):
+                        body = body.decode("utf-8")
+                    else:
+                        body = str(body)
+                    if body not in shown_bodies:
+                        shown_bodies.add(body)
+                        all_messages.append(body)
+                # Optionally sort all_messages here if you have a timestamp or sequence number
+                with placeholder.container():
+                    for i, body in enumerate(all_messages):
+                        st.write(f"Message {i+1}: {body}")
+                time.sleep(1)
+                iter_end = time.time()
+                if (iter_end - iter_start) > max_iter_seconds:
+                    st.warning(f"Stopped: One polling iteration took longer than {max_iteration_seconds} seconds.")
+                    break
+            st.success("Polling finished.")
 
-                        num_lines = body.count('\n') + 1
-                        unique_key = f"receive_model_data_text_area_{i}_{uuid.uuid4()}"
-                        height = min(max(45 * num_lines, 150), 500)
-                        st.text_area('', value=body, height=height, key=unique_key)            
+
+
+# def streamlit_receivepage():
+
+#     st.title("Receiving output of the agent")
+#     st.write("")
+#     received_messages = []
+
+#     # Receive data button
+#     if st.button("Receive data output from the model", key='receive_model_output_btn'):
+#         with st.spinner('Pending...'):
+#             subprocess.run(["python","/home/burgh512/Python_files/Agentic-AI/CW-Repeated-Calls/repeated_calls/orchestrator/main.py"])
+#             found_messages = False
+#             start_time = time.time()
+#             while time.time() - start_time < 30:
+#                 time.sleep(0.5)
+#                 new_messages = us.receive_servicebus_msg(client, config.queue)
+#                 if new_messages:
+#                     found_messages = True
+#                     for i, msg in enumerate(new_messages):
+#                         # Convert generator to bytes if needed
+#                         body = msg.body
+#                         if hasattr(body, "__iter__") and not isinstance(body, (str, bytes)):
+#                             # Convert generator to bytes, then decode
+#                             body = b"".join(body)
+#                         if isinstance(body, bytes):
+#                             body = body.decode("utf-8")
+#                         else:
+#                             body = str(body)
+
+#                         num_lines = body.count('\n') + 1
+#                         unique_key = f"receive_model_data_text_area_{i}_{uuid.uuid4()}"
+#                         height = min(max(45 * num_lines, 150), 500)
+#                         st.text_area('', value=body, height=height, key=unique_key)            
                                 
-            if not found_messages:
-                st.info('No data retrieved from the model')
+#             if not found_messages:
+#                 st.info('No data retrieved from the model')
+
+
 
 
 

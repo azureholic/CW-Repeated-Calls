@@ -46,7 +46,7 @@ from frontend import utils as us
 from azure.servicebus import ServiceBusMessage          
 
 
-config = StreamingSettings(queue = 'customercalls')
+config = StreamingSettings(queue = 'agent_output_messages')
 
 
 # Create a logger with your module name
@@ -58,24 +58,21 @@ client = us.get_sb_client(config.connection_string)
 received_servicebus_msg = us.receive_servicebus_msg(client, config.queue)
 
 
-def get_event(received_servicebus_msg: ServiceBusMessage) -> CallEvent:
-    dict_msg = us.transform_servicebus_msg_2_dict(received_servicebus_msg)
-    # Only process if it's a CallEvent (has expected keys)
-    if "id" in dict_msg and "customer_id" in dict_msg and "timestamp" in dict_msg and "sdc" in dict_msg:
-        date_str = dict_msg['timestamp']
-        try:
-            timestamp = datetime.fromisoformat(date_str)
-        except ValueError:
-            timestamp = datetime.strptime(date_str, "%d-%m-%Y")
-        return CallEvent(
-            id=dict_msg['id'],
-            customer_id=dict_msg['customer_id'],
-            sdc=dict_msg['sdc'],
-            timestamp=timestamp
-        )
-    else:
-        logger.debug(f"Skipping non-CallEvent message: {dict_msg}")
-        return None
+def get_event() -> CallEvent:
+    """Create a sample CallEvent object."""
+    data_path = os.path.join(os.path.dirname(files("repeated_calls")), "data")
+    csv_path = os.path.join(data_path, "call_event.csv")
+
+    with open(csv_path, "r", newline="") as csvfile:
+        reader = csv.DictReader(csvfile)
+        for row in reader:
+            # Convert the data to appropriate types
+            return CallEvent(
+                id=int(row.get("id", -1)),
+                customer_id=int(row.get("customer_id", -1)),
+                sdc=row.get("sdc", "No description available"),
+                timestamp=datetime.fromisoformat(row.get("timestamp", "1970-01-01 00:00:00")),
+            )
 
 async def run_sequence(call_event: CallEvent) -> None:
     """Run the sequence of steps for the Repeated Calls process."""
@@ -168,7 +165,7 @@ async def main() -> None:
     if args.loglevel:
         logger.setLevel(args.loglevel.upper())
 
-    call_event = get_event(received_servicebus_msg)
+    call_event = get_event()
     if call_event is None:
         logger.info("No valid CallEvent found in the queue. Skipping.")
         # Optionally, continue to the next message or exit
