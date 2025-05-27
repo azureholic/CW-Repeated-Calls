@@ -39,7 +39,7 @@ col_a.write(
 col_b.button(
     "Run this scenario",
     on_click=su.send_msg,
-    args=(scenario["call_event_id"], client, config.queue, engine),
+    args=(scenario["call_event_id"], client, config.calls_queue, engine),
 )
 
 # Customer PII

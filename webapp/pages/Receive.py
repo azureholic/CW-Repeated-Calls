@@ -22,7 +22,7 @@ client = su.get_sb_client(config.connection_string)
 if st.button("Process message", use_container_width=True):
     status = st.status("Receiving message...", expanded=True)
 
-    event = su.receive_msg(client, config.queue)
+    event = su.receive_msg(client, config.calls_queue)
 
     if event is None:
         status.update(label="No messages found!", state="error")
@@ -41,7 +41,7 @@ if st.button("Process message", use_container_width=True):
     # Publish the advice to the Service Bus queue
     status.update(label="Publishing advice...", state="running")
     with client:
-        with client.get_queue_sender("agent_output_messages") as sender:
+        with client.get_queue_sender(config.advice_queue) as sender:
             msg = ServiceBusMessage(body=json.dumps(res.model_dump(mode="json")))
             sender.send_messages(msg) # TODO: determine what we want to send here
         
