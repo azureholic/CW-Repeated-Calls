@@ -10,30 +10,28 @@ from repeated_calls.database.schemas import CallEvent
 from datetime import datetime
 
 
-config = StreamingSettings(queue = 'agent_output_messages')
+config = StreamingSettings(queue = 'customercalls')
 client = us.get_sb_client(config.connection_string)
 received_msg = us.receive_servicebus_msg(client, config.queue)
 
 print(type(received_msg))
-print(type(received_msg[0]))
-print(received_msg)
 
+msg = received_msg[0]
+body = msg.body
 
-# # Extract the body as a string (handle bytes/generator if needed)
-# body = received_msg.body
-# if hasattr(body, "__iter__") and not isinstance(body, (str, bytes)):
-#     body = b"".join(body)
-# if isinstance(body, bytes):
-#     body = body.decode("utf-8")
-# else:
-#     body = str(body)
+print(f"body type before processing: {type(body)}")
 
-# # Convert JSON string to dictionary
-# message = json.loads(body)
+if hasattr(body, "__iter__") and not isinstance(body, (str, bytes)):
+    body = b"".join(body)
+if isinstance(body, bytes):
+    body = body.decode("utf-8")
+elif not isinstance(body, str):
+    body = str(body)
 
-# ## Sending a message to the servicebus
-# message = CallEvent(id = message['id'], 
-#     customer_id = message['customer_id'],
-#     sdc = message['sdc'],
-#     timestamp =  datetime.fromisoformat(message['timestamp']))
+print(f"body type after processing: {type(body)}")
 
+# Now parse the JSON
+data = json.loads(body)
+
+print(f"data = {data}")
+print(f"type of data: {type(data)}")

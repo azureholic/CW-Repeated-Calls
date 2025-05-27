@@ -48,11 +48,8 @@ class DetermineRecommendationStep(KernelProcessStep):
         async for content in chat.invoke():
             msg = f">> {content.name.upper()}: {content.content}"
             await us._send_async(msg, client, config.queue)
-            # messages.append(msg)
             logger.debug(f">> {content.name.upper()}: {content.content}")
 
-        # # Sending messages to the servicebus
-        # total_message = us.create_one_message(messages)
 
         await context.emit_event("Exit", data=state)
 

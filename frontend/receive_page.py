@@ -14,17 +14,9 @@ import json
 
 logger = Logger()
 
-
-config = StreamingSettings(queue='agent_output_messages')
-client = us.get_sb_client(config.connection_string)
-
-def purge_servicebus_queue(client, queue):
-    """Remove all messages from the Service Bus queue."""
-    while True:
-        messages = us.receive_servicebus_msg(client, queue)
-        if not messages:
-            break  # Queue is empty
-        # Messages are completed (removed) in receive_servicebus_msg
+config_ingressqueue = StreamingSettings(queue='customercalls')
+config_egressqueue = StreamingSettings(queue='agent_output_messages')
+client = us.get_sb_client(config_ingressqueue.connection_string)
 
 def streamlit_receivepage():
     st.title("Output of the model")
@@ -38,23 +30,25 @@ def streamlit_receivepage():
         st.session_state.polling = False
 
     if st.button("Start polling for messages") and not st.session_state.polling:
-        # Purge the queue before starting with main.py
-        purge_servicebus_queue(client, config.queue)
-        # Start main.py in the background
-        subprocess.Popen(["python", "/home/burgh512/Python_files/Agentic-AI/CW-Repeated-Calls/repeated_calls/orchestrator/main.py"])
-        st.session_state.polling = True
-        st.session_state.start_time = time.time()
-        st.rerun()
+        with st.spinner("Polling for messages..."):
+            # Purge the egress queue before starting with main.py
+            us.purge_servicebus_queue(client, config_egressqueue.queue)
+
+            # Start main.py in the background
+            subprocess.Popen(["python", "/home/burgh512/Python_files/Agentic-AI/CW-Repeated-Calls/repeated_calls/orchestrator/main.py"])
+            st.session_state.polling = True
+            st.session_state.start_time = time.time()
+            st.rerun()
 
     if st.session_state.polling:
         with st.spinner("Polling for messages..."):
             # Only run the polling loop if still active
             if "polling_active" not in st.session_state:
                 st.session_state.polling_active = True
-
+            
             while st.session_state.polling_active:
                 iter_start = time.time()
-                new_messages = us.receive_servicebus_msg(client, config.queue)
+                new_messages = us.receive_servicebus_msg(client, config_egressqueue.queue)
                 iter_end = time.time()
                 iter_duration = iter_end - iter_start
 
@@ -72,52 +66,22 @@ def streamlit_receivepage():
 
                 for i, body in enumerate(st.session_state.messages):
                     st.write(f"Message {i+1}: {body}")
+                
+                # Stop if more than 6 messages and no new messages
+                if len(st.session_state.messages) > 6 and not new_messages:
+                    st.info("Stopped: Service Bus is empty")
+                    st.session_state.polling_active = False
+                    st.session_state.polling = False
+                    break
 
+                # Stop of the iteration takes longer than 15 seconds
                 if iter_duration > max_iter_seconds:
                     st.warning(f"Stopped: One polling iteration took longer than {max_iter_seconds} seconds.")
                     st.session_state.polling_active = False
                     st.session_state.polling = False
                     break
 
+
                 # Sleep a bit before next poll (optional)
-                time.sleep(1)
+                time.sleep(3)
                 st.rerun()
-
-# def streamlit_receivepage():
-#     st.title("Output of the model")
-#     max_iter_seconds = 15  # How long to poll for messages
-
-#     start_polling = st.button("Start polling for messages")
-#     placeholder = st.empty()
-
-#     if start_polling:
-#         with st.spinner("Pending ..."):
-#             subprocess.Popen(["python","/home/burgh512/Python_files/Agentic-AI/CW-Repeated-Calls/repeated_calls/orchestrator/main.py"])
-#             time.sleep(2)  # (shorter wait for demo)
-#             start_time = time.time()
-#             shown_bodies = set()
-#             all_messages = []
-#             while True:
-#                 iter_start = time.time()
-#                 new_messages = us.receive_servicebus_msg(client, config.queue)
-#                 for msg in new_messages:
-#                     body = msg.body
-#                     if hasattr(body, "__iter__") and not isinstance(body, (str, bytes)):
-#                         body = b"".join(body)
-#                     if isinstance(body, bytes):
-#                         body = body.decode("utf-8")
-#                     else:
-#                         body = str(body)
-#                     if body not in shown_bodies:
-#                         shown_bodies.add(body)
-#                         all_messages.append(body)
-#                 # Optionally sort all_messages here if you have a timestamp or sequence number
-#                 with placeholder.container():
-#                     for i, body in enumerate(all_messages):
-#                         st.write(f"Message {i+1}: {body}")
-#                 time.sleep(1)
-#                 iter_end = time.time()
-#                 if (iter_end - iter_start) > max_iter_seconds:
-#                     st.warning(f"Stopped: One polling iteration took longer than {max_iteration_seconds} seconds.")
-#                     break
-#             st.success("Polling finished.")

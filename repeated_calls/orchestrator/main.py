@@ -46,33 +46,29 @@ from frontend import utils as us
 from azure.servicebus import ServiceBusMessage          
 
 
-config = StreamingSettings(queue = 'agent_output_messages')
+config_ingressqueue = StreamingSettings(queue='customercalls')
+config_egressqueue = StreamingSettings(queue='agent_output_messages')
 
 
 # Create a logger with your module name
 logger = get_application_logger(__name__)
 logger.info("Telemetry configured for Azure Monitor")
-client = us.get_sb_client(config.connection_string)
+client = us.get_sb_client(config_ingressqueue.connection_string)
 
 # Receiving the message from the servicebus
-received_servicebus_msg = us.receive_servicebus_msg(client, config.queue)
+received_sb_msg = us.receive_servicebus_msg(client, config_ingressqueue.queue)
 
+# Transforming the message into a dictionary
+message = us.transform_servicebus_msg_2_dict(received_sb_msg)
 
-def get_event() -> CallEvent:
-    """Create a sample CallEvent object."""
-    data_path = os.path.join(os.path.dirname(files("repeated_calls")), "data")
-    csv_path = os.path.join(data_path, "call_event.csv")
-
-    with open(csv_path, "r", newline="") as csvfile:
-        reader = csv.DictReader(csvfile)
-        for row in reader:
-            # Convert the data to appropriate types
-            return CallEvent(
-                id=int(row.get("id", -1)),
-                customer_id=int(row.get("customer_id", -1)),
-                sdc=row.get("sdc", "No description available"),
-                timestamp=datetime.fromisoformat(row.get("timestamp", "1970-01-01 00:00:00")),
-            )
+def get_event(msg: dict) -> CallEvent:
+    
+    return CallEvent(
+        id = int(msg['id']),
+        customer_id = int(msg['customer_id']),
+        sdc = msg['sdc'],
+        timestamp = datetime.fromisoformat(msg['timestamp']),
+    )
 
 async def run_sequence(call_event: CallEvent) -> None:
     """Run the sequence of steps for the Repeated Calls process."""
@@ -135,7 +131,7 @@ async def run_sequence(call_event: CallEvent) -> None:
                 # Compile/build
                 process = process_builder.build()
                 msg_2 = "Starting process execution..."
-                us.send_servicebus_msg(msg_2, client, config.queue)
+                us.send_servicebus_msg(msg_2, client, config_egressqueue.queue)
                 logger.info(msg_2)
                 await start(
                     process=process,
@@ -143,7 +139,7 @@ async def run_sequence(call_event: CallEvent) -> None:
                     initial_event=KernelProcessEvent(id="Start", data=state),
                 )
                 msg_3 = "Process execution completed successfully."
-                us.send_servicebus_msg(msg_3, client, config.queue)
+                us.send_servicebus_msg(msg_3, client, config_egressqueue.queue)
                 logger.info(msg_3)
 
         except Exception as exc:
@@ -165,20 +161,20 @@ async def main() -> None:
     if args.loglevel:
         logger.setLevel(args.loglevel.upper())
 
-    call_event = get_event()
+    call_event = get_event(message)
     if call_event is None:
         logger.info("No valid CallEvent found in the queue. Skipping.")
         # Optionally, continue to the next message or exit
         exit()
 
     msg_1 = "\n Application started."
-    us.send_servicebus_msg(msg_1, client, config.queue)
+    us.send_servicebus_msg(msg_1, client, config_egressqueue.queue)
     logger.info(msg_1)
 
     await run_sequence(call_event)
 
     msg_4 = "Application finished."
-    us.send_servicebus_msg(msg_4, client, config.queue)
+    us.send_servicebus_msg(msg_4, client, config_egressqueue.queue)
     logger.info(msg_4)
 
 if __name__ == "__main__":

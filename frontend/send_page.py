@@ -15,8 +15,10 @@ from repeated_calls.streaming.settings import StreamingSettings
 from datetime import datetime
 
 
-config = StreamingSettings(queue = 'customercalls')
-client = us.get_sb_client(config.connection_string)
+
+config_ingressqueue = StreamingSettings(queue='customercalls')
+config_egressqueue = StreamingSettings(queue='agent_output_messages')
+client = us.get_sb_client(config_ingressqueue.connection_string)
 
 def streamlit_sendpage():
     # Importing the json file
@@ -45,18 +47,15 @@ def streamlit_sendpage():
             }
             message_json = json.dumps(message_dict)
             
-            # ## Sending a message to the servicebus
-            # message = CallEvent(id = pay_load[i]['call_event_id'], 
-            #     customer_id = pay_load[i]['customer']['customer_id'],
-            #     sdc = pay_load[i]['scenario_details']['call_reason'],
-            #     timestamp =  datetime.fromisoformat(pay_load[i]['dates']['primary_call_date']),)
-
             # Header
             col_a, col_b = st.columns([10,1])
             col_a.write(f"***Description of the scenario:*** \
                 \n {pay_load[i]['title']}")
             if col_b.button("Send scenario to servicebus"):
-                us.send_servicebus_msg(message_json, client, config.queue)
+                # Purge the ingress queue before starting with main.py
+                us.purge_servicebus_queue(client, config_ingressqueue.queue)
+
+                us.send_servicebus_msg(message_json, client, config_ingressqueue.queue)
 
 
             # Customer PII
