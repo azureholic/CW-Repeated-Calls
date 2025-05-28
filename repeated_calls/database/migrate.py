@@ -1,3 +1,5 @@
+"""Module for database migration and data ingestion."""
+
 import argparse
 import os
 

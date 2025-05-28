@@ -1,9 +1,11 @@
+"""Module for PostgreSQL database connection settings."""
+
 from pydantic import SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class DatabaseSettings(BaseSettings):
-    """Settings for connecting to PostgreSQL.
+    """Configuration for PostgreSQL database connection.
 
     Pydantic will determine the values of all fields in the following order of precedence
     (descending order of priority):
