@@ -4,14 +4,14 @@ from contextlib import asynccontextmanager
 from semantic_kernel.connectors.mcp import MCPSsePlugin
 from semantic_kernel.functions import kernel_function
 from typing import Annotated
-from repeated_calls.orchestrator.settings import McpApiKeySettings
+from repeated_calls.orchestrator.settings import McpApiKeySettings, McpApiSettings
 
 
-load_dotenv()                             
+MCPSettings = McpApiSettings()
 
 # URLs must be supplied via environment variables / .env
-CUSTOMER_MCP_URL   = "https://ca-mcp-server-codewith-customer.agreeabletree-63db5af3.westeurope.azurecontainerapps.io/sse"
-OPERATIONS_MCP_URL = "https://ca-mcp-server-codewith-operation.agreeabletree-63db5af3.westeurope.azurecontainerapps.io/sse"
+CUSTOMER_MCP_URL   = MCPSettings.customer_url
+OPERATIONS_MCP_URL = MCPSettings.operations_url
 
 if not CUSTOMER_MCP_URL or not OPERATIONS_MCP_URL:
     raise RuntimeError(
@@ -47,7 +47,7 @@ class McpApiKeyPlugin:
     @kernel_function
     def get_mcp_api_key(self) -> Annotated[str, "Returns the MCP API key for authenticating with the MCP server."]:
         """Retrieve the MCP API key from environment variables."""
-        mcp_api_key = "y2LOKdFuGn20HixtbaB1jv9gJTezHkmcMWzYhlFXW6nhcpCLS5eYonpWzjgvSbPS"
+        mcp_api_key = McpApiKeySettings().mcpapikey.get_secret_value()
         if not mcp_api_key:
             return "MCP API key not found in environment."
         return mcp_api_key
