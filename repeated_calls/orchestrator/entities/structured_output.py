@@ -34,6 +34,4 @@ class OfferResult(BaseModel):
 
     customer_id: int
     product_id: int
-    advice: str = Field(
-        description="The recommendation you give to the customer service employee on what offer to make to the customer."
-    )
+    conversation: list[str] = Field(description="The conversation between the drafter and the reviewer")
