@@ -1,3 +1,5 @@
+"""Utility functions for the Streamlit web app."""
+
 import json
 
 import streamlit as st
@@ -5,14 +7,16 @@ from azure.servicebus import ServiceBusClient, ServiceBusMessage
 from sqlalchemy import Engine, select
 from sqlalchemy.orm import Session
 
-from repeated_calls.utils.loggers import Logger
-from repeated_calls.database.tables import CallEvent as CallEventRow
 from repeated_calls.database.schemas import CallEvent
+from repeated_calls.database.tables import CallEvent as CallEventRow
+from repeated_calls.utils.loggers import Logger
 
 logger = Logger()
 
+
 @st.cache_resource
 def get_sb_client(connection_string: str) -> ServiceBusClient:
+    """Create and return a cached ServiceBusClient."""
     client = ServiceBusClient.from_connection_string(connection_string)
     logger.info(f"ServiceBusClient created with endpoint: sb://{client.fully_qualified_namespace}")
 
@@ -21,6 +25,7 @@ def get_sb_client(connection_string: str) -> ServiceBusClient:
 
 @st.cache_resource
 def get_sql_client() -> Engine:
+    """Create and return a cached SQLAlchemy engine."""
     from repeated_calls.database import engine
 
     return engine
@@ -28,13 +33,16 @@ def get_sql_client() -> Engine:
 
 @st.cache_data
 def load_scenarios(path: str) -> list[dict]:
+    """Load and return scenarios from a JSON file."""
     with open(path, "r") as file:
         data = json.load(file)
     logger.info(f"Loaded {len(data)} scenarios from {path}")
 
     return data
 
+
 def send_msg(id: int, client: ServiceBusClient, queue: str, engine: Engine) -> None:
+    """Send a message to the specified Service Bus queue."""
     # Retrieve scenario from database
     q = select(CallEventRow).where(CallEventRow.id == id)
     with Session(engine) as session:
@@ -56,7 +64,9 @@ def send_msg(id: int, client: ServiceBusClient, queue: str, engine: Engine) -> N
     logger.info(log)
     st.toast(log)
 
+
 def receive_msg(client: ServiceBusClient, queue: str) -> CallEvent | None:
+    """Receive a message from the specified Service Bus queue."""
     with client:
         with client.get_queue_receiver(queue) as receiver:
             # Only receive one message, wait max 2 seconds to prevent infinite loop
@@ -65,9 +75,9 @@ def receive_msg(client: ServiceBusClient, queue: str) -> CallEvent | None:
             # Check amount of messages received
             if not res:
                 return None
-            elif l := len(res) > 1:
-                logger.warning(f"Received {l} messages, expected only 1. Processing the first one.")
-            
+            elif num_messages := len(res) > 1:
+                logger.warning(f"Received {num_messages} messages, expected only 1. Processing the first one.")
+
             msg = res[0]
             try:
                 event = CallEvent(**json.loads(str(msg)))
@@ -79,4 +89,3 @@ def receive_msg(client: ServiceBusClient, queue: str) -> CallEvent | None:
                 receiver.complete_message(msg)
             finally:
                 return event
-

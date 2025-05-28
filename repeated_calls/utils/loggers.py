@@ -1,3 +1,5 @@
+"""Utility module for managing application logging."""
+
 import logging
 import logging.config
 from importlib import resources
@@ -6,7 +8,7 @@ import yaml
 
 
 class Logger:
-    """A singleton logger class to retrieve and/or create logger instances.
+    """Singleton logger class for creating and retrieving logger instances.
 
     Logger instances are configured in the `.logging_config.yaml` file located in the `utils`
     package.
@@ -16,7 +18,7 @@ class Logger:
     _config = None
 
     def __new__(cls, name="default") -> logging.Logger:
-        """Creates a new logger instance if it does not exist yet.
+        """Return a logger instance, creating it if necessary.
 
         Args:
             name (str): The name of the logger.
@@ -26,9 +28,7 @@ class Logger:
         """
         if name not in cls._loggers:
             if not cls._config:
-                with open(
-                    resources.files("repeated_calls.utils") / ".logging_config.yaml", "r"
-                ) as f:
+                with open(resources.files("repeated_calls.utils") / ".logging_config.yaml", "r") as f:
                     cls._config = yaml.safe_load(f)
 
                 logging.config.dictConfig(cls._config)
@@ -38,10 +38,8 @@ class Logger:
         return cls._loggers[name]
 
 
-def get_application_logger(
-    name: str, service_name: str = "repeated-calls-service"
-) -> logging.Logger:
-    """Create and return an application-specific logger that works with the telemetry setup.
+def get_application_logger(name: str, service_name: str = "repeated-calls-service") -> logging.Logger:
+    """Return a logger configured for application telemetry.
 
     This function creates a logger that will be captured by OpenTelemetry and sent to
     Azure Monitor when the telemetry is configured.

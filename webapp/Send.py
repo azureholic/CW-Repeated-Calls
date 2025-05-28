@@ -1,3 +1,5 @@
+"""Streamlit web app for simulating customer call scenarios."""
+
 import streamlit as st
 import utils as su
 
@@ -18,6 +20,7 @@ st.title("Test call scenarios")
 
 
 def render_options(raw: int):
+    """Format scenario options for display in the dropdown."""
     return f"{data[raw]['name']}: {data[raw]['title']}"
 
 
@@ -43,7 +46,7 @@ col_b.button(
 )
 
 # Customer PII
-with st.expander(f"**Customer personal information:**"):
+with st.expander("**Customer personal information:**"):
     col1, col2 = st.columns([1, 6])
 
     col1.write("Customer name:")

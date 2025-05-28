@@ -23,7 +23,6 @@ class StreamingSettings(BaseSettings):
     calls_queue: str = "customercalls"
     advice_queue: str = "advices"
 
-
     @computed_field
     @property
     def connection_string(self) -> str:

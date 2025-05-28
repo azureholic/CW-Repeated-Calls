@@ -3,7 +3,6 @@
 import json
 import os
 from datetime import datetime
-from typing import Optional
 
 from semantic_kernel.contents.chat_history import ChatHistory
 
@@ -54,9 +53,7 @@ def format_conversation_with_context(chat_history):
             last_user_message = message.content
             messages.append({"role": role, "content": message.content})
         elif role == "assistant":
-            messages.append(
-                {"role": role, "content": message.content, "context": last_user_message}
-            )
+            messages.append({"role": role, "content": message.content, "context": last_user_message})
         else:  # system or other roles
             messages.append({"role": role, "content": message.content})
 
@@ -67,12 +64,10 @@ def save_conversation(
     chat_history: ChatHistory,
     agent_name: str,
     row_id: str,
-    run_timestamp: Optional[str] = None,
+    run_timestamp: str | None = None,
     base_directory: str = "repeated_calls/conversation_logs",
 ) -> dict:
-    """
-    Save a conversation to individual file, conversations file, and run log.
-    """
+    """Save a conversation to individual file, conversations file, and run log."""
     if not run_timestamp:
         run_timestamp = get_current_timestamp()
 
