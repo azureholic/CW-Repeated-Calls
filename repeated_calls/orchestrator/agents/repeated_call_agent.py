@@ -12,41 +12,25 @@ from azure.ai.agents.models import (
     ResponseFormatJsonSchema,
     ResponseFormatJsonSchemaType,
 )
+from semantic_kernel.connectors.mcp import MCPSsePlugin
+from repeated_calls.orchestrator.plugins.mcp_plugins import McpApiKeyPlugin
+from settings import McpApiSettings
 
-# def get_agent(kernel: Kernel, instructions: str) -> ChatCompletionAgent:
-#     """Agent for determining if the call is repeated or not."""
-#     # Define temperature and which functions the agent can use
-#     settings = AzureChatPromptExecutionSettings(
-#         function_choice_behavior=FunctionChoiceBehavior.Auto(
-#             auto_invoke=True,
-#             filters={"included_plugins": ["CustomerDataPlugin"]},
-#         ),
-#         temperature=0.0,
-#         seed=1337,
-#         max_tokens=3000,
-#         response_format=RepeatedCallResult,
-#     )
-
-#     # Create and configure the agent
-#     agent = ChatCompletionAgent(
-#         name="RepeatedCallAgent",
-#         instructions=instructions,
-#         kernel=kernel,
-#         arguments=KernelArguments(settings=settings),
-#         plugins=None,
-#     )
-
-#     return agent
 async def get_agent_response(instructions: str, userprompt:str, thread_id:str) -> str:
     """Agent for determining if the call is repeated or not."""
     # Define temperature and which functions the agent can use
     ai_agent_settings = AzureAIAgentSettings()
-    
+    mcp_settings = McpApiSettings()
     async with (
         DefaultAzureCredential() as creds,
         AzureAIAgent.create_client(credential=creds, 
                                     conn_str=ai_agent_settings.endpoint, 
                                     deployment_name=ai_agent_settings.model_deployment_name) as client,
+        MCPSsePlugin(
+            name="CustomerDataPlugin",
+            description="Customer domain data and product related data",
+            url=mcp_settings.customer_url
+        ) as customer_plugin       
     ):
         # Create agent definition
         agent_definition = await client.agents.create_agent(
@@ -66,6 +50,7 @@ async def get_agent_response(instructions: str, userprompt:str, thread_id:str) -
         agent = AzureAIAgent(
             client=client,
             definition=agent_definition,
+            plugins = [customer_plugin, McpApiKeyPlugin()]
         )
 
         # Create a thread for the agent

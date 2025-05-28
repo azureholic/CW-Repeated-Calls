@@ -1,5 +1,5 @@
 """Step for drafting an offer."""
-
+import json
 from semantic_kernel import Kernel
 from semantic_kernel.functions import kernel_function
 from semantic_kernel.processes.kernel_process import KernelProcessStep, KernelProcessStepContext
@@ -28,17 +28,14 @@ class DetermineRecommendationStep(KernelProcessStep):
         # Hacky way to split the system prompt into two parts
         system_prompts = prompts.get_system_prompt().split("===")
 
-        agent_response = get_agent_response(
+        agent_response = await get_agent_response(
             draft_instructions=system_prompts[0],
             reviewer_instructions=system_prompts[1],
             user_prompt=prompts.get_user_prompt(),
             thread_id=state.thread_id
         )
 
+        print(agent_response)
         res = OfferResult(**json.loads(agent_response.content))
-
-
-        async for content in chat.invoke():
-            logger.debug(f">> {content.name.upper()}: {content.content}")
 
         await context.emit_event("Exit", data=state)

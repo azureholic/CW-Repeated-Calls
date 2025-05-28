@@ -10,8 +10,8 @@ from repeated_calls.orchestrator.settings import McpApiKeySettings
 load_dotenv()                             
 
 # URLs must be supplied via environment variables / .env
-CUSTOMER_MCP_URL   = os.getenv("CUSTOMER_MCP_URL")
-OPERATIONS_MCP_URL = os.getenv("OPERATIONS_MCP_URL")
+CUSTOMER_MCP_URL   = "https://ca-mcp-server-codewith-customer.agreeabletree-63db5af3.westeurope.azurecontainerapps.io/sse"
+OPERATIONS_MCP_URL = "https://ca-mcp-server-codewith-operation.agreeabletree-63db5af3.westeurope.azurecontainerapps.io/sse"
 
 if not CUSTOMER_MCP_URL or not OPERATIONS_MCP_URL:
     raise RuntimeError(
@@ -38,6 +38,7 @@ async def operations_plugin():
         url=OPERATIONS_MCP_URL,
     ) as plug:
         yield plug
+        
 
 
 class McpApiKeyPlugin:
@@ -46,7 +47,7 @@ class McpApiKeyPlugin:
     @kernel_function
     def get_mcp_api_key(self) -> Annotated[str, "Returns the MCP API key for authenticating with the MCP server."]:
         """Retrieve the MCP API key from environment variables."""
-        mcp_api_key = McpApiKeySettings().mcpapikey.get_secret_value()
+        mcp_api_key = "y2LOKdFuGn20HixtbaB1jv9gJTezHkmcMWzYhlFXW6nhcpCLS5eYonpWzjgvSbPS"
         if not mcp_api_key:
             return "MCP API key not found in environment."
         return mcp_api_key

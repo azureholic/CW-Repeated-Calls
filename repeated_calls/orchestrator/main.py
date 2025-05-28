@@ -20,7 +20,7 @@ from semantic_kernel.agents import AzureAIAgent,AzureAIAgentSettings, AzureAIAge
 
 from repeated_calls.database.schemas import CallEvent
 from repeated_calls.orchestrator.entities.state import State
-from repeated_calls.orchestrator.plugins import (
+from repeated_calls.orchestrator.plugins.mcp_plugins import (
     customer_plugin,
     operations_plugin,
     McpApiKeyPlugin,
@@ -93,6 +93,9 @@ async def run_sequence(call_event: CallEvent) -> None:
             thread = AzureAIAgentThread(client=client)
             await thread.create()
 
+            logger.info("Created Azure AI Agent thread.")
+            state.thread_id = thread.id
+
             # Keep MCP plugins alive for the whole run
             async with customer_plugin() as cust, operations_plugin() as ops:
                 kernel.add_plugin(cust, cust.name)   # → "CustomerDataPlugin"
@@ -106,9 +109,6 @@ async def run_sequence(call_event: CallEvent) -> None:
                 determine_cause = process_builder.add_step(DetermineCauseStep)
                 determine_recommendation = process_builder.add_step(DetermineRecommendationStep)
                 exit_step = process_builder.add_step(ExitStep)
-
-                print(f"Thread ID: {thread.id}")
-                state.thread_id = thread.id
 
                 # Orchestrate steps
                 process_builder.on_input_event("Start").send_event_to(

@@ -17,11 +17,7 @@ from repeated_calls.orchestrator.plugins.csv.customer import CustomerDataPlugin
 from repeated_calls.prompt_engineering.prompts import RepeatCallerPrompt
 from repeated_calls.utils.loggers import Logger
 from semantic_kernel.connectors.ai import FunctionChoiceBehavior
-from repeated_calls.orchestrator.plugins import (
-    customer_plugin,
-    operations_plugin,
-    McpApiKeyPlugin,
-)
+
 from repeated_calls.orchestrator.settings import McpApiKeySettings
 from semantic_kernel.agents import AzureAIAgent,AzureAIAgentSettings,AzureAIAgentThread
 from azure.identity.aio import DefaultAzureCredential
@@ -139,10 +135,8 @@ class DetermineRepeatedCallStep(KernelProcessStep):
         state.update(customer_obj, historic_events)
         prompts = RepeatCallerPrompt(state)
 
-        print(f"Thread ID: {state.thread_id}")
+        logger.debug(f"Thread ID: {state.thread_id}")
         agent_response = await get_agent_response(prompts.get_system_prompt(), prompts.get_user_prompt(), thread_id=state.thread_id)
-
-        logger.debug(f"# {agent_response.name}: {agent_response.content}")
 
         # # Parse the response and update the state
         res = RepeatedCallResult(**json.loads(agent_response.content))
@@ -150,10 +144,10 @@ class DetermineRepeatedCallStep(KernelProcessStep):
         state.update(res)
 
         # Log the decision and reasoning
-        logger.debug("=== REPEATED CALL DECISION ===")
-        logger.debug(f"Is repeated call: {state.repeated_call_result.is_repeated_call}")
-        logger.debug(f"Analysis: {state.repeated_call_result.analysis}")
-        logger.debug(f"Conclusion: {state.repeated_call_result.conclusion}")
+        # logger.debug("=== REPEATED CALL DECISION ===")
+        # logger.debug(f"Is repeated call: {state.repeated_call_result.is_repeated_call}")
+        # logger.debug(f"Analysis: {state.repeated_call_result.analysis}")
+        # logger.debug(f"Conclusion: {state.repeated_call_result.conclusion}")
 
         # Before emitting event
         logger.debug(f"Emitting event: {'IsRepeatedCall' if state.repeated_call_result.is_repeated_call else 'IsNotRepeatedCall'}")

@@ -6,13 +6,15 @@ from semantic_kernel.agents.strategies import TerminationStrategy
 from semantic_kernel.connectors.ai import FunctionChoiceBehavior
 from semantic_kernel.connectors.ai.open_ai import AzureChatPromptExecutionSettings
 from semantic_kernel.functions import KernelArguments
+from semantic_kernel.agents.azure_ai.agent_thread_actions import AgentThreadActions
 from semantic_kernel.agents import AzureAIAgent,AzureAIAgentSettings, AzureAIAgentThread
 from azure.identity.aio import DefaultAzureCredential
 from azure.ai.agents.models import (
     ResponseFormatJsonSchema,
     ResponseFormatJsonSchemaType,
 )
-
+from repeated_calls.orchestrator.plugins.mcp_plugins import McpApiKeyPlugin
+from semantic_kernel.connectors.mcp import MCPSsePlugin
 from repeated_calls.orchestrator.entities.structured_output import OfferResult
 
 
@@ -39,18 +41,34 @@ async def get_agent_response(draft_instructions: str, reviewer_instructions: str
             conn_str=ai_agent_settings.endpoint,
             deployment_name=ai_agent_settings.model_deployment_name,
         ) as client,
+          MCPSsePlugin(
+            name="CustomerDataPlugin",
+            description="Customer domain data and product related data",
+            url="https://ca-mcp-server-codewith-customer.agreeabletree-63db5af3.westeurope.azurecontainerapps.io/sse"
+        ) as customer_plugin,
+        MCPSsePlugin(
+        name="OperationsDataPlugin",
+        description="Operations data",
+        url="https://ca-mcp-server-codewith-operation.agreeabletree-63db5af3.westeurope.azurecontainerapps.io/sse",
+        ) as operations_plugin
     ):
         # Create agent definition
         reviewer_agent_definition = await client.agents.create_agent(
             model=ai_agent_settings.model_deployment_name,
             name="Drafter",
             instructions=draft_instructions,
+            
         )
 
         # 2. Create a Semantic Kernel agent for the reviewer Azure AI agent
         agent_reviewer = AzureAIAgent(
             client=client,
             definition=reviewer_agent_definition,
+             plugins=[
+                customer_plugin,
+                operations_plugin,
+                McpApiKeyPlugin()                
+            ]
         )
 
         # 3. Create the copy writer agent on the Azure AI agent service
@@ -64,13 +82,36 @@ async def get_agent_response(draft_instructions: str, reviewer_instructions: str
         agent_writer = AzureAIAgent(
             client=client,
             definition=copy_writer_agent_definition,
+            plugins=[
+                customer_plugin,
+                operations_plugin,
+                McpApiKeyPlugin()           
+            ]
+        )
+
+        agent_formatter_definition = await client.agents.create_agent(
+            model=ai_agent_settings.model_deployment_name,
+            name="Formatter",
+            instructions="After the offer has been drafted and reviewed, format it into a final offer document.",
+            response_format=ResponseFormatJsonSchemaType(
+                json_schema=ResponseFormatJsonSchema(
+                    name="offer",
+                    description="offer information.",
+                    schema=OfferResult.model_json_schema(),
+                )
+            )
+        )
+
+        agent_formatter = AzureAIAgent(
+            client=client,
+            definition=agent_formatter_definition,
         )
 
         thread = AzureAIAgentThread(client=client, thread_id=thread_id)
         # 5. Place the agents in a group chat with a custom termination strategy
         chat = AgentGroupChat(
-            agents=[agent_writer, agent_reviewer],
-            termination_strategy=ApprovalTerminationStrategy(agents=[agent_reviewer], maximum_iterations=10),
+            agents=[agent_writer, agent_reviewer, agent_formatter],
+            termination_strategy=ApprovalTerminationStrategy(agents=[agent_reviewer,agent_formatter], maximum_iterations=10),
         )
 
         try:
@@ -78,17 +119,22 @@ async def get_agent_response(draft_instructions: str, reviewer_instructions: str
             await chat.add_chat_message(message=user_prompt)
             
             # 7. Invoke the chat
-            async for content in chat.invoke(thread=thread):
+            async for content in chat.invoke():
                 print(f"# {content.role} - {content.name or '*'}: '{content.content}'")
         finally:
             # 8. Cleanup: Delete the agents
-            await chat.reset()
             await client.agents.delete_agent(agent_reviewer.id)
             await client.agents.delete_agent(agent_writer.id)
+            await client.agents.delete_agent(agent_formatter.id)
+            
+            chat.get_chat_messages()
+            response = chat.get_chat_messages()[-1]
+            AgentThreadActions.create_message(client, thread_id, response.content)
+            chat.reset()
+            
 
         # 9. Return the final response content
-        chat.get_chat_messages()
-        response = chat.get_chat_messages()[-1]
+        
         return response.content
 
 

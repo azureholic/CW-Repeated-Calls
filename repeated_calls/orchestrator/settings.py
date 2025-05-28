@@ -89,3 +89,24 @@ class McpApiKeySettings(BaseSettings):
     model_config = SettingsConfigDict(
         env_nested_delimiter="__", env_file=".env", extra="ignore"
     )
+
+class McpApiSettings(BaseSettings):
+    """Settings for the MCP Key.
+
+    Pydantic will determine the value of all fields in the following order of precedence
+    (descending order of priority):
+    1. Arguments passed to the class constructor
+    2. Environment variables (no prefix by default)
+    3. Variables in a .env file if present (no prefix by default)
+
+    Attributes:
+        customer_url (str): The URL for the customer MCP service.
+        operations_url (str): The URL for the operations MCP service.
+    """
+
+    customer_url: str
+    operations_url: str
+
+    model_config = SettingsConfigDict(
+        env_nested_delimiter="__", env_file=".env", env_prefix="MCP_",extra="ignore"
+    )
