@@ -2,6 +2,7 @@
 from pydantic import SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+
 class AzureOpenAISettings(BaseSettings):
     """Settings for Azure OpenAI.
 

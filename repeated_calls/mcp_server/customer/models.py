@@ -1,9 +1,14 @@
+"""Pydantic models for customer-related data and responses."""
+
 from datetime import datetime
 from typing import List, Optional
+
 from pydantic import BaseModel, Field
 
 
 class HistoricCallEvent(BaseModel):
+    """Represents a historic call event."""
+
     id: int
     customer_id: int
     sdc: str = Field(description="Self-described call reason")
@@ -13,6 +18,8 @@ class HistoricCallEvent(BaseModel):
 
 
 class HistoricCallEventResponse(BaseModel):
+    """Response model for historic call events."""
+
     events: List[HistoricCallEvent]
     count: int
     query_time_ms: float
@@ -20,6 +27,8 @@ class HistoricCallEventResponse(BaseModel):
 
 
 class Customer(BaseModel):
+    """Represents a customer."""
+
     id: int
     name: str
     clv: str
@@ -27,12 +36,16 @@ class Customer(BaseModel):
 
 
 class CustomerResponse(BaseModel):
+    """Response model for customer data."""
+
     customer: Optional[Customer] = None
     query_time_ms: float
     error: Optional[str] = None
 
 
 class CallEvent(BaseModel):
+    """Represents a call event."""
+
     id: int
     customer_id: int
     sdc: str
@@ -40,6 +53,8 @@ class CallEvent(BaseModel):
 
 
 class CallEventResponse(BaseModel):
+    """Response model for call events."""
+
     events: List[CallEvent]
     count: int
     query_time_ms: float
@@ -47,6 +62,8 @@ class CallEventResponse(BaseModel):
 
 
 class Subscription(BaseModel):
+    """Represents a subscription."""
+
     id: int
     customer_id: int
     product_id: int
@@ -57,6 +74,8 @@ class Subscription(BaseModel):
 
 
 class SubscriptionResponse(BaseModel):
+    """Response model for subscriptions."""
+
     subscriptions: List[Subscription]
     count: int
     query_time_ms: float
@@ -64,6 +83,8 @@ class SubscriptionResponse(BaseModel):
 
 
 class Product(BaseModel):
+    """Represents a product."""
+
     id: int
     name: str
     type: str
@@ -71,6 +92,8 @@ class Product(BaseModel):
 
 
 class ProductResponse(BaseModel):
+    """Response model for products."""
+
     products: List[Product]
     count: int
     query_time_ms: float
@@ -78,6 +101,8 @@ class ProductResponse(BaseModel):
 
 
 class SoftwareUpdate(BaseModel):
+    """Represents a software update."""
+
     id: int
     product_id: int
     rollout_date: datetime
@@ -85,6 +110,8 @@ class SoftwareUpdate(BaseModel):
 
 
 class SoftwareUpdateResponse(BaseModel):
+    """Response model for software updates."""
+
     updates: List[SoftwareUpdate]
     count: int
     query_time_ms: float
@@ -92,6 +119,8 @@ class SoftwareUpdateResponse(BaseModel):
 
 
 class Discount(BaseModel):
+    """Represents a discount."""
+
     id: int
     product_id: int
     minimum_clv: str
@@ -100,6 +129,8 @@ class Discount(BaseModel):
 
 
 class DiscountResponse(BaseModel):
+    """Response model for discounts."""
+
     discounts: List[Discount]
     count: int
     query_time_ms: float
