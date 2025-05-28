@@ -16,6 +16,10 @@ from azure.ai.agents.models import (
 from repeated_calls.orchestrator.plugins.mcp_plugins import McpApiKeyPlugin
 from semantic_kernel.connectors.mcp import MCPSsePlugin
 from repeated_calls.orchestrator.entities.structured_output import OfferResult
+from settings import McpApiSettings
+from repeated_calls.utils.loggers import Logger
+
+logger = Logger()
 
 
 # TODO: Change this agent to only create an offer and move the review/draft groupchat logic to a different agent
@@ -33,6 +37,7 @@ async def get_agent_response(draft_instructions: str, reviewer_instructions: str
     """Agent for creating an offer recommendation."""
     # Define temperature and which functions the agent can use
     ai_agent_settings = AzureAIAgentSettings()
+    mcp_settings = McpApiSettings()
 
     async with (
         DefaultAzureCredential() as creds,
@@ -44,12 +49,12 @@ async def get_agent_response(draft_instructions: str, reviewer_instructions: str
           MCPSsePlugin(
             name="CustomerDataPlugin",
             description="Customer domain data and product related data",
-            url="https://ca-mcp-server-codewith-customer.agreeabletree-63db5af3.westeurope.azurecontainerapps.io/sse"
+            url=mcp_settings.customer_url
         ) as customer_plugin,
         MCPSsePlugin(
         name="OperationsDataPlugin",
         description="Operations data",
-        url="https://ca-mcp-server-codewith-operation.agreeabletree-63db5af3.westeurope.azurecontainerapps.io/sse",
+        url=mcp_settings.operations_url
         ) as operations_plugin
     ):
         # Create agent definition
@@ -76,6 +81,13 @@ async def get_agent_response(draft_instructions: str, reviewer_instructions: str
             model=ai_agent_settings.model_deployment_name,
             name="Reviewer",
             instructions=reviewer_instructions,
+            response_format=ResponseFormatJsonSchemaType(
+                json_schema=ResponseFormatJsonSchema(
+                    name="offer",
+                    description="offer information.",
+                    schema=OfferResult.model_json_schema()
+                )
+            )
         )
 
         # 4. Create a Semantic Kernel agent for the copy writer Azure AI agent
@@ -89,90 +101,37 @@ async def get_agent_response(draft_instructions: str, reviewer_instructions: str
             ]
         )
 
-        agent_formatter_definition = await client.agents.create_agent(
-            model=ai_agent_settings.model_deployment_name,
-            name="Formatter",
-            instructions="After the offer has been drafted and reviewed, format it into a final offer document.",
-            response_format=ResponseFormatJsonSchemaType(
-                json_schema=ResponseFormatJsonSchema(
-                    name="offer",
-                    description="offer information.",
-                    schema=OfferResult.model_json_schema(),
-                )
-            )
-        )
-
-        agent_formatter = AzureAIAgent(
-            client=client,
-            definition=agent_formatter_definition,
-        )
-
-        thread = AzureAIAgentThread(client=client, thread_id=thread_id)
         # 5. Place the agents in a group chat with a custom termination strategy
         chat = AgentGroupChat(
-            agents=[agent_writer, agent_reviewer, agent_formatter],
-            termination_strategy=ApprovalTerminationStrategy(agents=[agent_reviewer,agent_formatter], maximum_iterations=10),
+            agents=[agent_writer, agent_reviewer],
+            termination_strategy=ApprovalTerminationStrategy(agents=[agent_reviewer], maximum_iterations=5),
         )
-
+        
+        chat_messages = []
         try:
             # 6. Add the task as a message to the group chat
             await chat.add_chat_message(message=user_prompt)
             
-            # 7. Invoke the chat
+            # 7. Invoke the chat and capture messages
             async for content in chat.invoke():
-                print(f"# {content.role} - {content.name or '*'}: '{content.content}'")
+                logger.info(f"# {content.role} - {content.name or '*'}: '{content.content}'")
+                chat_messages.append(content)
         finally:
             # 8. Cleanup: Delete the agents
             await client.agents.delete_agent(agent_reviewer.id)
             await client.agents.delete_agent(agent_writer.id)
-            await client.agents.delete_agent(agent_formatter.id)
             
-            chat.get_chat_messages()
-            response = chat.get_chat_messages()[-1]
-            AgentThreadActions.create_message(client, thread_id, response.content)
-            chat.reset()
-            
+            # Get the last message as the response
+            if chat_messages:
+                for message in chat_messages:
+                    await AgentThreadActions.create_message(client, thread_id, message)
+                formatter_messages = [msg for msg in chat_messages if msg.name == "Reviewer"]
+                if formatter_messages:
+                    response = formatter_messages[-1]
+            await chat.reset()
 
         # 9. Return the final response content
-        
-        return response.content
-
-
-# def get_agent(kernel: Kernel, draft_instructions: str, reviewer_instructions: str) -> AgentGroupChat:
-#     """Agent collaboration chat for interactively drafting and reviewing an offer."""
-#     drafter = ChatCompletionAgent(
-#         name="Drafter",
-#         instructions=draft_instructions,
-#         kernel=kernel,
-#         arguments=KernelArguments(
-#             settings=AzureChatPromptExecutionSettings(
-#                 function_choice_behavior=FunctionChoiceBehavior.Auto(
-#                     auto_invoke=True,
-#                     filters={"included_plugins": ["CustomerDataPlugin", "McpApiKeyPlugin"]},
-#                 ),
-#                 temperature=0.0,
-#                 seed=1337,
-#             )
-#         ),
-#     )
-
-#     reviewer = ChatCompletionAgent(
-#         name="Reviewer",
-#         instructions=reviewer_instructions,
-#         kernel=kernel,
-#         arguments=KernelArguments(
-#             settings=AzureChatPromptExecutionSettings(
-#                 function_choice_behavior=FunctionChoiceBehavior.Auto(
-#                     auto_invoke=True,
-#                     filters={"included_plugins": ["CustomerDataPlugin", "McpApiKeyPlugin"]},
-#                 ),
-#                 temperature=0.0,
-#                 seed=1337,
-#             )
-#         ),
-#     )
-
-#     return AgentGroupChat(
-#         agents=[drafter, reviewer],
-#         termination_strategy=ApprovalTerminationStrategy(agents=[reviewer], maximum_iterations=4),
-#     )
+        if chat_messages:
+            return response
+        else:
+            return "No response generated"

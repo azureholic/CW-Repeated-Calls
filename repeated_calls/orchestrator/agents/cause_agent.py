@@ -24,7 +24,7 @@ async def get_agent_response(instructions: str, userprompt:str, thread_id:str) -
     async with (
         DefaultAzureCredential() as creds,
         AzureAIAgent.create_client(credential=creds, 
-                                    conn_str=ai_agent_settings.endpoint, 
+                                    conn_str=ai_agent_settings.endpoint,
                                     deployment_name=ai_agent_settings.model_deployment_name) as client,
         MCPSsePlugin(
             name="CustomerDataPlugin",

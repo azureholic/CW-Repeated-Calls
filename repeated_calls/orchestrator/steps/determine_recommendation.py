@@ -35,7 +35,10 @@ class DetermineRecommendationStep(KernelProcessStep):
             thread_id=state.thread_id
         )
 
-        print(agent_response)
         res = OfferResult(**json.loads(agent_response.content))
-
+        logger.info(
+            f">> OFFER AGENT - {res.advice}"
+        )
+        
+        state.update(res)
         await context.emit_event("Exit", data=state)
