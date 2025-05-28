@@ -4,27 +4,16 @@ import json
 from datetime import date
 
 from semantic_kernel import Kernel
-from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
-from semantic_kernel.connectors.ai.open_ai import AzureChatPromptExecutionSettings
 from semantic_kernel.contents import TextContent
-from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.functions import KernelArguments, kernel_function
 from semantic_kernel.processes.kernel_process import KernelProcessStep, KernelProcessStepContext
-from repeated_calls.orchestrator.agents.repeated_call_agent import get_agent
-from repeated_calls.database.schemas import Customer, HistoricCallEvent, CallEvent
 
+from repeated_calls.database.schemas import Customer, HistoricCallEvent
+from repeated_calls.orchestrator.agents.repeated_call_agent import get_agent
 from repeated_calls.orchestrator.entities.state import State
 from repeated_calls.orchestrator.entities.structured_output import RepeatedCallResult
 from repeated_calls.prompt_engineering.prompts import RepeatCallerPrompt
 from repeated_calls.utils.loggers import Logger
-from repeated_calls.orchestrator.plugins import (
-    customer_plugin,
-    operations_plugin,
-    McpApiKeyPlugin,
-)
-from repeated_calls.orchestrator.settings import McpApiKeySettings
-
-from repeated_calls.utils.conversation_saver import save_conversation
 
 logger = Logger()
 
@@ -151,26 +140,11 @@ class DetermineRepeatedCallStep(KernelProcessStep):
             messages=prompts.get_prompt("user"),
         )
 
-       
         # Parse the response and update the state
         res = RepeatedCallResult(**json.loads(response.content.content))
         logger.debug(f">> REPEATED CALL AGENT - Analysis: {res.analysis} Conclusion: {res.conclusion}")
         state.update(res)
 
-
-        # Log the decision and reasoning
-        logger.debug("=== REPEATED CALL DECISION ===")
-        logger.debug(f"Is repeated call: {state.repeated_call_result.is_repeated_call}")
-        logger.debug(f"Analysis: {state.repeated_call_result.analysis}")
-        logger.debug(f"Conclusion: {state.repeated_call_result.conclusion}")
-
-        # Before emitting event
-        logger.debug(
-            f"Emitting event: {'IsRepeatedCall' if state.repeated_call_result.is_repeated_call else 'IsNotRepeatedCall'}"
-        )
-        logger.debug(f"Repeated call response: {response.content}")
-
-       
         # Emit event to continue process flow
         if res.is_repeated_call:
             await context.emit_event("IsRepeatedCall", data=state)
