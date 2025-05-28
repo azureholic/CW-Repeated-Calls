@@ -41,9 +41,8 @@ class DetermineRecommendationStep(KernelProcessStep):
 
         conversation = []
         async for content in chat.invoke():
-            c = f">> {content.name.upper()}: {content.content}"
-            logger.debug(c)
-            conversation.append(c)
+            logger.debug(f">> {content.name.upper()}: {content.content}")
+            conversation.append(content.content)
 
         # Update state
         state.update(
