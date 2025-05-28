@@ -3,8 +3,8 @@ Module for managing prompt templates for AI interactions.
 
 This module provides classes for loading, managing, and rendering Jinja2 templates
 for AI prompts. It includes:
-- PromptTemplate: A class for loading and rendering a single template
-- PromptTemplatePair: An abstract base class for managing system/user prompt pairs
+- _PromptTemplate: A class for loading and rendering a single template
+- _PromptTemplateCollection: An abstract base class for managing system/user prompt collections
 - Specialized prompt classes specific stepts in the workflow:
     - RepeatCallerPrompt: For determining if a customer is a repeat caller
     - CausePrompt: For analyzing the cause of product issues

@@ -1,42 +1,38 @@
-"""
-Repeated Contact Handling – Customer MCP data service
-"""
+"""Module for handling customer-related MCP data services."""
+
+import asyncio
 
 # ────────────────────────────── std-lib ──────────────────────────────
 import sys
-import asyncio
 import time
 from contextlib import asynccontextmanager
 from dataclasses import dataclass
-from datetime import datetime
-from typing import Annotated, Optional, AsyncIterator
+from typing import Annotated, AsyncIterator, Optional
 
 # ────────────────────────────── 3rd-party ───────────────────────────
 import psycopg_pool
 from dotenv import load_dotenv
-from mcp.server.fastmcp import FastMCP, Context
+from mcp.server.fastmcp import Context, FastMCP
+
+from repeated_calls.mcp_server.common.auth import check_api_key
+from repeated_calls.mcp_server.common.db import create_pool
 
 # ────────────────────────────── project ─────────────────────────────
 from repeated_calls.mcp_server.customer.dao import call_event as call_event_dao
-from repeated_calls.utils.loggers import Logger
-from repeated_calls.mcp_server.common.db import create_pool
-from repeated_calls.mcp_server.common.auth import check_api_key
+from repeated_calls.mcp_server.customer.dao import customer as customer_dao
+from repeated_calls.mcp_server.customer.dao import discount as discount_dao
+from repeated_calls.mcp_server.customer.dao import historic_call_event as hce_dao
+from repeated_calls.mcp_server.customer.dao import product as product_dao
+from repeated_calls.mcp_server.customer.dao import subscription as subscription_dao
 from repeated_calls.mcp_server.customer.models import (
-    # domain + response models
-    CallEvent, CallEventResponse,
-    HistoricCallEvent, HistoricCallEventResponse,
-    Customer, CustomerResponse,
-    Subscription, SubscriptionResponse,
-    Product, ProductResponse,
-    Discount, DiscountResponse
+    CallEventResponse,
+    CustomerResponse,
+    DiscountResponse,
+    HistoricCallEventResponse,
+    ProductResponse,
+    SubscriptionResponse,
 )
-from repeated_calls.mcp_server.customer.dao import (
-    historic_call_event as hce_dao,
-    customer as customer_dao,
-    subscription as subscription_dao,
-    product as product_dao,
-    discount as discount_dao
-)
+from repeated_calls.utils.loggers import Logger
 
 # ────────────────────────────── runtime set-up ──────────────────────
 if sys.platform == "win32":
@@ -47,23 +43,29 @@ load_dotenv()
 logger = Logger()
 logger.info("Starting Repeated Calls Customer MCP server")
 
+
 # ────────────────────────────── FastMCP lifespan ────────────────────
 @dataclass
 class AppContext:
+    """Application context holding shared resources."""
+
     pool: psycopg_pool.AsyncConnectionPool
 
 
 @asynccontextmanager
 async def lifespan(app) -> AsyncIterator[AppContext]:
+    """Manage the lifespan of the application context."""
     pool = await create_pool()
     try:
         yield AppContext(pool=pool)
     finally:
         await pool.close()
 
+
 # ────────────────────────────── FastMCP init ────────────────────────
 mcp = FastMCP("Repeated Calls Customer Data Service", lifespan=lifespan)
 app = mcp.sse_app
+
 
 # ────────────────────────────── Tools  ──────────────────────────────
 @mcp.tool(description="Return the latest call event for a customer")
@@ -72,7 +74,7 @@ async def get_call_event(
     mcp_api_key: Annotated[str, "MCP API Key for authentication"],
     ctx: Context = None,
 ) -> CallEventResponse:
-    """Fetch one most-recent row from public.call_event for the given customer."""
+    """Fetch the latest call event for a given customer."""
     check_api_key(mcp_api_key)
     start = time.time()
     pool = ctx.request_context.lifespan_context.pool
@@ -87,7 +89,8 @@ async def get_call_event(
     except Exception as exc:
         logger.error("get_call_event failed", exc_info=True)
         return CallEventResponse(
-            events=[], count=0,
+            events=[],
+            count=0,
             query_time_ms=round((time.time() - start) * 1000, 2),
             error=str(exc),
         )
@@ -99,7 +102,7 @@ async def get_historic_call_events(
     mcp_api_key: Annotated[str, "MCP API Key for authentication"],
     ctx: Context = None,
 ) -> HistoricCallEventResponse:
-    """Return every historic call event row belonging to the customer."""
+    """Fetch all historic call events for a given customer."""
     check_api_key(mcp_api_key)
     start = time.time()
     pool = ctx.request_context.lifespan_context.pool
@@ -113,7 +116,8 @@ async def get_historic_call_events(
     except Exception as exc:
         logger.error("get_historic_call_events failed", exc_info=True)
         return HistoricCallEventResponse(
-            events=[], count=0,
+            events=[],
+            count=0,
             query_time_ms=round((time.time() - start) * 1000, 2),
             error=str(exc),
         )
@@ -125,7 +129,7 @@ async def get_customer_by_id(
     mcp_api_key: Annotated[str, "MCP API Key for authentication"],
     ctx: Context = None,
 ) -> CustomerResponse:
-    """Look up one row in public.customer."""
+    """Fetch a single customer record by ID."""
     check_api_key(mcp_api_key)
     start = time.time()
     pool = ctx.request_context.lifespan_context.pool
@@ -151,7 +155,7 @@ async def get_subscriptions(
     mcp_api_key: Annotated[str, "MCP API Key for authentication"],
     ctx: Context = None,
 ) -> SubscriptionResponse:
-    """Query public.subscription filtered by customer_id."""
+    """Fetch all subscriptions for a given customer."""
     check_api_key(mcp_api_key)
     start = time.time()
     pool = ctx.request_context.lifespan_context.pool
@@ -178,13 +182,13 @@ async def get_products(
     product_id: Annotated[Optional[int], "Optional product id filter"] = None,
     ctx: Context = None,
 ) -> ProductResponse:
-    """Uses the cached catalogue; if product_id is given, returns at most one item."""
+    """Fetch the product catalogue or a specific product by ID."""
     check_api_key(mcp_api_key)
     start = time.time()
     pool = ctx.request_context.lifespan_context.pool
     try:
         if product_id is None:
-            items = await product_dao.get_all(pool)         
+            items = await product_dao.get_all(pool)
         else:
             p = await product_dao.get_by_id(pool, product_id)
             items = [p] if p else []
@@ -197,10 +201,12 @@ async def get_products(
     except Exception as exc:
         logger.error("get_products failed", exc_info=True)
         return ProductResponse(
-            products=[], count=0,
+            products=[],
+            count=0,
             query_time_ms=round((time.time() - start) * 1000, 2),
             error=str(exc),
         )
+
 
 @mcp.tool(description="Return active discount rules, optionally filtered by product")
 async def get_discounts(
@@ -208,7 +214,7 @@ async def get_discounts(
     product_id: Annotated[Optional[int], "Optional product id filter"] = None,
     ctx: Context = None,
 ) -> DiscountResponse:
-    """Query public.discount with optional product filter."""
+    """Fetch active discount rules, optionally filtered by product."""
     check_api_key(mcp_api_key)
     start = time.time()
     pool = ctx.request_context.lifespan_context.pool
@@ -222,10 +228,12 @@ async def get_discounts(
     except Exception as exc:
         logger.error("get_discounts failed", exc_info=True)
         return DiscountResponse(
-            discounts=[], count=0,
+            discounts=[],
+            count=0,
             query_time_ms=round((time.time() - start) * 1000, 2),
             error=str(exc),
         )
+
 
 # ────────────────────────────── CLI entrypoint ──────────────────────
 if __name__ == "__main__":

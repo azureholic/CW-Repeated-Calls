@@ -4,49 +4,35 @@ import argparse
 import asyncio
 import csv
 import os
-import sys
 from datetime import datetime
 from importlib.resources import files
 
+from opentelemetry import trace
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
 from semantic_kernel.processes import ProcessBuilder
 from semantic_kernel.processes.local_runtime.local_event import KernelProcessEvent
 from semantic_kernel.processes.local_runtime.local_kernel_process import start
-from repeated_calls.orchestrator.steps.determine_cause import DetermineCauseStep
-from repeated_calls.orchestrator.steps.determine_repeated_call import DetermineRepeatedCallStep
-from repeated_calls.orchestrator.steps.exit_step import ExitStep
 
 from repeated_calls.database.schemas import CallEvent
 from repeated_calls.orchestrator.entities.state import State
-from repeated_calls.orchestrator.plugins import (
-    customer_plugin,
-    operations_plugin,
-    McpApiKeyPlugin,
-)
-from repeated_calls.orchestrator.settings import (
-    AzureOpenAISettings,
-    AppInsightsSettings
-)
+from repeated_calls.orchestrator.plugins import McpApiKeyPlugin, customer_plugin, operations_plugin
+from repeated_calls.orchestrator.settings import AppInsightsSettings, AzureOpenAISettings
+from repeated_calls.orchestrator.steps.determine_cause import DetermineCauseStep
 from repeated_calls.orchestrator.steps.determine_recommendation import DetermineRecommendationStep
-from repeated_calls.utils.loggers import Logger
-
-from opentelemetry import trace
-
-  # Initialize telemetry
-from repeated_calls.utils.loggers import Logger
+from repeated_calls.orchestrator.steps.determine_repeated_call import DetermineRepeatedCallStep
+from repeated_calls.orchestrator.steps.exit_step import ExitStep
+from repeated_calls.utils.loggers import get_application_logger
 from repeated_calls.utils.otel import configure_telemetry
 
 # Get connection string from environment or settings
 appinsights_settings = AppInsightsSettings()
 configure_telemetry(appinsights_settings.connection_string, "repeated-calls-service")
 
-from repeated_calls.utils.loggers import get_application_logger
 
 # Create a logger with your module name
 logger = get_application_logger(__name__)
 logger.info("Telemetry configured for Azure Monitor")
-
 
 
 def get_event() -> CallEvent:
@@ -71,8 +57,6 @@ async def run_sequence(call_event: CallEvent) -> State:
     # Get OpenTelemetry tracer
     tracer = trace.get_tracer("repeated_calls.orchestrator")
 
-    
-
     # Start a span for this sequence execution
     with tracer.start_as_current_span("repeated_calls.run_sequence") as span:
         state = State.from_call_event(call_event)
@@ -95,8 +79,8 @@ async def run_sequence(call_event: CallEvent) -> State:
 
             # Keep MCP plugins alive for the whole run
             async with customer_plugin() as cust, operations_plugin() as ops:
-                kernel.add_plugin(cust, cust.name)   # → "CustomerDataPlugin"
-                kernel.add_plugin(ops,  ops.name)    # → "OperationsDataPlugin"
+                kernel.add_plugin(cust, cust.name)  # → "CustomerDataPlugin"
+                kernel.add_plugin(ops, ops.name)  # → "OperationsDataPlugin"
                 kernel.add_plugin(McpApiKeyPlugin(), "McpApiKeyPlugin")
 
                 process_builder = ProcessBuilder("RepeatedCalls")
@@ -157,7 +141,7 @@ async def main() -> None:
         choices=["once", "listener"],
         default="once",
         help="Run mode: 'once' for single execution or 'listener' for continuous service bus processing",
-    )    
+    )
 
     args = parser.parse_args()
 
@@ -165,19 +149,20 @@ async def main() -> None:
         logger.setLevel(args.loglevel.upper())
 
     logger.info("Application started.")
-    
+
     if args.mode == "listener":
         # Import here to avoid circular imports
         from repeated_calls.orchestrator.servicebus_listener import run_listener
+
         logger.info("Starting in listener mode. Processing Service Bus messages continuously.")
         await run_listener()
     else:
         # Default mode: run once with sample data from CSV
         call_event = get_event()
         logger.info("Using sample call event from CSV.")
-            
+
         _ = await run_sequence(call_event)
-        
+
     logger.info("Application finished.")
 
 

@@ -1,20 +1,24 @@
+"""Module for testing operations-related MCP server tools."""
+
 import argparse
 import asyncio
 import json
 import sys
 from pprint import pprint
+
 from mcp import ClientSession
 from mcp.client.sse import sse_client
 from psycopg_pool import AsyncConnectionPool
-from repeated_calls.mcp_server.common.settings import MCPSettings
+
 from repeated_calls.database.settings import DatabaseSettings
+from repeated_calls.mcp_server.common.settings import MCPSettings
 
 mcpsettings = MCPSettings()
 dbsettings = DatabaseSettings()
 
 
 async def invoke_tool(session, name: str, params: dict) -> dict:
-    """Generic wrapper to call an MCP tool and pretty-print the result."""
+    """Invoke an MCP tool and print the result."""
     print(f"\n─── {name} {params} ───")
     mcp_api_key = mcpsettings.mcpapikey.get_secret_value()
     params = dict(params)
@@ -40,11 +44,11 @@ async def invoke_tool(session, name: str, params: dict) -> dict:
 
 
 async def create_pool() -> AsyncConnectionPool:
-    """Create a PostgreSQL connection-pool with retry policy."""
+    """Create and return a PostgreSQL connection pool."""
     print("Opening PostgreSQL connection-pool")
 
     conninfo = (
-        f"host={dbsettings.host} "    
+        f"host={dbsettings.host} "
         f"port={dbsettings.port} "
         f"dbname={dbsettings.database} "
         f"user={dbsettings.user} "
@@ -55,11 +59,12 @@ async def create_pool() -> AsyncConnectionPool:
         conninfo=conninfo,
         min_size=1,
         max_size=10,
-        timeout=30,                 
+        timeout=30,
     )
 
 
 async def main(host: str, product_id: int):
+    """Run the test plan for operations-related MCP tools."""
     async with sse_client(f"https://{host}/sse") as (read, write):
         async with ClientSession(read, write) as session:
             await session.initialize()
@@ -69,8 +74,8 @@ async def main(host: str, product_id: int):
 
             # One list with (tool_name, params) we want to run
             test_plan = [
-                ("get_software_updates",     {}),                       # all updates
-                ("get_software_updates",     {"product_id": product_id}),
+                ("get_software_updates", {}),  # all updates
+                ("get_software_updates", {"product_id": product_id}),
             ]
 
             for name, params in test_plan:
@@ -83,7 +88,7 @@ async def main(host: str, product_id: int):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser("Quick Operations MCP tool sanity-check")
     parser.add_argument("--host", default="localhost:8000", help="`hostname:port` of MCP server")
-    parser.add_argument("--product",  type=int, default=101, help="Product ID used in tests")
+    parser.add_argument("--product", type=int, default=101, help="Product ID used in tests")
     args = parser.parse_args()
 
     asyncio.run(main(args.host, args.product))

@@ -1,7 +1,6 @@
 """Step for drafting an offer."""
 
 from semantic_kernel import Kernel
-from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.functions import kernel_function
 from semantic_kernel.processes.kernel_process import KernelProcessStep, KernelProcessStepContext
 
@@ -9,7 +8,6 @@ from repeated_calls.orchestrator.agents.offer_agent import get_agent
 from repeated_calls.orchestrator.entities.state import State
 from repeated_calls.prompt_engineering.prompts import RecommendationPrompt
 from repeated_calls.utils.loggers import Logger
-from repeated_calls.utils.conversation_saver import save_conversation
 
 logger = Logger()
 
@@ -45,5 +43,4 @@ class DetermineRecommendationStep(KernelProcessStep):
             # Add the response to our chat history
             responses.append(f"{content.name}: {content.content}")
 
-        
         await context.emit_event("Exit", data=state)

@@ -1,9 +1,13 @@
+"""Module for handling database operations related to software updates."""
+
 from typing import List, Optional
+
 from repeated_calls.mcp_server.common.db import fetch_dicts
 from repeated_calls.mcp_server.operations.models import SoftwareUpdate
 
 
 async def find(pool, product_id: Optional[int] = None) -> List[SoftwareUpdate]:
+    """Find software updates by product ID."""
     where = "WHERE product_id = %s" if product_id else ""
     params = (product_id,) if product_id else ()
     rows = await fetch_dicts(

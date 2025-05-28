@@ -5,11 +5,7 @@ from datetime import datetime
 from pydantic import BaseModel, ConfigDict, Field
 
 from repeated_calls.database.schemas import CallEvent, Customer, HistoricCallEvent
-from repeated_calls.orchestrator.entities.structured_output import (
-    CauseResult,
-    OfferResult,
-    RepeatedCallResult,
-)
+from repeated_calls.orchestrator.entities.structured_output import CauseResult, OfferResult, RepeatedCallResult
 from repeated_calls.utils.loggers import Logger
 
 logger = Logger()
@@ -27,9 +23,7 @@ class State(BaseModel):
     run_timestamp: str | None = Field(default=None)
     row_id: str | None = Field(default=None)
 
-    model_config = ConfigDict(
-        extra="ignore", json_encoders={datetime: lambda v: v.strftime("%Y-%m-%d %H:%M:%S")}
-    )
+    model_config = ConfigDict(extra="ignore", json_encoders={datetime: lambda v: v.strftime("%Y-%m-%d %H:%M:%S")})
 
     @classmethod
     def from_call_event(cls, call_event: CallEvent) -> "State":

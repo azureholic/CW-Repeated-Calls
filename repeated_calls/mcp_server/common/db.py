@@ -1,11 +1,15 @@
-from repeated_calls.utils.loggers import Logger
-from typing import Any, Iterable, List, Dict
+"""Database utilities for managing PostgreSQL connection pool and executing queries."""
+
+from typing import Any, Dict, Iterable, List
 
 import psycopg_pool
+
 from repeated_calls.database.settings import DatabaseSettings
+from repeated_calls.utils.loggers import Logger
 
 logger = Logger()
 settings = DatabaseSettings()
+
 
 async def create_pool() -> psycopg_pool.AsyncConnectionPool:
     """Create a global async connection-pool with retry policy."""
@@ -21,9 +25,8 @@ async def create_pool() -> psycopg_pool.AsyncConnectionPool:
         min_size=5,
         max_size=20,
         timeout=30,
-
     )
-    await pool.open()           # first connect happens at start-up
+    await pool.open()  # first connect happens at start-up
     return pool
 
 

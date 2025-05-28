@@ -1,5 +1,8 @@
-from pydantic_settings import BaseSettings, SettingsConfigDict
+"""Module for managing MCP server settings."""
+
 from pydantic import SecretStr
+from pydantic_settings import BaseSettings, SettingsConfigDict
+
 
 class MCPSettings(BaseSettings):
     """Settings for MCP API Key.
@@ -13,8 +16,7 @@ class MCPSettings(BaseSettings):
     Attributes:
         mcpapikey (str): The MCP API key to connect to the MCP server.
     """
+
     mcpapikey: SecretStr = SecretStr("")
 
-    model_config = SettingsConfigDict(
-        env_nested_delimiter="__", env_file=".env", extra="ignore"
-    )
+    model_config = SettingsConfigDict(env_nested_delimiter="__", env_file=".env", extra="ignore")
