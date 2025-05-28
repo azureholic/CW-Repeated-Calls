@@ -27,9 +27,8 @@ class State(BaseModel):
     run_timestamp: str | None = Field(default=None)
     row_id: str | None = Field(default=None)
 
-    model_config = ConfigDict(
-        extra="ignore", json_encoders={datetime: lambda v: v.strftime("%Y-%m-%d %H:%M:%S")}
-    )
+
+    model_config = ConfigDict(extra="ignore", json_encoders={datetime: lambda v: v.strftime("%Y-%m-%d %H:%M:%S")})
 
     @classmethod
     def from_call_event(cls, call_event: CallEvent) -> "State":
