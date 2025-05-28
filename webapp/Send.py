@@ -87,7 +87,7 @@ with st.expander("**Scenario details**"):
         st.write("Call history analysis:")
         st.write("Operational insights:")
         st.write("Customer insights:")
-        st.write("Recommended system response:")
+        st.write("Expected application response:")
 
     with col2:
         st.write(f"{scenario['scenario_details']['call_reason']}")
