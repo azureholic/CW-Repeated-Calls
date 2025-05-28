@@ -3,9 +3,6 @@
 import json
 
 from semantic_kernel import Kernel
-from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
-from semantic_kernel.connectors.ai.open_ai import AzureChatPromptExecutionSettings
-from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.functions import kernel_function
 from semantic_kernel.processes.kernel_process import KernelProcessStep, KernelProcessStepContext
 
@@ -14,7 +11,6 @@ from repeated_calls.orchestrator.entities.state import State
 from repeated_calls.orchestrator.entities.structured_output import CauseResult
 from repeated_calls.prompt_engineering.prompts import CausePrompt
 from repeated_calls.utils.loggers import Logger
-from repeated_calls.utils.conversation_saver import save_conversation
 
 logger = Logger()
 

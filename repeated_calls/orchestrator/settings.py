@@ -1,6 +1,6 @@
+"""Configuration settings for the orchestrator module."""
 from pydantic import SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
-
 
 class AzureOpenAISettings(BaseSettings):
     """Settings for Azure OpenAI.
@@ -43,12 +43,11 @@ class AzureAIFoundrySettings(BaseSettings):
     """
 
     endpoint: str
-    
-   
+
     model_config = SettingsConfigDict(
         env_nested_delimiter="__", env_file=".env", env_prefix="AZURE_AI_FOUNDRY_", extra="ignore"
     )
-    
+
 
 class AppInsightsSettings(BaseSettings):
     """Settings for Azure Application Insights.
@@ -69,7 +68,7 @@ class AppInsightsSettings(BaseSettings):
     model_config = SettingsConfigDict(
         env_nested_delimiter="__", env_file=".env", env_prefix="APPLICATIONINSIGHTS_", extra="ignore"
     )
-    
+
 
 class McpApiKeySettings(BaseSettings):
     """Settings for the MCP API Key.
@@ -86,6 +85,4 @@ class McpApiKeySettings(BaseSettings):
 
     mcpapikey: SecretStr = SecretStr("")
 
-    model_config = SettingsConfigDict(
-        env_nested_delimiter="__", env_file=".env", extra="ignore"
-    )
+    model_config = SettingsConfigDict(env_nested_delimiter="__", env_file=".env", extra="ignore")
