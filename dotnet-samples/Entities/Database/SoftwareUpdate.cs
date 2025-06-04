@@ -7,18 +7,18 @@ using System.Threading.Tasks;
 
 namespace cw_repeated_calls_dotnet.Entities.Database
 {
-    public class SoftwareUpdate
+    public record SoftwareUpdate
     {
-      //  [JsonProperty("id")]
+        [JsonProperty("id")]
         public int Id { get; set; }
 
-      //  [JsonProperty("productId")]
+        [JsonProperty("productId")]
         public int ProductId { get; set; }
 
-      //  [JsonProperty("rolloutDate")]
+        [JsonProperty("rolloutDate")]
         public DateTime RolloutDate { get; set; }
 
-      //  [JsonProperty("type")]
+       [JsonProperty("type")]
         public string Type { get; set; }
     }
 }

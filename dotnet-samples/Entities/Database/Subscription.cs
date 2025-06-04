@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace cw_repeated_calls_dotnet.Entities.Database
 {
-    public class Subscription
+    public record Subscription
     {
        // [JsonProperty("id")]
         public int Id { get; set; }

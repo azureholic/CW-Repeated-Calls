@@ -1,2 +1,0 @@
-id,customer_id,sdc,call_summary,start_time,end_time
-1,7,"My AutoMow 3000 stops working","Customer reported that her AutoMow 3000 suddenly stopped operating. Agent walked her through a power-cycle and checked the onboard error log (connectivity fault). A ticket was opened and the customer was assured the issue would be resolved by 2024-01-10.",2024-01-09 09:15:03,2024-01-09 09:26:11

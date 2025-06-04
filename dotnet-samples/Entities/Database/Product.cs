@@ -9,7 +9,7 @@ namespace cw_repeated_calls_dotnet.Entities.Database
 {
     // JsonProperties not needed when reading from csv files
 
-    public class Product
+    public record Product
     {
       //  [JsonProperty("id")]
         public int Id { get; set; }

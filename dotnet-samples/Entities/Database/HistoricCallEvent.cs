@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace cw_repeated_calls_dotnet.Entities.Database
 {
-    public class HistoricCallEvent
+    public record HistoricCallEvent
     {
        // [JsonProperty("id")]
         public int Id { get; set; }
